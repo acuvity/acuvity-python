@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "acuvity"
-version = "0.0.2"
+version = "0.0.3"
 description = "The official Acuvity Python SDK."
 authors = ["Acuvity, Inc. <info@acuvity.ai>"]
 readme = "README.md"
@@ -12,6 +12,7 @@ repository = "https://github.com/acuvity/acuvity-python"
 python = "^3.8"
 httpx = ">=0.23.0, <1"
 pyjwt = "^2.9.0"
+pydantic = "^2.9.2"
 
 [build-system]
 requires = ["poetry-core"]

@@ -3,6 +3,8 @@ import os
 import httpx
 import jwt
 
+from .types import ValidateResponse
+
 from typing import Iterable, List, Any, Dict, Sequence, Union, Optional
 from urllib.parse import urlparse
 
@@ -158,8 +160,18 @@ class AcuvityClient:
             annotations: Optional[Dict[str, str]] = None,
             bypass_hash: Optional[str] = None,
             anonymization: Optional[str] = None,
-    ) -> Any:
+    ) -> ValidateResponse:
         """
+        Validate runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
+        Returns a ValidateResponse object on success, and raises different exceptions on failure.
+
+        :param messages: the messages to validate. These are the prompts that you want to validate. Required if no files are provided.
+        :param files: the files to validate. These are the files that you want to validate. Required if no messages are provided.
+        :param type: the type of the validation. This can be either "Input" or "Output". Defaults to "Input". Use "Output" if you want to run model output through the detection engines.
+        :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+pii_detector", "-ner_detector"] will include the PII detector and exclude the NER detector.
+        :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
+        :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
+        :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, no anonymization will be used.
         """
         data = {}
         # messages must be strings
@@ -233,7 +245,7 @@ class AcuvityClient:
                 raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
             data["anonymization"] = anonymization
 
-        resp_json = self.http_client.post(
+        resp = self.http_client.post(
             self.apex_url + "/_acuvity/validate",
             headers={
                 "Authorization": "Bearer " + self.token,
@@ -243,11 +255,13 @@ class AcuvityClient:
             },
             json=data,
         )
-        if  resp_json.status_code != 200:
-            raise ValueError(f"failed to call validate API: HTTP {resp_json.status_code}: {resp_json.text}")
+        if  resp.status_code != 200:
+            raise ValueError(f"failed to call validate API: HTTP {resp.status_code}: {resp.text}")
 
-        resp = resp_json.json()
-        return resp
+        # TODO: account for msgpack
+        # ret = resp.json()
+        ret = ValidateResponse.model_validate_json(resp.content)
+        return ret
 
     def list_analyzer_groups(self) -> List[str]:
         return list(self._available_analyzers.keys())
