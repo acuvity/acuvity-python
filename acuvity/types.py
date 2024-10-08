@@ -14,12 +14,67 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import Iterable, List, Any, Dict, Sequence, Union, Optional
+from typing import List, Dict, Optional, TypeVar
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+
+try:
+    import msgpack
+    import msgpack.ext
+    HAVE_MSGPACK = True
+except ImportError:
+    HAVE_MSGPACK = False
+
+class AcuvityModel(BaseModel):
+    """
+    AcuvityModel is the base class for all models in the Acuvity API.
+    It serves mainly as a marker that all of these classes are models which belong to us.
+    However, we will also extend this with utility functions that are useful for all models.
+    """
+    @model_validator(mode="before")
+    def convert_msgpack_timestamps(cls, values):
+        """
+        This validator runs before any other field-level validation.
+        It converts any `msgpack.ext.Timestamp` in the model to a `datetime` object
+        so that we can have normal datetim objects in the model and still use msgpack
+        and json interchangeably.
+        """
+        if not HAVE_MSGPACK:
+            return values
+        else:
+            # Iterate through all fields and check for `msgpack.ext.Timestamp`
+            for field, value in values.items():
+                if isinstance(value, msgpack.ext.Timestamp):
+                    # values[field] = datetime.fromtimestamp(value.seconds + value.nanoseconds / 1e9)
+                    values[field] = value.to_datetime()
+            return values
+
+A = TypeVar('A', bound=AcuvityModel)
 
 
-class PrincipalApp(BaseModel):
+class OrgSettings(AcuvityModel):
+    """
+    OrgSettings represents the model of a orgsettings
+    """
+    model_config = ConfigDict(strict=False)
+
+    ID: Optional[str] = Field(None, description="The identifier of the object.")
+    accessPolicy: str = Field(..., description="The rego policy that decides if the incoming request can access the provider.")
+    askConsent: bool = Field(..., description="Ask the user for consent before accessing a monitored provider, using an html splash screen the first time they connect.")
+    assignPolicy: str = Field(..., description="The rego policy that decides in which team an user should be in. The team will be passed to the accessPolicy.")
+    contentPolicy: str = Field(..., description="The policy that decides how to handle the request content, once access has been granted by accessPolicy and the content analysis was performed.")
+    createTime: datetime = Field(..., description="Creation date of the object.")
+    importHash: Optional[str] = Field(None, description="The hash of the structure used to compare with new import version.")
+    importLabel: Optional[str] = Field(None, description="The user-defined import label that allows the system to group resources from the same import operation.")
+    keywords: List[str] = Field(..., description="List of keyword to detect and on which you can take policy decision, like redactions, warnings, alerts of simply blocks.")
+    namespace: Optional[str] = Field(None, description="The namespace of the object.")
+    profile: str = Field(..., description="A few sentences about the organization. The description must be short and detailed. It will be used by the inference engine to decide if the content sent by the users are relevant to your company.")
+    propagate: bool = Field(..., description="Propagates the object to all child namespaces. This is always true.")
+    updateTime: datetime = Field(..., description="Last update date of the object.")
+    useRegoCodeOnly: bool = Field(..., description="If true, it uses Rego code to define team assignment, provider access and content policies.")
+
+
+class PrincipalApp(AcuvityModel):
     """
     PrincipalApp represents the model of a principalapp
 
@@ -35,7 +90,7 @@ class PrincipalApp(BaseModel):
     tier: Optional[str] = Field(None, description="The tier of the application request.")
 
 
-class PrincipalUser(BaseModel):
+class PrincipalUser(AcuvityModel):
     """
     PrincipalUser represents the model of a principaluser
 
@@ -45,7 +100,7 @@ class PrincipalUser(BaseModel):
     name: str = Field(..., description="Identification bit that will be used to identify the origin of the request.")
 
 
-class Principal(BaseModel):
+class Principal(AcuvityModel):
     """
     Principal represents the model of a principal
     """
@@ -60,7 +115,7 @@ class Principal(BaseModel):
     user: Optional[PrincipalUser] = Field(None, description="The user principal information if type is User.")
 
 
-class AlertEvent(BaseModel):
+class AlertEvent(AcuvityModel):
     """
     AlertEvent represents the model of a alertevent
     """
@@ -73,7 +128,7 @@ class AlertEvent(BaseModel):
     timestamp: Optional[datetime] = Field(None, description="When the alert event was raised.")
 
 
-class Modality(BaseModel):
+class Modality(AcuvityModel):
     """
     Modality represents the model of a modality
     """
@@ -83,7 +138,7 @@ class Modality(BaseModel):
     type: str = Field(..., description="The type of data.")
 
 
-class TextualDetection(BaseModel):
+class TextualDetection(AcuvityModel):
     """
     TextualDetection represents the model of a textualdetection
     """
@@ -97,7 +152,7 @@ class TextualDetection(BaseModel):
     type: str = Field(..., description="The type of detection.")
 
 
-class Extraction(BaseModel):
+class Extraction(AcuvityModel):
     """
     Extraction represents the model of a extraction
     """
@@ -124,7 +179,7 @@ class Extraction(BaseModel):
     topics: Optional[Dict[str, float]] = Field(None, description="The topic of the classification.")
 
 
-class Latency(BaseModel):
+class Latency(AcuvityModel):
     """
     Latency represents the model of a latency
     """
@@ -137,7 +192,7 @@ class Latency(BaseModel):
     extraction: int = Field(..., description="How much time it took to run input or output extraction in nanoseconds.")
 
 
-class ValidateResponse(BaseModel):
+class ValidateResponse(AcuvityModel):
     """
     ValidateResponse represents the model of a response to a validate API call
     """

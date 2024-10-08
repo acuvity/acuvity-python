@@ -17,12 +17,20 @@
 import base64
 import os
 import httpx
+import json
 import jwt
 
-from .types import ValidateResponse
+from .types import A, ValidateResponse, OrgSettings
 
-from typing import Iterable, List, Any, Dict, Sequence, Union, Optional
+from typing import Iterable, List, Type, Dict, Sequence, Union, Optional
 from urllib.parse import urlparse
+
+# msgpack is optional and sits behind a 'msgpack' extra
+try:
+    import msgpack
+    HAVE_MSGPACK = True
+except ImportError:
+    HAVE_MSGPACK = False
 
 class AcuvityClient:
     def __init__(
@@ -33,6 +41,7 @@ class AcuvityClient:
             api_url: Optional[str] = None,
             apex_url: Optional[str] = None,
             http_client: Optional[httpx.Client] = None,
+            use_msgpack: bool = HAVE_MSGPACK,
     ):
         """
         Initializes a new Acuvity client. At a minimum you need to provide a token, which can get passed through an environment variable.
@@ -43,6 +52,7 @@ class AcuvityClient:
         :param api_url: the URL of the Acuvity API to use. If not provided, it will be detected from the environment variable ACUVITY_API_URL or it will be derived from the token. If that fails, the initialization fails.
         :param apex_url: the URL of the Acuvity Apex service to use. If not provided, it will be detected from the environment variable ACUVITY_APEX_URL or it will be derived from an API call. If that fails, the initialization fails.
         :param http_client: the HTTP client to use for making requests. If not provided, a new client will be created.
+        :param use_msgpack: whether to use msgpack for serialization. If True, the 'msgpack' extra must be installed, and this will raise an exception otherwise. Defaults to True if msgpack is installed.
         """
 
         # we initialize the available analyzers here as they are static right now
@@ -70,11 +80,20 @@ class AcuvityClient:
             ],
         }
 
+        # check for msgpack
+        if use_msgpack:
+            if not HAVE_MSGPACK:
+                raise ValueError("msgpack is not available, but use_msgpack is set to True")
+            self._use_msgpack = True
+        else:
+            self._use_msgpack = False
+
         # we initialize the client early as we might require it to fully initialize our own client
         self.http_client = http_client if http_client is not None else httpx.Client(
             timeout=httpx.Timeout(timeout=600.0, connect=5.0),
             limits=httpx.Limits(max_connections=1000, max_keepalive_connections=100),
             follow_redirects=True,
+            http2=True,
         )
 
         # token first, as we potentially need it to detect the other values
@@ -132,7 +151,7 @@ class AcuvityClient:
         if apex_url is None or apex_url == "":
             try:
                 orgsettings = self.orgsettings()
-                org_id = orgsettings["ID"]
+                org_id = orgsettings.ID
             except Exception as e:
                 raise ValueError("failed to detect apex URL: could not retrieve orgsettings: " + str(e))
             apex_url = f"https://{org_id}.{self.api_tld_domain}"
@@ -147,24 +166,85 @@ class AcuvityClient:
         except Exception as e:
             raise ValueError("Apex URL is not a valid URL: " + str(e))
 
-    def orgsettings(self):
+    def _build_headers(self, method: str) -> Dict[str, str]:
+        # we always send our token and namesp
+        ret = {
+            "Authorization": "Bearer " + self.token,
+            "X-Namespace": self.namespace,
+        }
+
+        # accept header depends on the use of msgpack
+        if self._use_msgpack:
+            ret["Accept"] = "application/msgpack"
+        else:
+            ret["Accept"] = "application/json"
+
+        # if this is a POST or PUT, then the Content-Type again depends on the use of msgpack
+        if method == "POST" or method == "PUT":
+            if self._use_msgpack:
+                ret["Content-Type"] = "application/msgpack"
+            else:
+                ret["Content-Type"] = "application/json; charset=utf-8",
+
+        return ret
+
+    def _make_request(self, method: str, url: str, **kwargs) -> httpx.Response:
+        resp = self.http_client.request(
+            method, url,
+            headers=self._build_headers(method),
+            **kwargs,
+        )
+        return resp
+
+    def _obj_from_content(self, object_class: Type[A], content: bytes) -> Union[A, List[A]]:
+        data = msgpack.unpackb(content) if self._use_msgpack else json.loads(content)
+        if isinstance(data, list):
+            return [object_class.model_validate(item) for item in data]
+        else:
+            object_class.model_validate(data)
+
+    def _obj_to_content(self, obj: Union[A, List[A]]) -> bytes:
+        if isinstance(obj, list):
+            data = [item.model_dump() for item in obj]
+        else:
+            data = obj.model_dump()
+        return msgpack.packb(data) if self._use_msgpack else json.dumps(data).encode('utf-8')
+
+    def apex_request(self, method: str, path: str, **kwargs) -> httpx.Response:
+        return self._make_request(method, self.apex_url + path, **kwargs)
+
+    def apex_get(self, path: str, object_class: Type[A], **kwargs) -> Union[A, List[A]]:
+        resp = self.apex_request("GET", path, **kwargs)
+        return self._obj_from_content(object_class, resp.content)
+    
+    def apex_post(self, path: str, obj: Union[A, List[A]], **kwargs) -> None:
+        content = self._obj_to_content(obj)
+        self.apex_request("POST", path, content=content, **kwargs)
+        return None
+
+    def api_request(self, method: str, path: str, **kwargs) -> httpx.Response:
+        return self._make_request(method, self.api_url + path, **kwargs)
+
+    def api_get(self, path: str, object_class: Type[A], **kwargs) -> Union[A, List[A]]:
+        resp = self.api_request("GET", path, **kwargs)
+        return self._obj_from_content(object_class, resp.content)
+
+    def api_post(self, path: str, obj: Union[A, List[A]], **kwargs) -> None:
+        content = self._obj_to_content(obj)
+        self.api_request("POST", path, content=content, **kwargs)
+        return None
+
+    def orgsettings(self) -> OrgSettings:
         """
         Retrieves the organization settings that the authenticated token belongs to.
         """
-        resp_json = self.http_client.get(
-            self.api_url + "/orgsettings",
-            headers={
-                "Authorization": "Bearer " + self.token,
-                "X-Namespace": self.namespace,
-                "Accept": "application/json",
-                "Content-Type": "application/json; charset=utf-8",
-            },
-        )
-        if  resp_json.status_code != 200:
-            raise ValueError(f"failed to call orgsettings API: HTTP {resp_json.status_code}: {resp_json.text}")
-        resp = resp_json.json()
+        try:
+            resp: List[OrgSettings] = self.api_get("/orgsettings", OrgSettings)
+        except Exception as e:
+            raise ValueError(f"failed to call orgsettings API: {e}")
 
-        # we know this is a singleton, so there will always be exactly one
+        # We know that this API returns a list. However, this is a singleton, so there will always be exactly one
+        # And we return simply that one.
         return resp[0]
 
     def validate(
@@ -271,7 +351,7 @@ class AcuvityClient:
             },
             json=data,
         )
-        if  resp.status_code != 200:
+        if resp.status_code != 200:
             raise ValueError(f"failed to call validate API: HTTP {resp.status_code}: {resp.text}")
 
         # TODO: account for msgpack
