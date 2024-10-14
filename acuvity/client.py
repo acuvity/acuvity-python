@@ -16,11 +16,12 @@
 
 import base64
 import os
+import ssl
 import httpx
 import json
 import jwt
 
-from .types import AO, ValidateRequest, ValidateResponse
+from .types import AO, ApexInfo, ValidateRequest, ValidateResponse
 
 from typing import Iterable, List, Type, Dict, Sequence, Union, Optional
 from urllib.parse import urlparse
@@ -40,7 +41,6 @@ class AcuvityClient:
             namespace: Optional[str] = None,
             api_url: Optional[str] = None,
             apex_url: Optional[str] = None,
-            http_client: Optional[httpx.Client] = None,
             use_msgpack: bool = HAVE_MSGPACK,
     ):
         """
@@ -51,7 +51,6 @@ class AcuvityClient:
         :param namespace: the namespace to use for the API calls. If not provided, it will be detected from the environment variable ACUVITY_NAMESPACE or it will be derived from the token. If that fails, the initialization fails.
         :param api_url: the URL of the Acuvity API to use. If not provided, it will be detected from the environment variable ACUVITY_API_URL or it will be derived from the token. If that fails, the initialization fails.
         :param apex_url: the URL of the Acuvity Apex service to use. If not provided, it will be detected from the environment variable ACUVITY_APEX_URL or it will be derived from an API call. If that fails, the initialization fails.
-        :param http_client: the HTTP client to use for making requests. If not provided, a new client will be created.
         :param use_msgpack: whether to use msgpack for serialization. If True, the 'msgpack' extra must be installed, and this will raise an exception otherwise. Defaults to True if msgpack is installed.
         """
 
@@ -89,7 +88,7 @@ class AcuvityClient:
             self._use_msgpack = False
 
         # we initialize the client early as we might require it to fully initialize our own client
-        self.http_client = http_client if http_client is not None else httpx.Client(
+        self.http_client = httpx.Client(
             timeout=httpx.Timeout(timeout=600.0, connect=5.0),
             limits=httpx.Limits(max_connections=1000, max_keepalive_connections=100),
             follow_redirects=True,
@@ -150,11 +149,22 @@ class AcuvityClient:
             apex_url = os.getenv("ACUVITY_APEX_URL", None)
         if apex_url is None or apex_url == "":
             try:
-                orgsettings = self.orgsettings()
-                org_id = orgsettings.ID
+                apex_info = self.well_known_apex_info()
+                if apex_info.cas is not None and apex_info.cas != "":
+                    # if the API provided us with Apex CA certs, we're going to recreate the
+                    # http_client to make use of them.
+                    sslctx = ssl.create_default_context()
+                    sslctx.load_verify_locations(cadata=apex_info.cas)
+                    self.http_client = httpx.Client(
+                        timeout=httpx.Timeout(timeout=600.0, connect=5.0),
+                        limits=httpx.Limits(max_connections=1000, max_keepalive_connections=100),
+                        follow_redirects=True,
+                        http2=True,
+                        verify=sslctx,
+                    )
             except Exception as e:
-                raise ValueError("failed to detect apex URL: could not retrieve orgsettings: " + str(e))
-            apex_url = f"https://{org_id}.{self.api_tld_domain}"
+                raise ValueError("failed to detect apex URL: could not retrieve well-known Apex info: " + str(e))
+            apex_url = f"https://{apex_info.url}" if not apex_info.url.startswith(("https://", "http://")) else apex_info.url
         self.apex_url = apex_url
 
         try:
@@ -190,7 +200,6 @@ class AcuvityClient:
 
     def _make_request(self, method: str, url: str, **kwargs) -> httpx.Response:
         headers = self._build_headers(method)
-        print(headers)
         resp = self.http_client.request(
             method, url,
             headers=headers,
@@ -203,7 +212,7 @@ class AcuvityClient:
         if isinstance(data, list):
             return [object_class.model_validate(item) for item in data]
         else:
-            object_class.model_validate(data)
+            return object_class.model_validate(data)
 
     def _obj_to_content(self, obj: Union[AO, List[AO]]) -> bytes:
         if isinstance(obj, list):
@@ -235,6 +244,9 @@ class AcuvityClient:
         content = self._obj_to_content(obj)
         self.api_request("POST", path, content=content, **kwargs)
         return None
+
+    def well_known_apex_info(self) -> ApexInfo:
+        return self.api_get("/.well-known/acuvity/my-apex.json", ApexInfo)
 
     def validate(
             self,

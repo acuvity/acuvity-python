@@ -52,6 +52,20 @@ class AcuvityModel(BaseModel):
 AO = TypeVar('AO', bound=AcuvityModel)
 
 
+class ApexInfo(AcuvityModel):
+    """
+    ApexInfo holds the well known URL and CA information for an apex for a namespace.
+
+    Fields:
+    - url: the URL of the Apex
+    - CAs: the CA certificates that verify the certificates that this apex is serving
+    """
+    model_config = ConfigDict(strict=False)
+
+    url: str = Field(..., description="The URL of the Apex.")
+    cas: Optional[str] = Field(None, description="The CA certificates that verify the certificates that this apex is serving.", alias="CAs")
+
+
 class PrincipalApp(AcuvityModel):
     """
     PrincipalApp represents the model of a principalapp
