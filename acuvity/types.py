@@ -49,29 +49,7 @@ class AcuvityModel(BaseModel):
                     values[field] = value.to_datetime()
             return values
 
-A = TypeVar('A', bound=AcuvityModel)
-
-
-class OrgSettings(AcuvityModel):
-    """
-    OrgSettings represents the model of a orgsettings
-    """
-    model_config = ConfigDict(strict=False)
-
-    ID: Optional[str] = Field(None, description="The identifier of the object.")
-    accessPolicy: str = Field(..., description="The rego policy that decides if the incoming request can access the provider.")
-    askConsent: bool = Field(..., description="Ask the user for consent before accessing a monitored provider, using an html splash screen the first time they connect.")
-    assignPolicy: str = Field(..., description="The rego policy that decides in which team an user should be in. The team will be passed to the accessPolicy.")
-    contentPolicy: str = Field(..., description="The policy that decides how to handle the request content, once access has been granted by accessPolicy and the content analysis was performed.")
-    createTime: datetime = Field(..., description="Creation date of the object.")
-    importHash: Optional[str] = Field(None, description="The hash of the structure used to compare with new import version.")
-    importLabel: Optional[str] = Field(None, description="The user-defined import label that allows the system to group resources from the same import operation.")
-    keywords: List[str] = Field(..., description="List of keyword to detect and on which you can take policy decision, like redactions, warnings, alerts of simply blocks.")
-    namespace: Optional[str] = Field(None, description="The namespace of the object.")
-    profile: str = Field(..., description="A few sentences about the organization. The description must be short and detailed. It will be used by the inference engine to decide if the content sent by the users are relevant to your company.")
-    propagate: bool = Field(..., description="Propagates the object to all child namespaces. This is always true.")
-    updateTime: datetime = Field(..., description="Last update date of the object.")
-    useRegoCodeOnly: bool = Field(..., description="If true, it uses Rego code to define team assignment, provider access and content policies.")
+AO = TypeVar('AO', bound=AcuvityModel)
 
 
 class PrincipalApp(AcuvityModel):
@@ -214,3 +192,33 @@ class ValidateResponse(AcuvityModel):
     reasons: Optional[List[str]] = Field(None, description="The various reasons returned by the policy engine.")
     time: datetime = Field(..., description="Set the time of the message request.")
     type: str = Field(..., description="The type of text.")
+
+
+class ExtractionRequest(AcuvityModel):
+    """
+    ExtractionRequest contains the data of an extraction request..
+    """
+    model_config = ConfigDict(strict=False)
+
+    annotations: Optional[Dict[str, str]] = Field(None, description="Annotations attached to the extraction.", alias="Annotations")
+    content: str = Field(..., description="The data extracted.", alias="Content")
+    label: Optional[str] = Field(None, description="A means of distinguishing what was extracted, such as prompt, input file or code.", alias="Label")
+
+
+class ValidateRequest(AcuvityModel):
+    """
+    ValidateRequest represents the model of a request to the validate API
+    """
+    model_config = ConfigDict(strict=False)
+
+    annotations: Optional[Dict[str, str]] = Field(None, description="Annotations attached to the log.")
+    anonymization: Optional[str] = Field(None, description="Anonymization values to use. This can be FixedSize or VariableSize.")
+    extractions: Optional[List[ExtractionRequest]] = Field(None, description="The extractions to process for this request.")
+    messages: Optional[List[str]] = Field(None, description="Messages to process and provide detections for. These are additive to the set extractions. This is a shortcut for ExtractionRequest.content essentially.")
+    type: Optional[str] = Field(None, description="The type of validation request this is. This can be Input or Output.")
+    analyzers: Optional[List[str]] = Field(None, description="These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use '+' to include an analyzer and '-' to exclude an analyzer. For example, ['+pii_detector', '-ner_detector'] will include the PII detector and exclude the NER detector.")
+    keywords: Optional[List[str]] = Field(None, description="The keywords to try to detect for in the request data.")
+    redactions: Optional[List[str]] = Field(None, description="The redactions to use: the strings need to match the names of the textual detections. For example, if a PII location was detected and you want to redact it, you need to use 'location' for the redaction as this is its textual detection name.")
+    minimalLogging: Optional[bool] = Field(None, description="If true, only minimal logging will be done which essentially skips logging the request data.")
+    contentPolicy: Optional[str] = Field(None, description="ContentPolicy allows to pass optional Rego content policy. If not set, The action is always Allow, and there cannot be any alerts raised etc If it is set, it will be run, and the final decision will be computed based on that policy. If the rego code does not start with 'package main', then the needed classic package definition and  acuvity imports will be added automatically. If the code starts with `package main`, then everything remains untouched.")
+    bypassHash: Optional[str] = Field(None, description="In the case of a contentPolicy that asks for a confirmation, this is the hash you must send back to bypass the block. This is only useful when a content policy has been set.")

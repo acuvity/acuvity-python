@@ -20,7 +20,7 @@ import httpx
 import json
 import jwt
 
-from .types import A, ValidateResponse, OrgSettings
+from .types import AO, ValidateRequest, ValidateResponse
 
 from typing import Iterable, List, Type, Dict, Sequence, Union, Optional
 from urllib.parse import urlparse
@@ -189,21 +189,23 @@ class AcuvityClient:
         return ret
 
     def _make_request(self, method: str, url: str, **kwargs) -> httpx.Response:
+        headers = self._build_headers(method)
+        print(headers)
         resp = self.http_client.request(
             method, url,
-            headers=self._build_headers(method),
+            headers=headers,
             **kwargs,
         )
         return resp
 
-    def _obj_from_content(self, object_class: Type[A], content: bytes) -> Union[A, List[A]]:
+    def _obj_from_content(self, object_class: Type[AO], content: bytes) -> Union[AO, List[AO]]:
         data = msgpack.unpackb(content) if self._use_msgpack else json.loads(content)
         if isinstance(data, list):
             return [object_class.model_validate(item) for item in data]
         else:
             object_class.model_validate(data)
 
-    def _obj_to_content(self, obj: Union[A, List[A]]) -> bytes:
+    def _obj_to_content(self, obj: Union[AO, List[AO]]) -> bytes:
         if isinstance(obj, list):
             data = [item.model_dump() for item in obj]
         else:
@@ -213,11 +215,11 @@ class AcuvityClient:
     def apex_request(self, method: str, path: str, **kwargs) -> httpx.Response:
         return self._make_request(method, self.apex_url + path, **kwargs)
 
-    def apex_get(self, path: str, object_class: Type[A], **kwargs) -> Union[A, List[A]]:
+    def apex_get(self, path: str, object_class: Type[AO], **kwargs) -> Union[AO, List[AO]]:
         resp = self.apex_request("GET", path, **kwargs)
         return self._obj_from_content(object_class, resp.content)
     
-    def apex_post(self, path: str, obj: Union[A, List[A]], **kwargs) -> None:
+    def apex_post(self, path: str, obj: Union[AO, List[AO]], **kwargs) -> None:
         content = self._obj_to_content(obj)
         self.apex_request("POST", path, content=content, **kwargs)
         return None
@@ -225,27 +227,14 @@ class AcuvityClient:
     def api_request(self, method: str, path: str, **kwargs) -> httpx.Response:
         return self._make_request(method, self.api_url + path, **kwargs)
 
-    def api_get(self, path: str, object_class: Type[A], **kwargs) -> Union[A, List[A]]:
+    def api_get(self, path: str, object_class: Type[AO], **kwargs) -> Union[AO, List[AO]]:
         resp = self.api_request("GET", path, **kwargs)
         return self._obj_from_content(object_class, resp.content)
 
-    def api_post(self, path: str, obj: Union[A, List[A]], **kwargs) -> None:
+    def api_post(self, path: str, obj: Union[AO, List[AO]], **kwargs) -> None:
         content = self._obj_to_content(obj)
         self.api_request("POST", path, content=content, **kwargs)
         return None
-
-    def orgsettings(self) -> OrgSettings:
-        """
-        Retrieves the organization settings that the authenticated token belongs to.
-        """
-        try:
-            resp: List[OrgSettings] = self.api_get("/orgsettings", OrgSettings)
-        except Exception as e:
-            raise ValueError(f"failed to call orgsettings API: {e}")
-
-        # We know that this API returns a list. However, this is a singleton, so there will always be exactly one
-        # And we return simply that one.
-        return resp[0]
 
     def validate(
             self,
@@ -256,6 +245,8 @@ class AcuvityClient:
             annotations: Optional[Dict[str, str]] = None,
             bypass_hash: Optional[str] = None,
             anonymization: Optional[str] = None,
+            redactions: Optional[List[str]] = None,
+            keywords: Optional[List[str]] = None,
     ) -> ValidateResponse:
         """
         Validate runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
@@ -341,8 +332,26 @@ class AcuvityClient:
                 raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
             data["anonymization"] = anonymization
 
+        # redactions must be a list of strings
+        if redactions is not None:
+            if not isinstance(redactions, List):
+                raise ValueError("redactions must be a list")
+            for redaction in redactions:
+                if not isinstance(redaction, str):
+                    raise ValueError("redactions must be strings")
+            data["redactions"] = redactions
+
+        # keywords must be a list of strings
+        if keywords is not None:
+            if not isinstance(keywords, List):
+                raise ValueError("keywords must be a list")
+            for keyword in keywords:
+                if not isinstance(keyword, str):
+                    raise ValueError("keywords must be strings")
+            data["keywords"] = keywords
+
         resp = self.http_client.post(
-            self.apex_url + "/_acuvity/validate",
+            self.apex_url + "/_acuvity/validate/unmanaged",
             headers={
                 "Authorization": "Bearer " + self.token,
                 "X-Namespace": self.namespace,
