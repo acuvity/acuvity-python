@@ -21,11 +21,13 @@ import httpx
 import json
 import jwt
 import logging
+import functools
 
 from .types import AO, ApexInfo, ValidateRequest, ValidateResponse
 
 from typing import Any, Iterable, List, Type, Dict, Sequence, Union, Optional
 from urllib.parse import urlparse
+from tenacity import retry, retry_if_exception_type, wait_random_exponential, stop_after_attempt, stop_after_delay
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,31 @@ try:
 except ImportError:
     HAVE_MSGPACK = False
 
+
+class RequestRetryError(Exception):
+    """
+    RequestRetryError is thrown by _make_request whenever the HTTP status code of a response indicates that
+    the request can and/or should be retried.
+    """
+
+
+class OutdatedLibraryError(Exception):
+    """
+    OutdatedLibraryError is thrown by _make_request whenever the HTTP status code of a response indicates that
+    the library is outdated and should be updated.
+    This can happen if the serialized types are out of date and require this library to be updated to receive the latest updates.
+    """
+    def __init__(self, message: str = "Your 'acuvity' library is outdated. Please update to the latest version."):
+        super().__init__(message)
+
+
 class AcuvityClient:
+    """
+    AcuvityClient is a synchronous client to use the Acuvity API or more importantly the Acuvity APEX API
+    which is the center piece for the Python SDK.
+
+    It offers the Acuvity Validate APIs in convenience wrappers around the actual API calls.
+    """
     def __init__(
             self,
             *,
@@ -45,6 +71,8 @@ class AcuvityClient:
             api_url: Optional[str] = None,
             apex_url: Optional[str] = None,
             use_msgpack: bool = HAVE_MSGPACK,
+            retry_max_attempts: int = 10,
+            retry_max_wait: int = 300,
     ):
         """
         Initializes a new Acuvity client. At a minimum you need to provide a token, which can get passed through an environment variable.
@@ -55,7 +83,13 @@ class AcuvityClient:
         :param api_url: the URL of the Acuvity API to use. If not provided, it will be detected from the environment variable ACUVITY_API_URL or it will be derived from the token. If that fails, the initialization fails.
         :param apex_url: the URL of the Acuvity Apex service to use. If not provided, it will be detected from the environment variable ACUVITY_APEX_URL or it will be derived from an API call. If that fails, the initialization fails.
         :param use_msgpack: whether to use msgpack for serialization. If True, the 'msgpack' extra must be installed, and this will raise an exception otherwise. Defaults to True if msgpack is installed.
+        :param retry_max_attempts: the maximum number of retry attempts to make on failed requests that can be retried. Defaults to 10.
+        :param retry_max_wait: the maximum number of seconds to wait for all retry attempts. Defaults to 300 seconds.
         """
+
+        # take the values as is
+        self._retry_max_attempts: int = retry_max_attempts
+        self._retry_max_wait: int = retry_max_wait
 
         # we initialize the available analyzers here as they are static right now
         # this will need to change once they become dynamic, but even then we can cache them within the client
@@ -201,13 +235,74 @@ class AcuvityClient:
 
         return ret
 
+    def __retry_decorator(func):
+        """
+        Custom decorator to derive retry configuration from the instance itself.
+        """
+        @functools.wraps(func)
+        def retry_wrapper(self, *args, **kwargs):
+            # Retry mechanism is based on tenacity, which is a general-purpose retrying library
+            #
+            # chosen algorithm: we are using wait_random_exponential which is an exponential backoff algorithm with added jitter
+            retry_decorator = retry(
+                retry=retry_if_exception_type(RequestRetryError),
+                wait=wait_random_exponential(multiplier=1, min=1, max=60),
+                stop=(stop_after_delay(self._retry_max_wait) | stop_after_attempt(self._retry_max_attempts)),
+            )
+            decorated_func = retry_decorator(func)
+            return decorated_func(self, *args, **kwargs)
+        return retry_wrapper
+
+    @__retry_decorator
     def _make_request(self, method: str, url: str, **kwargs) -> httpx.Response:
+        # For retrying requests, we should retry on the same or similar conditions as the golang manipulate library:
+        # - the same HTTP status codes as in the golang manipulate library:
+        # - IO errors
+        # - potential connection errors
         headers = self._build_headers(method)
-        resp = self.http_client.request(
-            method, url,
-            headers=headers,
-            **kwargs,
-        )
+        try:
+            resp = self.http_client.request(
+                method, url,
+                headers=headers,
+                **kwargs,
+            )
+            resp.raise_for_status()
+        except httpx.CloseError as e:
+            # nothing to fix here, also not harmful at all
+            # do nothing
+            logger.warning(f"Request encountered a CloseError: {e}. Ignoring this error.")
+        except httpx.UnsupportedProtocol as e:
+            # nothing to fix here, just raise
+            # but as it is a TransportError, we need to catch it here
+            raise e
+        except httpx.ProtocolError as e:
+            # nothing to fix here, just raise
+            # but as it is a TransportError, we need to catch it here
+            raise e
+        except httpx.TransportError as e:
+            logger.warning(f"Request failed with TransportError: {e}. Retrying...")
+            raise RequestRetryError(f"TransportError: {e}")
+        except httpx.HTTPStatusError as e:
+            # we want to retry on certain status codes like the manipulate golang library:
+            # - http.StatusBadGateway
+		    # - http.StatusServiceUnavailable
+		    # - http.StatusGatewayTimeout
+		    # - http.StatusLocked
+		    # - http.StatusRequestTimeout
+		    # - http.StatusTooManyRequests
+            if resp.status_code in [502, 503, 504, 423, 408, 429]:
+                logger.warning(f"Request failed with HTTPStatusError: {e}. Retrying...")
+                raise RequestRetryError(f"HTTPStatusError: {e}")
+            elif resp.status_code == 422:
+                # This means that our types that we are sending are out of date. Give the user a hint that they need to update.
+                logger.error(f"Request failed with HTTPStatusError: {e}. This means your 'acuvity' library is outdated. Please update to the latest version.")
+                raise OutdatedLibraryError() from e
+            else:
+                raise e
+        except Exception as e:
+            logger.error(f"Request failed with unexpected error: {e}.")
+            raise e
+
         return resp
 
     def _obj_from_content(self, object_class: Type[AO], content: bytes, content_type: Optional[str]) -> Union[AO, List[AO]]:
@@ -216,7 +311,7 @@ class AcuvityClient:
             logger.debug("Content-Type is msgpack")
             data = msgpack.unpack(content)       
         elif content_type is not None and isinstance(content_type, str) and content_type.lower().startswith("application/json"):
-            print("Content-TYpe is JSON")
+            logger.debug("Content-TYpe is JSON")
             data = json.loads(content)
         else:
             logger.warning(f"Unknown or unsupported Content-Type: {content_type}. Trying to use JSON decoder.")
