@@ -20,11 +20,14 @@ import ssl
 import httpx
 import json
 import jwt
+import logging
 
 from .types import AO, ApexInfo, ValidateRequest, ValidateResponse
 
-from typing import Iterable, List, Type, Dict, Sequence, Union, Optional
+from typing import Any, Iterable, List, Type, Dict, Sequence, Union, Optional
 from urllib.parse import urlparse
+
+logger = logging.getLogger(__name__)
 
 # msgpack is optional and sits behind a 'msgpack' extra
 try:
@@ -207,8 +210,18 @@ class AcuvityClient:
         )
         return resp
 
-    def _obj_from_content(self, object_class: Type[AO], content: bytes) -> Union[AO, List[AO]]:
-        data = msgpack.unpackb(content) if self._use_msgpack else json.loads(content)
+    def _obj_from_content(self, object_class: Type[AO], content: bytes, content_type: Optional[str]) -> Union[AO, List[AO]]:
+        data: Any = None
+        if content_type is not None and isinstance(content_type, str) and content_type.lower().startswith("application/msgpack"):
+            logger.debug("Content-Type is msgpack")
+            data = msgpack.unpack(content)       
+        elif content_type is not None and isinstance(content_type, str) and content_type.lower().startswith("application/json"):
+            print("Content-TYpe is JSON")
+            data = json.loads(content)
+        else:
+            logger.warning(f"Unknown or unsupported Content-Type: {content_type}. Trying to use JSON decoder.")
+            data = json.loads(content)
+
         if isinstance(data, list):
             return [object_class.model_validate(item) for item in data]
         else:
@@ -226,7 +239,7 @@ class AcuvityClient:
 
     def apex_get(self, path: str, object_class: Type[AO], **kwargs) -> Union[AO, List[AO]]:
         resp = self.apex_request("GET", path, **kwargs)
-        return self._obj_from_content(object_class, resp.content)
+        return self._obj_from_content(object_class, resp.content, resp.headers.get('Content-Type'))
     
     def apex_post(self, path: str, obj: Union[AO, List[AO]], **kwargs) -> None:
         content = self._obj_to_content(obj)
@@ -238,7 +251,7 @@ class AcuvityClient:
 
     def api_get(self, path: str, object_class: Type[AO], **kwargs) -> Union[AO, List[AO]]:
         resp = self.api_request("GET", path, **kwargs)
-        return self._obj_from_content(object_class, resp.content)
+        return self._obj_from_content(object_class, resp.content, resp.headers.get('Content-Type'))
 
     def api_post(self, path: str, obj: Union[AO, List[AO]], **kwargs) -> None:
         content = self._obj_to_content(obj)
