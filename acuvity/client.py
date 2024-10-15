@@ -23,7 +23,8 @@ import jwt
 import logging
 import functools
 
-from .types import AO, ApexInfo, ValidateRequest, ValidateResponse
+from .types import AcuvityObject, RequestAcuvityObject, ResponseAcuvityObject, ApexInfo, ExtractionRequest, ValidateRequest, ValidateResponse
+from pydantic import ValidationError
 
 from typing import Any, Iterable, List, Type, Dict, Sequence, Union, Optional
 from urllib.parse import urlparse
@@ -70,7 +71,7 @@ class AcuvityClient:
             namespace: Optional[str] = None,
             api_url: Optional[str] = None,
             apex_url: Optional[str] = None,
-            use_msgpack: bool = HAVE_MSGPACK,
+            use_msgpack: bool = False,
             retry_max_attempts: int = 10,
             retry_max_wait: int = 300,
     ):
@@ -231,7 +232,7 @@ class AcuvityClient:
             if self._use_msgpack:
                 ret["Content-Type"] = "application/msgpack"
             else:
-                ret["Content-Type"] = "application/json; charset=utf-8",
+                ret["Content-Type"] = "application/json; charset=utf-8"
 
         return ret
 
@@ -291,13 +292,14 @@ class AcuvityClient:
 		    # - http.StatusRequestTimeout
 		    # - http.StatusTooManyRequests
             if resp.status_code in [502, 503, 504, 423, 408, 429]:
-                logger.warning(f"Request failed with HTTPStatusError: {e}. Retrying...")
+                logger.warning(f"Request failed with HTTP status: {resp.status_code}. Retrying...")
                 raise RequestRetryError(f"HTTPStatusError: {e}")
             elif resp.status_code == 422:
                 # This means that our types that we are sending are out of date. Give the user a hint that they need to update.
-                logger.error(f"Request failed with HTTPStatusError: {e}. This means your 'acuvity' library is outdated. Please update to the latest version.")
+                logger.error(f"Request failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is outdated. Please update to the latest version.")
                 raise OutdatedLibraryError() from e
             else:
+                logger.error(f"Request failed with HTTP status {resp.status_code}: {resp.text}")
                 raise e
         except Exception as e:
             logger.error(f"Request failed with unexpected error: {e}.")
@@ -305,7 +307,7 @@ class AcuvityClient:
 
         return resp
 
-    def _obj_from_content(self, object_class: Type[AO], content: bytes, content_type: Optional[str]) -> Union[AO, List[AO]]:
+    def _obj_from_content(self, object_class: Type[AcuvityObject], content: bytes, content_type: Optional[str]) -> Union[AcuvityObject, List[AcuvityObject]]:
         data: Any = None
         if content_type is not None and isinstance(content_type, str) and content_type.lower().startswith("application/msgpack"):
             logger.debug("Content-Type is msgpack")
@@ -322,7 +324,7 @@ class AcuvityClient:
         else:
             return object_class.model_validate(data)
 
-    def _obj_to_content(self, obj: Union[AO, List[AO]]) -> bytes:
+    def _obj_to_content(self, obj: Union[AcuvityObject, List[AcuvityObject]]) -> bytes:
         if isinstance(obj, list):
             data = [item.model_dump() for item in obj]
         else:
@@ -332,26 +334,26 @@ class AcuvityClient:
     def apex_request(self, method: str, path: str, **kwargs) -> httpx.Response:
         return self._make_request(method, self.apex_url + path, **kwargs)
 
-    def apex_get(self, path: str, object_class: Type[AO], **kwargs) -> Union[AO, List[AO]]:
+    def apex_get(self, path: str, response_object_class: Type[ResponseAcuvityObject], **kwargs) -> Union[ResponseAcuvityObject, List[ResponseAcuvityObject]]:
         resp = self.apex_request("GET", path, **kwargs)
-        return self._obj_from_content(object_class, resp.content, resp.headers.get('Content-Type'))
+        return self._obj_from_content(response_object_class, resp.content, resp.headers.get('Content-Type'))
     
-    def apex_post(self, path: str, obj: Union[AO, List[AO]], **kwargs) -> None:
+    def apex_post(self, path: str, obj: Union[RequestAcuvityObject, List[RequestAcuvityObject]], response_object_class: Type[ResponseAcuvityObject], **kwargs) -> Union[ResponseAcuvityObject, List[ResponseAcuvityObject]]:
         content = self._obj_to_content(obj)
-        self.apex_request("POST", path, content=content, **kwargs)
-        return None
+        resp = self.apex_request("POST", path, content=content, **kwargs)
+        return self._obj_from_content(response_object_class, resp.content, resp.headers.get('Content-Type'))
 
     def api_request(self, method: str, path: str, **kwargs) -> httpx.Response:
         return self._make_request(method, self.api_url + path, **kwargs)
 
-    def api_get(self, path: str, object_class: Type[AO], **kwargs) -> Union[AO, List[AO]]:
+    def api_get(self, path: str, object_class: Type[ResponseAcuvityObject], **kwargs) -> Union[ResponseAcuvityObject, List[ResponseAcuvityObject]]:
         resp = self.api_request("GET", path, **kwargs)
         return self._obj_from_content(object_class, resp.content, resp.headers.get('Content-Type'))
 
-    def api_post(self, path: str, obj: Union[AO, List[AO]], **kwargs) -> None:
+    def api_post(self, path: str, obj: Union[RequestAcuvityObject, List[RequestAcuvityObject]], response_object_class: Type[ResponseAcuvityObject], **kwargs) -> Union[ResponseAcuvityObject, List[ResponseAcuvityObject]]:
         content = self._obj_to_content(obj)
-        self.api_request("POST", path, content=content, **kwargs)
-        return None
+        resp = self.api_request("POST", path, content=content, **kwargs)
+        return self._obj_from_content(response_object_class, resp.content, resp.headers.get('Content-Type'))
 
     def well_known_apex_info(self) -> ApexInfo:
         return self.api_get("/.well-known/acuvity/my-apex.json", ApexInfo)
@@ -360,6 +362,7 @@ class AcuvityClient:
             self,
             *messages: str,
             files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
+            request: Optional[ValidateRequest] = None,
             type: str = "Input",
             analyzers: Optional[List[str]] = None,
             annotations: Optional[Dict[str, str]] = None,
@@ -372,121 +375,121 @@ class AcuvityClient:
         Validate runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a ValidateResponse object on success, and raises different exceptions on failure.
 
-        :param messages: the messages to validate. These are the prompts that you want to validate. Required if no files are provided.
-        :param files: the files to validate. These are the files that you want to validate. Required if no messages are provided.
+        :param messages: the messages to validate. These are the prompts that you want to validate. Required if no files or a direct request object are provided.
+        :param files: the files to validate. These are the files that you want to validate. Required if no messages or a direct request object are provided. Can be used in addition to messages.
+        :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the validate API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
         :param type: the type of the validation. This can be either "Input" or "Output". Defaults to "Input". Use "Output" if you want to run model output through the detection engines.
         :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+pii_detector", "-ner_detector"] will include the PII detector and exclude the NER detector.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
         :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, no anonymization will be used.
         """
-        data = {}
-        # messages must be strings
-        for message in messages:
-            if not isinstance(message, str):
-                raise ValueError("messages must be strings")
-        if len(messages) == 0 and files is None:
-            raise ValueError("no messages and no files provided")
-        if len(messages) > 0:
-            data["messages"] = [message for message in messages]
+        if request is None:
+            request = ValidateRequest.model_construct()
 
-        # files must be a list of strings (or paths) or a single string (or path)
-        extractions = []
-        if files is not None:
-            process_files = []
-            if isinstance(files, str):
-                process_files.append(files)
-            elif isinstance(files, os.PathLike):
-                process_files.append(files)
-            elif isinstance(files, Iterable):
-                for file in files:
-                    if not isinstance(file, str) and not isinstance(file, os.PathLike):
-                        raise ValueError("files must be strings or paths")
-                    process_files.append(file)
-            else:
-                raise ValueError("files must be strings or paths")
-            for process_file in process_files:
-                with open(process_file, 'rb') as file:
-                    file_content = file.read()
-                    encoded_content = base64.b64encode(file_content).decode('utf-8')
-                    extractions.append({
-                        "content": encoded_content,
-                    })
-        if len(extractions) > 0:
-            data["extractions"] = extractions
+            # messages must be strings
+            for message in messages:
+                if not isinstance(message, str):
+                    raise ValueError("messages must be strings")
+            if len(messages) == 0 and files is None and request is None:
+                raise ValueError("no messages, no files and no request object provided")
+            if len(messages) > 0:
+                request.messages = [message for message in messages]
 
-        # type must be either "Input" or "Output"
-        if type != "Input" and type != "Output":
-            raise ValueError("type must be either 'Input' or 'Output'")
-        data["type"] = type
+            # files must be a list of strings (or paths) or a single string (or path)
+            extractions: List[ExtractionRequest] = []
+            if files is not None:
+                process_files = []
+                if isinstance(files, str):
+                    process_files.append(files)
+                elif isinstance(files, os.PathLike):
+                    process_files.append(files)
+                elif isinstance(files, Iterable):
+                    for file in files:
+                        if not isinstance(file, str) and not isinstance(file, os.PathLike):
+                            raise ValueError("files must be strings or paths")
+                        process_files.append(file)
+                else:
+                    raise ValueError("files must be strings or paths")
+                for process_file in process_files:
+                    with open(process_file, 'rb') as file:
+                        file_content = file.read()
+                        encoded_content = base64.b64encode(file_content).decode('utf-8')
+                        extractions.append(ExtractionRequest(Content=encoded_content))
+            if len(extractions) > 0:
+                request.extractions = extractions
 
-        # analyzers must be a list of strings
-        if analyzers is not None:
-            if not isinstance(analyzers, List):
-                raise ValueError("analyzers must be a list")
-            for analyzer in analyzers:
-                if not isinstance(analyzer, str):
-                    raise ValueError("analyzers must be strings")
-                if not analyzer.startswith(("+", "-")):
-                    raise ValueError("analyzers does not start with '+' or '-' to indicate inclusion or exclusion: " + analyzer)
-            data["analyzers"] = analyzers
+            # type must be either "Input" or "Output"
+            if type != "Input" and type != "Output":
+                raise ValueError("type must be either 'Input' or 'Output'")
+            request.type = type
 
-        # annotations must be a dictionary of strings
-        if annotations is not None:
-            if not isinstance(annotations, dict):
-                raise ValueError("annotations must be a dictionary")
-            for key, value in annotations.items():
-                if not isinstance(key, str) or not isinstance(value, str):
-                    raise ValueError("annotations must be strings")
-            data["annotations"] = annotations
+            # analyzers must be a list of strings
+            if analyzers is not None:
+                if not isinstance(analyzers, List):
+                    raise ValueError("analyzers must be a list")
+                for analyzer in analyzers:
+                    if not isinstance(analyzer, str):
+                        raise ValueError("analyzers must be strings")
+                    if not analyzer.startswith(("+", "-")):
+                        raise ValueError("analyzers does not start with '+' or '-' to indicate inclusion or exclusion: " + analyzer)
+                request.analyzers = analyzers
 
-        # bypass_hash must be a string
-        if bypass_hash is not None:
-            if not isinstance(bypass_hash, str):
-                raise ValueError("bypass_hash must be a string")
-            data["bypass"] = bypass_hash
+            # annotations must be a dictionary of strings
+            if annotations is not None:
+                if not isinstance(annotations, dict):
+                    raise ValueError("annotations must be a dictionary")
+                for key, value in annotations.items():
+                    if not isinstance(key, str) or not isinstance(value, str):
+                        raise ValueError("annotations must be strings")
+                request.annotations = annotations
 
-        # anonymization must be "FixedSize" or "VariableSize"
-        if anonymization is not None:
-            if anonymization != "FixedSize" and anonymization != "VariableSize":
-                raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
-            data["anonymization"] = anonymization
+            # bypass_hash must be a string
+            if bypass_hash is not None:
+                if not isinstance(bypass_hash, str):
+                    raise ValueError("bypass_hash must be a string")
+                request.bypassHash = bypass_hash
 
-        # redactions must be a list of strings
-        if redactions is not None:
-            if not isinstance(redactions, List):
-                raise ValueError("redactions must be a list")
-            for redaction in redactions:
-                if not isinstance(redaction, str):
-                    raise ValueError("redactions must be strings")
-            data["redactions"] = redactions
+            # anonymization must be "FixedSize" or "VariableSize"
+            if anonymization is not None:
+                if anonymization != "FixedSize" and anonymization != "VariableSize":
+                    raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
+                request.anonymization = anonymization
 
-        # keywords must be a list of strings
-        if keywords is not None:
-            if not isinstance(keywords, List):
-                raise ValueError("keywords must be a list")
-            for keyword in keywords:
-                if not isinstance(keyword, str):
-                    raise ValueError("keywords must be strings")
-            data["keywords"] = keywords
+            # redactions must be a list of strings
+            if redactions is not None:
+                if not isinstance(redactions, List):
+                    raise ValueError("redactions must be a list")
+                for redaction in redactions:
+                    if not isinstance(redaction, str):
+                        raise ValueError("redactions must be strings")
+                request.redactions = redactions
 
-        resp = self.http_client.post(
-            self.apex_url + "/_acuvity/validate/unmanaged",
-            headers={
-                "Authorization": "Bearer " + self.token,
-                "X-Namespace": self.namespace,
-                "Accept": "application/json",
-                "Content-Type": "application/json; charset=utf-8",
-            },
-            json=data,
-        )
-        if resp.status_code != 200:
-            raise ValueError(f"failed to call validate API: HTTP {resp.status_code}: {resp.text}")
+            # keywords must be a list of strings
+            if keywords is not None:
+                if not isinstance(keywords, List):
+                    raise ValueError("keywords must be a list")
+                for keyword in keywords:
+                    if not isinstance(keyword, str):
+                        raise ValueError("keywords must be strings")
+                request.keywords = keywords
 
-        # TODO: account for msgpack
-        # ret = resp.json()
-        ret = ValidateResponse.model_validate_json(resp.content)
-        return ret
+            # last but not least, ensure the request is valid now
+            # this is a bug if it is not and we should abort immediately
+            try:
+                ValidateRequest.model_validate(request)
+            except ValidationError as e:
+                raise RuntimeError(f"BUG: request object is invalid: {e}") from e
+        else:
+            if not isinstance(request, ValidateRequest):
+                raise ValueError("request must be a ValidateRequest object")
+            try:
+                ValidateRequest.model_validate(request)
+            except ValidationError as e:
+                raise ValueError(f"request object is invalid: {e}") from e
+
+        # now execute the request
+        return self.apex_post("/_acuvity/validate/unmanaged", request, ValidateResponse)
 
     def list_analyzer_groups(self) -> List[str]:
         return list(self._available_analyzers.keys())
@@ -495,7 +498,6 @@ class AcuvityClient:
         if group is None:
             return [analyzer for analyzers in self._available_analyzers.values() for analyzer in analyzers]
         return self._available_analyzers[group]
-
 
 # TODO: implement async client as well
 #class AsyncAcuvityClient:

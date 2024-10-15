@@ -14,8 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Dict, Optional, TypeVar
+from typing import List, Dict, Optional, TypeVar, Self
 from datetime import datetime
+from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 try:
@@ -49,7 +50,9 @@ class AcuvityModel(BaseModel):
                     values[field] = value.to_datetime()
             return values
 
-AO = TypeVar('AO', bound=AcuvityModel)
+AcuvityObject = TypeVar('AcuvityObject', bound=AcuvityModel)
+RequestAcuvityObject = TypeVar('RequestAcuvityObject', bound=AcuvityModel)
+ResponseAcuvityObject = TypeVar('ResponseAcuvityObject', bound=AcuvityModel)
 
 
 class ApexInfo(AcuvityModel):
@@ -219,6 +222,22 @@ class ExtractionRequest(AcuvityModel):
     label: Optional[str] = Field(None, description="A means of distinguishing what was extracted, such as prompt, input file or code.", alias="Label")
 
 
+class AnonymizationEnum(str, Enum):
+    """
+    AnonymizationEnum represents all the valid values for the anonymization field in a ValidateRequest.
+    """
+    fixedSize = "FixedSize"
+    variableSize = "VariableSize"
+
+
+class ValidateRequestTypeEnum(str, Enum):
+    """
+    ValidateRequestTypeEnum represents all the valid values for the type field in a ValidateRequest.
+    """
+    input = "Input"
+    output = "Output"
+
+
 class ValidateRequest(AcuvityModel):
     """
     ValidateRequest represents the model of a request to the validate API
@@ -226,13 +245,21 @@ class ValidateRequest(AcuvityModel):
     model_config = ConfigDict(strict=False)
 
     annotations: Optional[Dict[str, str]] = Field(None, description="Annotations attached to the log.")
-    anonymization: Optional[str] = Field(None, description="Anonymization values to use. This can be FixedSize or VariableSize.")
+    anonymization: Optional[AnonymizationEnum] = Field(None, description="Anonymization values to use. This can be FixedSize or VariableSize.")
     extractions: Optional[List[ExtractionRequest]] = Field(None, description="The extractions to process for this request.")
     messages: Optional[List[str]] = Field(None, description="Messages to process and provide detections for. These are additive to the set extractions. This is a shortcut for ExtractionRequest.content essentially.")
-    type: Optional[str] = Field(None, description="The type of validation request this is. This can be Input or Output.")
+    type: ValidateRequestTypeEnum = Field(..., description="The type of validation request this is. This can be Input or Output.")
     analyzers: Optional[List[str]] = Field(None, description="These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use '+' to include an analyzer and '-' to exclude an analyzer. For example, ['+pii_detector', '-ner_detector'] will include the PII detector and exclude the NER detector.")
     keywords: Optional[List[str]] = Field(None, description="The keywords to try to detect for in the request data.")
     redactions: Optional[List[str]] = Field(None, description="The redactions to use: the strings need to match the names of the textual detections. For example, if a PII location was detected and you want to redact it, you need to use 'location' for the redaction as this is its textual detection name.")
     minimalLogging: Optional[bool] = Field(None, description="If true, only minimal logging will be done which essentially skips logging the request data.")
     contentPolicy: Optional[str] = Field(None, description="ContentPolicy allows to pass optional Rego content policy. If not set, The action is always Allow, and there cannot be any alerts raised etc If it is set, it will be run, and the final decision will be computed based on that policy. If the rego code does not start with 'package main', then the needed classic package definition and  acuvity imports will be added automatically. If the code starts with `package main`, then everything remains untouched.")
-    bypassHash: Optional[str] = Field(None, description="In the case of a contentPolicy that asks for a confirmation, this is the hash you must send back to bypass the block. This is only useful when a content policy has been set.")
+    bypassHash: Optional[str] = Field(None, description="In the case of a contentPolicy that asks for a confirmation, this is the hash you must send back to bypass the block. This is only useful when a content policy has been set.", alias="bypass")
+
+    @model_validator(mode='after')
+    def additional_validation_check(self) -> Self:
+        red = self.redactions
+        cp = self.contentPolicy
+        if red is not None and len(red) > 0 and cp is not None and cp != "":
+            raise ValueError("if redactions are set, you cannot use contentPolicy and vice versa")
+        return self
