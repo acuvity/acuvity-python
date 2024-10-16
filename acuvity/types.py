@@ -140,7 +140,7 @@ class TextualDetection(AcuvityModel):
     model_config = ConfigDict(strict=False)
 
     end: int = Field(..., description="The end position of the detection.")
-    hash: Optional[str] = Field(None, description="The detection Hash.")
+    key: str = Field(..., description="The key that is used in the name's place, If empty, a sequence of X's are used.")
     name: Optional[str] = Field(None, description="The name of the detection.")
     score: float = Field(..., description="The confidence score of the detection.")
     start: int = Field(..., description="The start position of the detection.")
