@@ -295,9 +295,10 @@ class AcuvityClient:
                 logger.warning(f"Request failed with HTTP status: {resp.status_code}. Retrying...")
                 raise RequestRetryError(f"HTTPStatusError: {e}")
             elif resp.status_code == 422:
-                # This means that our types that we are sending are out of date. Give the user a hint that they need to update.
-                logger.error(f"Request failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is outdated. Please update to the latest version.")
-                raise OutdatedLibraryError() from e
+                # This means that our types that we are sending are probably out of date.
+                # Give the user a hint that they need to update.
+                logger.error(f"Request failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.")
+                raise OutdatedLibraryError(message=f"Request failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.") from e
             else:
                 logger.error(f"Request failed with HTTP status {resp.status_code}: {resp.text}")
                 raise e
@@ -319,10 +320,16 @@ class AcuvityClient:
             logger.warning(f"Unknown or unsupported Content-Type: {content_type}. Trying to use JSON decoder.")
             data = json.loads(content)
 
-        if isinstance(data, list):
-            return [object_class.model_validate(item) for item in data]
-        else:
-            return object_class.model_validate(data)
+        try:
+            if isinstance(data, list):
+                return [object_class.model_validate(item) for item in data]
+            else:
+                return object_class.model_validate(data)
+        except ValidationError as e:
+            # This means that our types that we are receiving are probably out of date and incompatible with our pydantic types.
+            # Give the user a hint that they need to update.
+            logger.error(f"Failed to validate model: {e}. This means your 'acuvity' library is probably outdated and we are receiving data which is incompatible with our models. Please update to the latest version.")
+            raise OutdatedLibraryError(message="Failed to validate model. This means your 'acuvity' library is probably outdated and we are receiving data which is incompatible with our models. Please update to the latest version.") from e
 
     def _obj_to_content(self, obj: Union[AcuvityObject, List[AcuvityObject]]) -> bytes:
         if isinstance(obj, list):
