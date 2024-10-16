@@ -202,7 +202,7 @@ class AcuvityClient:
                     )
             except Exception as e:
                 raise ValueError("failed to detect apex URL: could not retrieve well-known Apex info: " + str(e))
-            apex_url = f"https://{apex_info.url}" if not apex_info.url.startswith(("https://", "http://")) else apex_info.url
+            apex_url = f"https://{apex_info.url}:11443" if not apex_info.url.startswith(("https://", "http://")) else apex_info.url
         self.apex_url = apex_url
 
         try:
@@ -364,28 +364,89 @@ class AcuvityClient:
             files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
             request: Optional[ValidateRequest] = None,
             type: str = "Input",
-            analyzers: Optional[List[str]] = None,
             annotations: Optional[Dict[str, str]] = None,
+            analyzers: Optional[List[str]] = None,
             bypass_hash: Optional[str] = None,
             anonymization: Optional[str] = None,
             redactions: Optional[List[str]] = None,
             keywords: Optional[List[str]] = None,
     ) -> ValidateResponse:
         """
-        Validate runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
+        validate() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a ValidateResponse object on success, and raises different exceptions on failure.
+
+        This function allows to use and try different analyzers and make use of the redaction feature.
 
         :param messages: the messages to validate. These are the prompts that you want to validate. Required if no files or a direct request object are provided.
         :param files: the files to validate. These are the files that you want to validate. Required if no messages or a direct request object are provided. Can be used in addition to messages.
         :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the validate API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
         :param type: the type of the validation. This can be either "Input" or "Output". Defaults to "Input". Use "Output" if you want to run model output through the detection engines.
-        :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+pii_detector", "-ner_detector"] will include the PII detector and exclude the NER detector.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
+        :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+pii_detector", "-ner_detector"] will include the PII detector and exclude the NER detector.
         :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
         :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, no anonymization will be used.
         """
+        return self.__validate(
+            False,
+            *messages,
+            files=files,
+            request=request,
+            type=type,
+            annotations=annotations,
+            analyzers=analyzers,
+            bypass_hash=bypass_hash,
+            anonymization=anonymization,
+            redactions=redactions,
+            keywords=keywords,
+        )
+
+    def validate_managed(
+            self,
+            *messages: str,
+            files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
+            request: Optional[ValidateRequest] = None,
+            type: str = "Input",
+            annotations: Optional[Dict[str, str]] = None,
+    ) -> ValidateResponse:
+        """
+        validate_managed() runs the provided messages (prompts) through the Acuvity detection engines, applies policies, and returns the results. Alternatively, you can run model output through the detection engines.
+        Returns a ValidateResponse object on success, and raises different exceptions on failure.
+
+        This function does **NOT** allow to use different analyzers or redactions as all policies including content policies are being **managed** by the Acuvity backend.
+        To configure different analyzers and redactions you must do so in the Acuvity backend.
+
+        :param messages: the messages to validate. These are the prompts that you want to validate. Required if no files or a direct request object are provided.
+        :param files: the files to validate. These are the files that you want to validate. Required if no messages or a direct request object are provided. Can be used in addition to messages.
+        :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the validate API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
+        :param type: the type of the validation. This can be either "Input" or "Output". Defaults to "Input". Use "Output" if you want to run model output through the detection engines.
+        :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
+        """
+        return self.__validate(
+            True,
+            *messages,
+            files=files,
+            request=request,
+            type=type,
+            annotations=annotations,
+        )
+
+    def __validate(
+            self,
+            managed: bool,
+            *messages: str,
+            files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
+            request: Optional[ValidateRequest] = None,
+            type: str = "Input",
+            annotations: Optional[Dict[str, str]] = None,
+            analyzers: Optional[List[str]] = None,
+            bypass_hash: Optional[str] = None,
+            anonymization: Optional[str] = None,
+            redactions: Optional[List[str]] = None,
+            keywords: Optional[List[str]] = None,
+    ) -> ValidateResponse:
         if request is None:
             request = ValidateRequest.model_construct()
+            request._managed = managed
 
             # messages must be strings
             for message in messages:
@@ -424,17 +485,6 @@ class AcuvityClient:
                 raise ValueError("type must be either 'Input' or 'Output'")
             request.type = type
 
-            # analyzers must be a list of strings
-            if analyzers is not None:
-                if not isinstance(analyzers, List):
-                    raise ValueError("analyzers must be a list")
-                for analyzer in analyzers:
-                    if not isinstance(analyzer, str):
-                        raise ValueError("analyzers must be strings")
-                    if not analyzer.startswith(("+", "-")):
-                        raise ValueError("analyzers does not start with '+' or '-' to indicate inclusion or exclusion: " + analyzer)
-                request.analyzers = analyzers
-
             # annotations must be a dictionary of strings
             if annotations is not None:
                 if not isinstance(annotations, dict):
@@ -444,35 +494,47 @@ class AcuvityClient:
                         raise ValueError("annotations must be strings")
                 request.annotations = annotations
 
-            # bypass_hash must be a string
-            if bypass_hash is not None:
-                if not isinstance(bypass_hash, str):
-                    raise ValueError("bypass_hash must be a string")
-                request.bypassHash = bypass_hash
+            if not managed:
+                # analyzers must be a list of strings
+                if analyzers is not None:
+                    if not isinstance(analyzers, List):
+                        raise ValueError("analyzers must be a list")
+                    for analyzer in analyzers:
+                        if not isinstance(analyzer, str):
+                            raise ValueError("analyzers must be strings")
+                        if not analyzer.startswith(("+", "-")):
+                            raise ValueError("analyzers does not start with '+' or '-' to indicate inclusion or exclusion: " + analyzer)
+                    request.analyzers = analyzers
 
-            # anonymization must be "FixedSize" or "VariableSize"
-            if anonymization is not None:
-                if anonymization != "FixedSize" and anonymization != "VariableSize":
-                    raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
-                request.anonymization = anonymization
+                # bypass_hash must be a string
+                if bypass_hash is not None:
+                    if not isinstance(bypass_hash, str):
+                        raise ValueError("bypass_hash must be a string")
+                    request.bypassHash = bypass_hash
 
-            # redactions must be a list of strings
-            if redactions is not None:
-                if not isinstance(redactions, List):
-                    raise ValueError("redactions must be a list")
-                for redaction in redactions:
-                    if not isinstance(redaction, str):
-                        raise ValueError("redactions must be strings")
-                request.redactions = redactions
+                # anonymization must be "FixedSize" or "VariableSize"
+                if anonymization is not None:
+                    if anonymization != "FixedSize" and anonymization != "VariableSize":
+                        raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
+                    request.anonymization = anonymization
 
-            # keywords must be a list of strings
-            if keywords is not None:
-                if not isinstance(keywords, List):
-                    raise ValueError("keywords must be a list")
-                for keyword in keywords:
-                    if not isinstance(keyword, str):
-                        raise ValueError("keywords must be strings")
-                request.keywords = keywords
+                # redactions must be a list of strings
+                if redactions is not None:
+                    if not isinstance(redactions, List):
+                        raise ValueError("redactions must be a list")
+                    for redaction in redactions:
+                        if not isinstance(redaction, str):
+                            raise ValueError("redactions must be strings")
+                    request.redactions = redactions
+
+                # keywords must be a list of strings
+                if keywords is not None:
+                    if not isinstance(keywords, List):
+                        raise ValueError("keywords must be a list")
+                    for keyword in keywords:
+                        if not isinstance(keyword, str):
+                            raise ValueError("keywords must be strings")
+                    request.keywords = keywords
 
             # last but not least, ensure the request is valid now
             # this is a bug if it is not and we should abort immediately
@@ -483,13 +545,15 @@ class AcuvityClient:
         else:
             if not isinstance(request, ValidateRequest):
                 raise ValueError("request must be a ValidateRequest object")
+            request._managed = managed
             try:
                 ValidateRequest.model_validate(request)
             except ValidationError as e:
                 raise ValueError(f"request object is invalid: {e}") from e
 
         # now execute the request
-        return self.apex_post("/_acuvity/validate/unmanaged", request, ValidateResponse)
+        path = "/_acuvity/validate/managed" if managed else "/_acuvity/validate/unmanaged"
+        return self.apex_post(path, request, ValidateResponse)
 
     def list_analyzer_groups(self) -> List[str]:
         return list(self._available_analyzers.keys())

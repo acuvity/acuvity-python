@@ -17,7 +17,7 @@
 from typing import List, Dict, Optional, TypeVar, Self
 from datetime import datetime
 from enum import Enum
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
 
 try:
     import msgpack
@@ -244,6 +244,8 @@ class ValidateRequest(AcuvityModel):
     """
     model_config = ConfigDict(strict=False)
 
+    _managed: bool = PrivateAttr(default=False)
+
     annotations: Optional[Dict[str, str]] = Field(None, description="Annotations attached to the log.")
     anonymization: Optional[AnonymizationEnum] = Field(None, description="Anonymization values to use. This can be FixedSize or VariableSize.")
     extractions: Optional[List[ExtractionRequest]] = Field(None, description="The extractions to process for this request.")
@@ -258,8 +260,21 @@ class ValidateRequest(AcuvityModel):
 
     @model_validator(mode='after')
     def additional_validation_check(self) -> Self:
+        # redactions and contentPolicy are mutual exclusive
         red = self.redactions
         cp = self.contentPolicy
         if red is not None and len(red) > 0 and cp is not None and cp != "":
             raise ValueError("if redactions are set, you cannot use contentPolicy and vice versa")
+
+        # on managed requests you cannot set a lot of fields
+        if (self._managed and (
+            (self.analyzers is not None and len(self.analyzers) > 0) or
+            (self.keywords is not None and len(self.keywords) > 0) or
+            (self.redactions is not None and len(self.redactions) > 0) or
+            (self.minimalLogging is not None) or
+            (self.contentPolicy is not None and self.contentPolicy != "") or
+            (self.bypassHash is not None and self.bypassHash != "")
+        )):
+            raise ValueError("You cannot set analyzers, keywords, redactions, minimalLogging, contentPolicy or bypass when using backend policies")
+
         return self
