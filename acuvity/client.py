@@ -23,7 +23,7 @@ import jwt
 import logging
 import functools
 
-from .types import AcuvityObject, RequestAcuvityObject, ResponseAcuvityObject, ApexInfo, ExtractionRequest, ValidateRequest, ValidateResponse
+from .types import AcuvityObject, RequestAcuvityObject, ResponseAcuvityObject, ApexInfo, ExtractionRequest, ValidateRequest, ValidateResponse, AnonymizationEnum, ValidateRequestTypeEnum
 from pydantic import ValidationError
 
 from typing import Any, Iterable, List, Type, Dict, Sequence, Union, Optional
@@ -202,7 +202,7 @@ class AcuvityClient:
                     )
             except Exception as e:
                 raise ValueError("failed to detect apex URL: could not retrieve well-known Apex info: " + str(e))
-            apex_url = f"https://{apex_info.url}:11443" if not apex_info.url.startswith(("https://", "http://")) else apex_info.url
+            apex_url = f"https://{apex_info.url}" if not apex_info.url.startswith(("https://", "http://")) else apex_info.url
         self.apex_url = apex_url
 
         try:
@@ -363,11 +363,11 @@ class AcuvityClient:
             *messages: str,
             files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
             request: Optional[ValidateRequest] = None,
-            type: str = "Input",
+            type: Union[ValidateRequestTypeEnum,str] = ValidateRequestTypeEnum("Input"),
             annotations: Optional[Dict[str, str]] = None,
             analyzers: Optional[List[str]] = None,
             bypass_hash: Optional[str] = None,
-            anonymization: Optional[str] = None,
+            anonymization: Union[AnonymizationEnum, str, None] = None,
             redactions: Optional[List[str]] = None,
             keywords: Optional[List[str]] = None,
     ) -> ValidateResponse:
@@ -405,7 +405,7 @@ class AcuvityClient:
             *messages: str,
             files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
             request: Optional[ValidateRequest] = None,
-            type: str = "Input",
+            type: Union[ValidateRequestTypeEnum,str] = ValidateRequestTypeEnum("Input"),
             annotations: Optional[Dict[str, str]] = None,
     ) -> ValidateResponse:
         """
@@ -436,11 +436,11 @@ class AcuvityClient:
             *messages: str,
             files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
             request: Optional[ValidateRequest] = None,
-            type: str = "Input",
+            type: Union[ValidateRequestTypeEnum,str] = ValidateRequestTypeEnum("Input"),
             annotations: Optional[Dict[str, str]] = None,
             analyzers: Optional[List[str]] = None,
             bypass_hash: Optional[str] = None,
-            anonymization: Optional[str] = None,
+            anonymization: Union[AnonymizationEnum, str, None] = None,
             redactions: Optional[List[str]] = None,
             keywords: Optional[List[str]] = None,
     ) -> ValidateResponse:
@@ -481,9 +481,14 @@ class AcuvityClient:
                 request.extractions = extractions
 
             # type must be either "Input" or "Output"
-            if type != "Input" and type != "Output":
-                raise ValueError("type must be either 'Input' or 'Output'")
-            request.type = type
+            if isinstance(type, ValidateRequestTypeEnum):
+                request.type = type
+            elif isinstance(type, str):
+                if type != "Input" and type != "Output":
+                    raise ValueError("type must be either 'Input' or 'Output'")
+                request.type = ValidateRequestTypeEnum(type)
+            else:
+                raise ValueError("type must be a 'str' or 'ValidateRequestTypeEnum'")
 
             # annotations must be a dictionary of strings
             if annotations is not None:
@@ -514,9 +519,14 @@ class AcuvityClient:
 
                 # anonymization must be "FixedSize" or "VariableSize"
                 if anonymization is not None:
-                    if anonymization != "FixedSize" and anonymization != "VariableSize":
-                        raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
-                    request.anonymization = anonymization
+                    if isinstance(anonymization, AnonymizationEnum):
+                        request.anonymization = anonymization
+                    elif isinstance(anonymization, str):
+                        if anonymization != "FixedSize" and anonymization != "VariableSize":
+                            raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
+                        request.anonymization = AnonymizationEnum(anonymization)
+                    else:
+                        raise ValueError("anonymization must be a 'str' or 'AnonymizationEnum'")
 
                 # redactions must be a list of strings
                 if redactions is not None:

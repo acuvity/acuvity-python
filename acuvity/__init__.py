@@ -15,4 +15,4 @@
 # limitations under the License.
 
 from .client import AcuvityClient  # noqa: F401
-from .types import ValidateRequest, ValidateResponse  # noqa: F401
+from .types import ValidateRequest, ValidateResponse, AnonymizationEnum, ValidateRequestTypeEnum  # noqa: F401
