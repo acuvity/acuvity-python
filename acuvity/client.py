@@ -389,7 +389,7 @@ class AcuvityClient:
         :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the validate API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
         :param type: the type of the validation. This can be either "Input" or "Output". Defaults to "Input". Use "Output" if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
-        :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+pii_detector", "-ner_detector"] will include the PII detector and exclude the NER detector.
+        :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+pii_detector", "-ner_detector"] will include the PII detector and exclude the NER detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided.
         :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
         :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, no anonymization will be used.
         """
@@ -511,11 +511,14 @@ class AcuvityClient:
                 if analyzers is not None:
                     if not isinstance(analyzers, List):
                         raise ValueError("analyzers must be a list")
+                    analyzers_list = self.list_analyzer_groups() + self.list_analyzers()
                     for analyzer in analyzers:
                         if not isinstance(analyzer, str):
                             raise ValueError("analyzers must be strings")
-                        if not analyzer.startswith(("+", "-")):
-                            raise ValueError("analyzers does not start with '+' or '-' to indicate inclusion or exclusion: " + analyzer)
+                        if analyzer.startswith(("+", "-")):
+                            analyzer = analyzer[1:]
+                        if analyzer not in analyzers_list:
+                            raise ValueError(f"analyzer '{analyzer}' is not in list of analyzer groups or analyzers: {analyzers_list}")
                     request.analyzers = analyzers
 
                 # bypass_hash must be a string
