@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Dict, Optional, TypeVar, Self
+from typing import List, Dict, Optional, TypeVar
 from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
@@ -259,7 +259,7 @@ class ValidateRequest(AcuvityModel):
     bypassHash: Optional[str] = Field(None, description="In the case of a contentPolicy that asks for a confirmation, this is the hash you must send back to bypass the block. This is only useful when a content policy has been set.", alias="bypass")
 
     @model_validator(mode='after')
-    def additional_validation_check(self) -> Self:
+    def additional_validation_check(self) -> 'ValidateRequest':
         # redactions and contentPolicy are mutual exclusive
         red = self.redactions
         cp = self.contentPolicy
