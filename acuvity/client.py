@@ -578,7 +578,7 @@ class AcuvityClient:
     def list_analyzer_groups(self) -> List[str]:
         return list(self._available_analyzers.keys())
     
-    def list_analyzers(self, group: str | None = None) -> List[str]:
+    def list_analyzers(self, group: Optional[str] = None) -> List[str]:
         if group is None:
             return [analyzer for analyzers in self._available_analyzers.values() for analyzer in analyzers]
         return self._available_analyzers[group]
