@@ -23,7 +23,7 @@ import jwt
 import logging
 import functools
 
-from .types import AcuvityObject, RequestAcuvityObject, ResponseAcuvityObject, ApexInfo, ExtractionRequest, ValidateRequest, ValidateResponse, AnonymizationEnum, ValidateRequestTypeEnum
+from .types import AcuvityObject, RequestAcuvityObject, ResponseAcuvityObject, ElementalError, ApexInfo, ExtractionRequest, ValidateRequest, ValidateResponse, AnonymizationEnum, ValidateRequestTypeEnum
 from pydantic import ValidationError
 
 from typing import Any, Iterable, List, Type, Dict, Sequence, Union, Optional
@@ -40,22 +40,30 @@ except ImportError:
     HAVE_MSGPACK = False
 
 
-class RequestRetryError(Exception):
+class RequestRetryException(Exception):
     """
-    RequestRetryError is thrown by _make_request whenever the HTTP status code of a response indicates that
+    RequestRetryException is thrown by _make_request whenever the HTTP status code of a response indicates that
     the request can and/or should be retried.
     """
 
 
-class OutdatedLibraryError(Exception):
+class OutdatedLibraryException(Exception):
     """
-    OutdatedLibraryError is thrown by _make_request whenever the HTTP status code of a response indicates that
+    OutdatedLibraryException is thrown by _make_request whenever the HTTP status code of a response indicates that
     the library is outdated and should be updated.
     This can happen if the serialized types are out of date and require this library to be updated to receive the latest updates.
     """
     def __init__(self, message: str = "Your 'acuvity' library is outdated. Please update to the latest version."):
         super().__init__(message)
 
+class AcuvityClientException(Exception):
+    """
+    AcuvityClientException is thrown by the AcuvityClient whenever a known and documented error occurs during the execution of a request.
+    This will include an ElementalError object that contains the error message and potentially more information.
+    """
+    def __init__(self, elemental_error: ElementalError, message: str):
+        self.error = elemental_error
+        super().__init__(message)
 
 class AcuvityClient:
     """
@@ -246,7 +254,7 @@ class AcuvityClient:
             #
             # chosen algorithm: we are using wait_random_exponential which is an exponential backoff algorithm with added jitter
             retry_decorator = retry(
-                retry=retry_if_exception_type(RequestRetryError),
+                retry=retry_if_exception_type(RequestRetryException),
                 wait=wait_random_exponential(multiplier=1, min=1, max=60),
                 stop=(stop_after_delay(self._retry_max_wait) | stop_after_attempt(self._retry_max_attempts)),
             )
@@ -271,7 +279,7 @@ class AcuvityClient:
         except httpx.CloseError as e:
             # nothing to fix here, also not harmful at all
             # do nothing
-            logger.warning(f"Request encountered a CloseError: {e}. Ignoring this error.")
+            logger.warning(f"Request to {url} encountered a CloseError: {e}. Ignoring this error.")
         except httpx.UnsupportedProtocol as e:
             # nothing to fix here, just raise
             # but as it is a TransportError, we need to catch it here
@@ -281,8 +289,8 @@ class AcuvityClient:
             # but as it is a TransportError, we need to catch it here
             raise e
         except httpx.TransportError as e:
-            logger.warning(f"Request failed with TransportError: {e}. Retrying...")
-            raise RequestRetryError(f"TransportError: {e}")
+            logger.warning(f"Request to {url} failed with TransportError: {e}. Retrying...")
+            raise RequestRetryException(f"TransportError: {e}")
         except httpx.HTTPStatusError as e:
             # we want to retry on certain status codes like the manipulate golang library:
             # - http.StatusBadGateway
@@ -292,18 +300,30 @@ class AcuvityClient:
 		    # - http.StatusRequestTimeout
 		    # - http.StatusTooManyRequests
             if resp.status_code in [502, 503, 504, 423, 408, 429]:
-                logger.warning(f"Request failed with HTTP status: {resp.status_code}. Retrying...")
-                raise RequestRetryError(f"HTTPStatusError: {e}")
+                logger.warning(f"Request to {url} failed with HTTP status: {resp.status_code}. Retrying...")
+                raise RequestRetryException(f"HTTPStatusError: {e}")
             elif resp.status_code == 422:
                 # This means that our types that we are sending are probably out of date.
                 # Give the user a hint that they need to update.
-                logger.error(f"Request failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.")
-                raise OutdatedLibraryError(message=f"Request failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.") from e
+                logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.")
+                raise OutdatedLibraryException(message=f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.") from e
             else:
-                logger.error(f"Request failed with HTTP status {resp.status_code}: {resp.text}")
-                raise e
+                # this itself can fail, so we are going to be conservative here and simply raise the exception if we cannot decode the error contents
+                try:
+                    elem_err = self._obj_from_content(ElementalError, resp.content, resp.headers.get('Content-Type'))
+                    if resp.status_code == 422:
+                        logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err.model_dump_json()}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.")
+                        raise OutdatedLibraryException(message=f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err.model_dump_json()}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.") from e
+                    logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err.model_dump_json()}")
+                    raise AcuvityClientException(elem_err, f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err.model_dump_json()}") from e
+                except Exception:
+                    if resp.status_code == 422:
+                        logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.")
+                        raise OutdatedLibraryException(message=f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.") from e
+                    logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}")
+                    raise e
         except Exception as e:
-            logger.error(f"Request failed with unexpected error: {e}.")
+            logger.error(f"Request to {url} failed with unexpected error: {e}.")
             raise e
 
         return resp
@@ -312,7 +332,7 @@ class AcuvityClient:
         data: Any = None
         if content_type is not None and isinstance(content_type, str) and content_type.lower().startswith("application/msgpack"):
             logger.debug("Content-Type is msgpack")
-            data = msgpack.unpack(content)       
+            data = msgpack.unpackb(content)       
         elif content_type is not None and isinstance(content_type, str) and content_type.lower().startswith("application/json"):
             logger.debug("Content-TYpe is JSON")
             data = json.loads(content)
@@ -329,7 +349,7 @@ class AcuvityClient:
             # This means that our types that we are receiving are probably out of date and incompatible with our pydantic types.
             # Give the user a hint that they need to update.
             logger.error(f"Failed to validate model: {e}. This means your 'acuvity' library is probably outdated and we are receiving data which is incompatible with our models. Please update to the latest version.")
-            raise OutdatedLibraryError(message="Failed to validate model. This means your 'acuvity' library is probably outdated and we are receiving data which is incompatible with our models. Please update to the latest version.") from e
+            raise OutdatedLibraryException(message="Failed to validate model. This means your 'acuvity' library is probably outdated and we are receiving data which is incompatible with our models. Please update to the latest version.") from e
 
     def _obj_to_content(self, obj: Union[AcuvityObject, List[AcuvityObject]]) -> bytes:
         if isinstance(obj, list):
@@ -572,7 +592,8 @@ class AcuvityClient:
                 raise ValueError(f"request object is invalid: {e}") from e
 
         # now execute the request
-        path = "/_acuvity/validate/managed" if managed else "/_acuvity/validate/unmanaged"
+        # path = "/_acuvity/validate/managed" if managed else "/_acuvity/validate/unmanaged"
+        path = "/_acuvity/scan"
         return self.apex_post(path, request, ValidateResponse)
 
     def list_analyzer_groups(self) -> List[str]:

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from typing import List, Dict, Optional, TypeVar
+from typing import List, Dict, Optional, TypeVar, Any
 from datetime import datetime
 from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, PrivateAttr, model_validator
@@ -54,6 +54,19 @@ AcuvityObject = TypeVar('AcuvityObject', bound=AcuvityModel)
 RequestAcuvityObject = TypeVar('RequestAcuvityObject', bound=AcuvityModel)
 ResponseAcuvityObject = TypeVar('ResponseAcuvityObject', bound=AcuvityModel)
 
+
+class ElementalError(AcuvityModel):
+    """
+    ElementalError represents the model of an error
+    """
+    model_config = ConfigDict(strict=False)
+
+    code: Optional[int] = Field(None, description="Optional error code.")
+    description: str = Field(..., description="The error description.")
+    subject: str = Field(..., description="The error subject.")
+    title: str = Field(..., description="The error title.")
+    data: Optional[Any] = Field(None, description="Optional additional error data.")
+    trace: Optional[str] = Field(None, description="Optional error trace.")
 
 class ApexInfo(AcuvityModel):
     """
