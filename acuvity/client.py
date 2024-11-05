@@ -61,7 +61,7 @@ class AcuvityClientException(Exception):
     AcuvityClientException is thrown by the AcuvityClient whenever a known and documented error occurs during the execution of a request.
     This will include an ElementalError object that contains the error message and potentially more information.
     """
-    def __init__(self, elemental_error: ElementalError, message: str):
+    def __init__(self, elemental_error: Union[ElementalError, List[ElementalError]], message: str):
         self.error = elemental_error
         super().__init__(message)
 
@@ -79,6 +79,7 @@ class AcuvityClient:
             namespace: Optional[str] = None,
             api_url: Optional[str] = None,
             apex_url: Optional[str] = None,
+            http_client: Optional[httpx.Client] = None,
             use_msgpack: bool = False,
             retry_max_attempts: int = 10,
             retry_max_wait: int = 300,
@@ -91,6 +92,7 @@ class AcuvityClient:
         :param namespace: the namespace to use for the API calls. If not provided, it will be detected from the environment variable ACUVITY_NAMESPACE or it will be derived from the token. If that fails, the initialization fails.
         :param api_url: the URL of the Acuvity API to use. If not provided, it will be detected from the environment variable ACUVITY_API_URL or it will be derived from the token. If that fails, the initialization fails.
         :param apex_url: the URL of the Acuvity Apex service to use. If not provided, it will be detected from the environment variable ACUVITY_APEX_URL or it will be derived from an API call. If that fails, the initialization fails.
+        :param http_client: the HTTP client to use for making requests. If not provided, a new client will be created.
         :param use_msgpack: whether to use msgpack for serialization. If True, the 'msgpack' extra must be installed, and this will raise an exception otherwise. Defaults to True if msgpack is installed.
         :param retry_max_attempts: the maximum number of retry attempts to make on failed requests that can be retried. Defaults to 10.
         :param retry_max_wait: the maximum number of seconds to wait for all retry attempts. Defaults to 300 seconds.
@@ -134,7 +136,7 @@ class AcuvityClient:
             self._use_msgpack = False
 
         # we initialize the client early as we might require it to fully initialize our own client
-        self.http_client = httpx.Client(
+        self.http_client = http_client if http_client is not None else httpx.Client(
             timeout=httpx.Timeout(timeout=600.0, connect=5.0),
             limits=httpx.Limits(max_connections=1000, max_keepalive_connections=100),
             follow_redirects=True,
@@ -156,6 +158,10 @@ class AcuvityClient:
                 raise ValueError("token has no 'source' field")
             if "namespace" not in decoded_token["source"]:
                 raise ValueError("token has no 'source.namespace' field")
+            if "restrictions" not in decoded_token:
+                raise ValueError("token has no 'restrictions' field")
+            if "namespace" not in decoded_token["restrictions"]:
+                raise ValueError("token has no 'restrictions.namespace' field")
         except Exception as e:
             raise ValueError("invalid token provided: " + str(e))
 
@@ -184,10 +190,16 @@ class AcuvityClient:
         if namespace is None:
             namespace = os.getenv("ACUVITY_NAMESPACE", None)
         if namespace is None or namespace == "":
-            namespace = decoded_token["source"]["namespace"]
+            namespace = decoded_token["restrictions"]["namespace"]
         if namespace is None or namespace == "":
             raise ValueError("no namespace provided or detected")
         self.namespace = namespace
+
+        # we set the cookie here for the API domain as it might be doing redirects
+        # during redirects we lose the headers that we sent during the initial request
+        # so it is easier to simply use the cookie to keep the token for all subsequent requests
+        # we ensure to limit it in the client here for just the API domain
+        self.http_client.cookies.set("x-a3s-token", self.token, domain=self.api_domain)
 
         # and last but not least, the apex URL which is the service/proxy that provides the APIs
         # that we want to actually use in this client
@@ -197,37 +209,55 @@ class AcuvityClient:
             try:
                 apex_info = self.well_known_apex_info()
                 if apex_info.cas is not None and apex_info.cas != "":
-                    # if the API provided us with Apex CA certs, we're going to recreate the
-                    # http_client to make use of them.
-                    sslctx = ssl.create_default_context()
-                    sslctx.load_verify_locations(cadata=apex_info.cas)
-                    self.http_client = httpx.Client(
-                        timeout=httpx.Timeout(timeout=600.0, connect=5.0),
-                        limits=httpx.Limits(max_connections=1000, max_keepalive_connections=100),
-                        follow_redirects=True,
-                        http2=True,
-                        verify=sslctx,
-                    )
+                    if http_client is None:
+                        # if the API provided us with Apex CA certs, we're going to recreate the
+                        # http_client to make use of them.
+                        sslctx = ssl.create_default_context()
+                        sslctx.load_verify_locations(cadata=apex_info.cas)
+                        self.http_client = httpx.Client(
+                            timeout=httpx.Timeout(timeout=600.0, connect=5.0),
+                            limits=httpx.Limits(max_connections=1000, max_keepalive_connections=100),
+                            follow_redirects=True,
+                            http2=True,
+                            verify=sslctx,
+                        )
+                        self.http_client.cookies.set("x-a3s-token", self.token, domain=self.api_domain)
+                    else:
+                        logger.warning("Apex dynamic signing CA certs discovered, but custom HTTP client used. Certificate validation might fail against servers that are using a certificate from those CAs.")
             except Exception as e:
-                raise ValueError("failed to detect apex URL: could not retrieve well-known Apex info: " + str(e))
+                raise ValueError("failed to detect apex URL: could not retrieve well-known Apex info") from e
             apex_url = f"https://{apex_info.url}" if not apex_info.url.startswith(("https://", "http://")) else apex_info.url
         self.apex_url = apex_url
 
         try:
             parsed_url = urlparse(apex_url)
-            if parsed_url.netloc == "":
-                raise ValueError("no domain in URL")
+            domain = parsed_url.netloc
+            if domain == "":
+                raise ValueError(f"Apex URL: no domain in URL: {self.apex_url}")
+            self.apex_domain = domain
+            self.apex_tld_domain = ".".join(domain.split('.')[1:])
             if parsed_url.scheme != "https" and parsed_url.scheme != "http":
-                raise ValueError(f"invalid scheme: {parsed_url.scheme}")
+                raise ValueError(f"Apex URL: invalid scheme: {parsed_url.scheme}: {self.apex_url}")
         except Exception as e:
             raise ValueError("Apex URL is not a valid URL: " + str(e))
 
-    def _build_headers(self, method: str) -> Dict[str, str]:
-        # we always send our token and namesp
+        # again, we are going to set the cookie here for the apex domain
+        # this simplifies the request handling as we can always rely on the cookie being set on everything
+        # that we sent to the apex - even on redirects
+        self.http_client.cookies.set("x-a3s-token", self.token, domain=self.apex_domain)
+
+    def _build_headers(self, method: str, domain: str) -> Dict[str, str]:
+        # we always send our namespace
         ret = {
-            "Authorization": "Bearer " + self.token,
             "X-Namespace": self.namespace,
         }
+
+        # but we only send the token as an Authorization header if there is no cookie set
+        # this is really just a fail-safe at this point as this client class should make sure
+        # that the cookie is always set. However, when a custom http client is used, someone
+        # might have cleared the cookies, so this is really just a safety net.
+        if self.http_client.cookies.get("x-a3s-token", domain=domain) is None:
+            ret["Authorization"] = "Bearer " + self.token
 
         # accept header depends on the use of msgpack
         if self._use_msgpack:
@@ -268,7 +298,11 @@ class AcuvityClient:
         # - the same HTTP status codes as in the golang manipulate library:
         # - IO errors
         # - potential connection errors
-        headers = self._build_headers(method)
+        parsed_url = urlparse(url)
+        domain = parsed_url.netloc
+        if domain == "":
+            raise ValueError(f"_make_request: no domain in URL: {url}")
+        headers = self._build_headers(method, domain)
         try:
             resp = self.http_client.request(
                 method, url,
@@ -294,34 +328,30 @@ class AcuvityClient:
         except httpx.HTTPStatusError as e:
             # we want to retry on certain status codes like the manipulate golang library:
             # - http.StatusBadGateway
-		    # - http.StatusServiceUnavailable
-		    # - http.StatusGatewayTimeout
-		    # - http.StatusLocked
-		    # - http.StatusRequestTimeout
-		    # - http.StatusTooManyRequests
+            # - http.StatusServiceUnavailable
+            # - http.StatusGatewayTimeout
+            # - http.StatusLocked
+            # - http.StatusRequestTimeout
+            # - http.StatusTooManyRequests
             if resp.status_code in [502, 503, 504, 423, 408, 429]:
                 logger.warning(f"Request to {url} failed with HTTP status: {resp.status_code}. Retrying...")
                 raise RequestRetryException(f"HTTPStatusError: {e}")
-            elif resp.status_code == 422:
-                # This means that our types that we are sending are probably out of date.
-                # Give the user a hint that they need to update.
-                logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.")
-                raise OutdatedLibraryException(message=f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.") from e
             else:
                 # this itself can fail, so we are going to be conservative here and simply raise the exception if we cannot decode the error contents
                 try:
                     elem_err = self._obj_from_content(ElementalError, resp.content, resp.headers.get('Content-Type'))
-                    if resp.status_code == 422:
-                        logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err.model_dump_json()}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.")
-                        raise OutdatedLibraryException(message=f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err.model_dump_json()}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.") from e
-                    logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err.model_dump_json()}")
-                    raise AcuvityClientException(elem_err, f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err.model_dump_json()}") from e
+                    elem_err_json = ', '.join([e.model_dump_json() for e in elem_err]) if isinstance(elem_err, List) else elem_err.model_dump_json()
                 except Exception:
                     if resp.status_code == 422:
                         logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.")
                         raise OutdatedLibraryException(message=f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.") from e
                     logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {resp.text}")
                     raise e
+                if resp.status_code == 422:
+                    logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err_json}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.")
+                    raise OutdatedLibraryException(message=f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err_json}. This means your 'acuvity' library is probably outdated and we are sending incompatible data. Please update to the latest version.") from e
+                logger.error(f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err_json}")
+                raise AcuvityClientException(elem_err, f"Request to {url} failed with HTTP status {resp.status_code}: {elem_err_json}") from e
         except Exception as e:
             logger.error(f"Request to {url} failed with unexpected error: {e}.")
             raise e
@@ -383,7 +413,29 @@ class AcuvityClient:
         return self._obj_from_content(response_object_class, resp.content, resp.headers.get('Content-Type'))
 
     def well_known_apex_info(self) -> ApexInfo:
-        return self.api_get("/.well-known/acuvity/my-apex.json", ApexInfo)
+        # we know for a fact that the well known apex endpoint is going to perform a redirect
+        # unfortunately for us, it is going to be very likely a redirect to a different domain from the API as well as the Apex
+        # so we temporarily set this response event hook here while performing this request
+        def event_handler(response: httpx.Response):
+            if response.is_redirect:
+                redirect_url = response.headers.get("Location")
+                if redirect_url:
+                    parsed_url = urlparse(redirect_url)
+                    domain = parsed_url.netloc
+                    if domain != "":
+                        self.http_client.cookies.set("x-a3s-token", self.token, domain=domain)
+
+        original_hooks = self.http_client.event_hooks["response"]
+        self.http_client.event_hooks["response"] = original_hooks + [event_handler]
+
+        try:
+            ret = self.api_get("/.well-known/acuvity/my-apex.json", ApexInfo, follow_redirects=True)
+        except Exception as e:
+            self.http_client.event_hooks["response"] = original_hooks
+            raise e
+        self.http_client.event_hooks["response"] = original_hooks
+
+        return ret
 
     def validate(
             self,
