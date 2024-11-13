@@ -19,7 +19,7 @@
 # Source: github.com/acuvity/regolithe-python (templates/init.py.tmpl)
 
 # This elemental import is used in every generated model file
-from .elemental import ElementalModel, ElementalObject, ElementalError # noqa: F401
+from .elemental import ElementalModel, ElementalObject, RequestElementalObject, ResponseElementalObject, ElementalError # noqa: F401
 
 # Now import all the models that were generated for easy access when the package is imported
 from .alertevent import AlertEvent # noqa: F401

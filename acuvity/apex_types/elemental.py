@@ -54,8 +54,8 @@ class ElementalModel(BaseModel):
             return values
 
 ElementalObject = TypeVar('ElementalObject', bound=ElementalModel)
-RequestElementalObject = TypeVar('RequestAcuvityObject', bound=ElementalModel)
-ResponseElementalObject = TypeVar('ResponseAcuvityObject', bound=ElementalModel)
+RequestElementalObject = TypeVar('RequestElementalObject', bound=ElementalModel)
+ResponseElementalObject = TypeVar('ResponseElementalObject', bound=ElementalModel)
 
 class ElementalError(ElementalModel):
     """
