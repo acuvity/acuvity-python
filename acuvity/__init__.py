@@ -15,4 +15,4 @@
 # limitations under the License.
 
 from .client import AcuvityClient  # noqa: F401
-from .apex_types import ScanRequest, ScanResponse, ScanRequestAnonymizationEnum, ScanRequestTypeEnum  # noqa: F401
+from .apex_types import ScanRequest, ScanResponse, ScanRequestAnonymizationEnum, ScanRequestTypeEnum, ScanExternalUser  # noqa: F401

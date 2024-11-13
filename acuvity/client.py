@@ -23,11 +23,11 @@ import jwt
 import logging
 import functools
 
-from .apex_types import ElementalObject, RequestElementalObject, ResponseElementalObject, ElementalError, ExtractionRequest, ScanRequest, ScanResponse, ScanRequestAnonymizationEnum, ScanRequestTypeEnum
+from .apex_types import ElementalObject, RequestElementalObject, ResponseElementalObject, ElementalError, ExtractionRequest, ScanRequest, ScanResponse, ScanRequestAnonymizationEnum, ScanRequestTypeEnum, ScanExternalUser
 from .api_types import ApexInfo
 from pydantic import ValidationError
 
-from typing import Any, Iterable, List, Type, Dict, Sequence, Union, Optional
+from typing import Any, Iterable, List, Type, Dict, Sequence, Union, Optional, Tuple
 from urllib.parse import urlparse
 from tenacity import retry, retry_if_exception_type, wait_random_exponential, stop_after_attempt, stop_after_delay
 
@@ -439,17 +439,16 @@ class AcuvityClient:
         return ret
 
     def scan(
-            self,
-            *messages: str,
-            files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-            request: Optional[ScanRequest] = None,
-            type: Union[ScanRequestTypeEnum,str] = ScanRequestTypeEnum.INPUT,
-            annotations: Optional[Dict[str, str]] = None,
-            analyzers: Optional[List[str]] = None,
-            bypass_hash: Optional[str] = None,
-            anonymization: Union[ScanRequestAnonymizationEnum, str, None] = None,
-            redactions: Optional[List[str]] = None,
-            keywords: Optional[List[str]] = None,
+        self,
+        *messages: str,
+        files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
+        type: Union[ScanRequestTypeEnum,str] = ScanRequestTypeEnum.INPUT,
+        annotations: Optional[Dict[str, str]] = None,
+        analyzers: Optional[List[str]] = None,
+        bypass_hash: Optional[str] = None,
+        anonymization: Union[ScanRequestAnonymizationEnum, str, None] = None,
+        redactions: Optional[List[str]] = None,
+        keywords: Optional[List[str]] = None,
     ) -> ScanResponse:
         """
         scan() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
@@ -459,7 +458,6 @@ class AcuvityClient:
 
         :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
         :param files: the files to scan. These are the files that you want to scan. Required if no messages or a direct request object are provided. Can be used in addition to messages.
-        :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the scan API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
         :param type: the type of the validation. This can be either ScanRequestTypeEnum.INPUT or ScanRequestTypeEnum.OUTPUT. Defaults to ScanRequestTypeEnum.INPUT. Use ScanRequestTypeEnum.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+pii_detector", "-ner_detector"] will include the PII detector and exclude the NER detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided.
@@ -471,7 +469,6 @@ class AcuvityClient:
         return self.__scan(
             *messages,
             files=files,
-            request=request,
             type=type,
             annotations=annotations,
             analyzers=analyzers,
@@ -481,47 +478,100 @@ class AcuvityClient:
             keywords=keywords,
         )
 
-    def scan_managed(
-            self,
-            *messages: str,
-            files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-            request: Optional[ScanRequest] = None,
-            type: Union[ScanRequestTypeEnum,str] = ScanRequestTypeEnum.INPUT,
-            annotations: Optional[Dict[str, str]] = None,
+    def scan_and_police(
+        self,
+        *messages: str,
+        files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
+        type: Union[ScanRequestTypeEnum,str] = ScanRequestTypeEnum.INPUT,
+        annotations: Optional[Dict[str, str]] = None,
+        user: Union[ScanExternalUser,Tuple[str, List[str]],Dict[str, Any]] = None,
+        access_policy: Optional[str] = None,
+        content_policy: Optional[str] = None,
     ) -> ScanResponse:
         """
-        scan_managed() runs the provided messages (prompts) through the Acuvity detection engines, applies policies, and returns the results. Alternatively, you can run model output through the detection engines.
+        scan_and_police() runs the provided messages (prompts) through the Acuvity detection engines, applies policies, and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a ScanResponse object on success, and raises different exceptions on failure.
 
-        This function does **NOT** allow to use different analyzers or redactions as all policies including content policies are being **managed** by the Acuvity backend.
+        You **must** provide a user to run this function.
+
+        This function does **NOT** allow to use different analyzers or redactions as policies are being **managed** by the Acuvity backend.
         To configure different analyzers and redactions you must do so in the Acuvity backend.
+        You can run *additional* access policies and content policies by passing them as parameters. However, these are additional policies and the main policies are being determined by the provided user, and will be applied and enforced first.
 
         :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
         :param files: the files to scan. These are the files that you want to scan. Required if no messages or a direct request object are provided. Can be used in addition to messages.
-        :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the scan API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
         :param type: the type of the validation. This can be either ScanRequestTypeEnum.INPUT or ScanRequestTypeEnum.OUTPUT. Defaults to ScanRequestTypeEnum.INPUT. Use ScanRequestTypeEnum.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         """
+        if user is None:
+            raise ValueError("no user provided")
+        if isinstance(user, tuple):
+            if len(user) != 2:
+                raise ValueError("user tuple must have exactly 2 elements to represent the name and claims")
+            if not isinstance(user[0], str):
+                raise ValueError("user tuple first element must be a string to represent the name")
+            if not isinstance(user[1], list):
+                raise ValueError("user tuple second element must be a list to represent the claims")
+            for claim in user[1]:
+                if not isinstance(claim, str):
+                    raise ValueError("user tuple second element must be a list of strings to represent the claims")
+            u = ScanExternalUser(name=user[0], claims=user[1])
+        elif isinstance(user, dict):
+            name = user.get("name", None)
+            if name is None:
+                raise ValueError("user dictionary must have a 'name' key to represent the name")
+            if not isinstance(name, str):
+                raise ValueError("user dictionary 'name' key must be a string to represent the name")
+            claims = user.get("claims", None)
+            if claims is None:
+                raise ValueError("user dictionary must have a 'claims' key to represent the claims")
+            if not isinstance(claims, list):
+                raise ValueError("user dictionary 'claims' key must be a list to represent the claims")
+            for claim in claims:
+                if not isinstance(claim, str):
+                    raise ValueError("user dictionary 'claims' key must be a list of strings to represent the claims")
+            u = ScanExternalUser(name=name, claims=claims)
+        elif isinstance(user, ScanExternalUser):
+            u = user
+        else:
+            raise ValueError("user must be a tuple, dictionary or ScanExternalUser object")
+
         return self.__scan(
             *messages,
             files=files,
-            request=request,
             type=type,
             annotations=annotations,
+            user=u,
+            access_policy=access_policy,
+            content_policy=content_policy,
         )
 
+    def scan_request(self, request: ScanRequest) -> ScanResponse:
+        """
+        scan_request() runs the provided ScanRequest object through the Acuvity detection engines and returns the results.
+        This is the most advanced option to use the scan API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
+        For most use cases, the scan() and scan_and_police() functions are sufficient.
+
+        :param request: the raw request object to send to scan
+        """
+
+        return self.__scan(request=request)
+
     def __scan(
-            self,
-            *messages: str,
-            files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-            request: Optional[ScanRequest] = None,
-            type: Union[ScanRequestTypeEnum,str] = ScanRequestTypeEnum.INPUT,
-            annotations: Optional[Dict[str, str]] = None,
-            analyzers: Optional[List[str]] = None,
-            bypass_hash: Optional[str] = None,
-            anonymization: Union[ScanRequestAnonymizationEnum, str, None] = None,
-            redactions: Optional[List[str]] = None,
-            keywords: Optional[List[str]] = None,
+        self,
+        *messages: str,
+        files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
+        request: Optional[ScanRequest] = None,
+        type: Union[ScanRequestTypeEnum,str] = ScanRequestTypeEnum.INPUT,
+        annotations: Optional[Dict[str, str]] = None,
+        analyzers: Optional[List[str]] = None,
+        bypass_hash: Optional[str] = None,
+        anonymization: Union[ScanRequestAnonymizationEnum, str, None] = None,
+        redactions: Optional[List[str]] = None,
+        keywords: Optional[List[str]] = None,
+        user: Optional[ScanExternalUser] = None,
+        access_policy: Optional[str] = None,
+        content_policy: Optional[str] = None,
     ) -> ScanResponse:
         if request is None:
             request = ScanRequest.model_construct()
@@ -624,6 +674,24 @@ class AcuvityClient:
                     if not isinstance(keyword, str):
                         raise ValueError("keywords must be strings")
                 request.keywords = keywords
+
+            # local access policy
+            if access_policy is not None:
+                if not isinstance(access_policy, str):
+                    raise ValueError("access_policy must be a string")
+                request.access_policy = access_policy
+
+            # local content policy
+            if content_policy is not None:
+                if not isinstance(content_policy, str):
+                    raise ValueError("content_policy must be a string")
+                request.content_policy = content_policy
+
+            # external user
+            if user is not None:
+                if not isinstance(user, ScanExternalUser):
+                    raise ValueError("user must be a ScanExternalUser object")
+                request.user = user
 
             # last but not least, ensure the request is valid now
             # if we were building this request, then this is a bug if it is not
