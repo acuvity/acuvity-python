@@ -23,7 +23,7 @@ from .principalapp import PrincipalApp
 from .principaluser import PrincipalUser
 from enum import Enum
 from pydantic import ConfigDict, Field, model_validator
-from typing import Optional, List
+from typing import List, Optional
 
 
 class PrincipalAuthTypeEnum(str, Enum):

@@ -20,7 +20,7 @@
 
 from .elemental import ElementalModel
 from pydantic import ConfigDict, Field
-from typing import Optional, List
+from typing import List, Optional
 
 
 class PrincipalApp(ElementalModel):

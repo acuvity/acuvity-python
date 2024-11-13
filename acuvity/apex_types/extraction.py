@@ -21,8 +21,8 @@
 from .elemental import ElementalModel
 from .modality import Modality
 from .textualdetection import TextualDetection
-from pydantic import ConfigDict, Field, field_validator, field_serializer
-from typing import Optional, Dict, List
+from pydantic import ConfigDict, Field, field_serializer, field_validator
+from typing import Dict, List, Optional
 import base64
 
 

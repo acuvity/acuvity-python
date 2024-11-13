@@ -23,7 +23,7 @@ from .extractionrequest import ExtractionRequest
 from .scanexternaluser import ScanExternalUser
 from enum import Enum
 from pydantic import ConfigDict, Field, ValidationInfo, field_validator, model_validator
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 
 class ScanRequestAnonymizationEnum(str, Enum):

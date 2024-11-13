@@ -19,8 +19,8 @@
 # Source: github.com/acuvity/regolithe-python (templates/model.py.tmpl)
 
 from .elemental import ElementalModel
-from pydantic import Field, field_validator, ValidationInfo, ConfigDict
-from typing import List, Any
+from pydantic import ConfigDict, Field, ValidationInfo, field_validator
+from typing import Any, List
 
 
 class ScanExternalUser(ElementalModel):

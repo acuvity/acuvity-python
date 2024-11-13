@@ -19,8 +19,8 @@
 # Source: github.com/acuvity/regolithe-python (templates/model.py.tmpl)
 
 from .elemental import ElementalModel
-from pydantic import ConfigDict, Field, field_validator, field_serializer
-from typing import Optional, Dict
+from pydantic import ConfigDict, Field, field_serializer, field_validator
+from typing import Dict, Optional
 import base64
 
 

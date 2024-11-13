@@ -19,7 +19,7 @@
 # Source: github.com/acuvity/regolithe-python (templates/model.py.tmpl)
 
 from .elemental import ElementalModel
-from pydantic import Field, ConfigDict
+from pydantic import ConfigDict, Field
 from typing import Optional
 
 

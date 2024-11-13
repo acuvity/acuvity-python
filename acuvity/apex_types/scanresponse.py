@@ -26,7 +26,7 @@ from .principal import Principal
 from datetime import datetime
 from enum import Enum
 from pydantic import ConfigDict, Field
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 
 class ScanResponseDecisionEnum(str, Enum):
