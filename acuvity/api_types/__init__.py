@@ -14,5 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .client import AcuvityClient  # noqa: F401
-from .apex_types import ScanRequest, ScanResponse, ScanRequestAnonymizationEnum, ScanRequestTypeEnum  # noqa: F401
+from .apexinfo import ApexInfo  # noqa: F401

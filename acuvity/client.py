@@ -23,7 +23,8 @@ import jwt
 import logging
 import functools
 
-from .types import AcuvityObject, RequestAcuvityObject, ResponseAcuvityObject, ElementalError, ApexInfo, ExtractionRequest, ValidateRequest, ValidateResponse, AnonymizationEnum, ValidateRequestTypeEnum
+from .apex_types import ElementalObject, RequestElementalObject, ResponseElementalObject, ElementalError, ExtractionRequest, ScanRequest, ScanResponse, ScanRequestAnonymizationEnum, ScanRequestTypeEnum
+from .api_types import ApexInfo
 from pydantic import ValidationError
 
 from typing import Any, Iterable, List, Type, Dict, Sequence, Union, Optional
@@ -358,7 +359,7 @@ class AcuvityClient:
 
         return resp
 
-    def _obj_from_content(self, object_class: Type[AcuvityObject], content: bytes, content_type: Optional[str]) -> Union[AcuvityObject, List[AcuvityObject]]:
+    def _obj_from_content(self, object_class: Type[ElementalObject], content: bytes, content_type: Optional[str]) -> Union[ElementalObject, List[ElementalObject]]:
         data: Any = None
         if content_type is not None and isinstance(content_type, str) and content_type.lower().startswith("application/msgpack"):
             logger.debug("Content-Type is msgpack")
@@ -381,7 +382,7 @@ class AcuvityClient:
             logger.error(f"Failed to validate model: {e}. This means your 'acuvity' library is probably outdated and we are receiving data which is incompatible with our models. Please update to the latest version.")
             raise OutdatedLibraryException(message="Failed to validate model. This means your 'acuvity' library is probably outdated and we are receiving data which is incompatible with our models. Please update to the latest version.") from e
 
-    def _obj_to_content(self, obj: Union[AcuvityObject, List[AcuvityObject]]) -> bytes:
+    def _obj_to_content(self, obj: Union[ElementalObject, List[ElementalObject]]) -> bytes:
         if isinstance(obj, list):
             data = [item.model_dump() for item in obj]
         else:
@@ -391,11 +392,11 @@ class AcuvityClient:
     def apex_request(self, method: str, path: str, **kwargs) -> httpx.Response:
         return self._make_request(method, self.apex_url + path, **kwargs)
 
-    def apex_get(self, path: str, response_object_class: Type[ResponseAcuvityObject], **kwargs) -> Union[ResponseAcuvityObject, List[ResponseAcuvityObject]]:
+    def apex_get(self, path: str, response_object_class: Type[ResponseElementalObject], **kwargs) -> Union[ResponseElementalObject, List[ResponseElementalObject]]:
         resp = self.apex_request("GET", path, **kwargs)
         return self._obj_from_content(response_object_class, resp.content, resp.headers.get('Content-Type'))
     
-    def apex_post(self, path: str, obj: Union[RequestAcuvityObject, List[RequestAcuvityObject]], response_object_class: Type[ResponseAcuvityObject], **kwargs) -> Union[ResponseAcuvityObject, List[ResponseAcuvityObject]]:
+    def apex_post(self, path: str, obj: Union[RequestElementalObject, List[RequestElementalObject]], response_object_class: Type[ResponseElementalObject], **kwargs) -> Union[ResponseElementalObject, List[ResponseElementalObject]]:
         content = self._obj_to_content(obj)
         resp = self.apex_request("POST", path, content=content, **kwargs)
         return self._obj_from_content(response_object_class, resp.content, resp.headers.get('Content-Type'))
@@ -403,11 +404,11 @@ class AcuvityClient:
     def api_request(self, method: str, path: str, **kwargs) -> httpx.Response:
         return self._make_request(method, self.api_url + path, **kwargs)
 
-    def api_get(self, path: str, object_class: Type[ResponseAcuvityObject], **kwargs) -> Union[ResponseAcuvityObject, List[ResponseAcuvityObject]]:
+    def api_get(self, path: str, object_class: Type[ResponseElementalObject], **kwargs) -> Union[ResponseElementalObject, List[ResponseElementalObject]]:
         resp = self.api_request("GET", path, **kwargs)
         return self._obj_from_content(object_class, resp.content, resp.headers.get('Content-Type'))
 
-    def api_post(self, path: str, obj: Union[RequestAcuvityObject, List[RequestAcuvityObject]], response_object_class: Type[ResponseAcuvityObject], **kwargs) -> Union[ResponseAcuvityObject, List[ResponseAcuvityObject]]:
+    def api_post(self, path: str, obj: Union[RequestElementalObject, List[RequestElementalObject]], response_object_class: Type[ResponseElementalObject], **kwargs) -> Union[ResponseElementalObject, List[ResponseElementalObject]]:
         content = self._obj_to_content(obj)
         resp = self.api_request("POST", path, content=content, **kwargs)
         return self._obj_from_content(response_object_class, resp.content, resp.headers.get('Content-Type'))
@@ -437,36 +438,37 @@ class AcuvityClient:
 
         return ret
 
-    def validate(
+    def scan(
             self,
             *messages: str,
             files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-            request: Optional[ValidateRequest] = None,
-            type: Union[ValidateRequestTypeEnum,str] = ValidateRequestTypeEnum("Input"),
+            request: Optional[ScanRequest] = None,
+            type: Union[ScanRequestTypeEnum,str] = ScanRequestTypeEnum.INPUT,
             annotations: Optional[Dict[str, str]] = None,
             analyzers: Optional[List[str]] = None,
             bypass_hash: Optional[str] = None,
-            anonymization: Union[AnonymizationEnum, str, None] = None,
+            anonymization: Union[ScanRequestAnonymizationEnum, str, None] = None,
             redactions: Optional[List[str]] = None,
             keywords: Optional[List[str]] = None,
-    ) -> ValidateResponse:
+    ) -> ScanResponse:
         """
-        validate() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
-        Returns a ValidateResponse object on success, and raises different exceptions on failure.
+        scan() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
+        Returns a ScanResponse object on success, and raises different exceptions on failure.
 
         This function allows to use and try different analyzers and make use of the redaction feature.
 
-        :param messages: the messages to validate. These are the prompts that you want to validate. Required if no files or a direct request object are provided.
-        :param files: the files to validate. These are the files that you want to validate. Required if no messages or a direct request object are provided. Can be used in addition to messages.
-        :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the validate API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
-        :param type: the type of the validation. This can be either "Input" or "Output". Defaults to "Input". Use "Output" if you want to run model output through the detection engines.
+        :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
+        :param files: the files to scan. These are the files that you want to scan. Required if no messages or a direct request object are provided. Can be used in addition to messages.
+        :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the scan API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
+        :param type: the type of the validation. This can be either ScanRequestTypeEnum.INPUT or ScanRequestTypeEnum.OUTPUT. Defaults to ScanRequestTypeEnum.INPUT. Use ScanRequestTypeEnum.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+pii_detector", "-ner_detector"] will include the PII detector and exclude the NER detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided.
         :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
-        :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, no anonymization will be used.
+        :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
+        :param redactions: the redactions to apply. If your want to redact certain parts of the returned detections, you can provide a list of redactions that you want to apply. If not provided, no redactions will be applied.
+        :param keywords: the keywords to detect in the input. If you want to detect certain keywords in the input, you can provide a list of keywords that you want to detect. If not provided, no keyword detection will be run.
         """
-        return self.__validate(
-            False,
+        return self.__scan(
             *messages,
             files=files,
             request=request,
@@ -479,29 +481,28 @@ class AcuvityClient:
             keywords=keywords,
         )
 
-    def validate_managed(
+    def scan_managed(
             self,
             *messages: str,
             files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-            request: Optional[ValidateRequest] = None,
-            type: Union[ValidateRequestTypeEnum,str] = ValidateRequestTypeEnum("Input"),
+            request: Optional[ScanRequest] = None,
+            type: Union[ScanRequestTypeEnum,str] = ScanRequestTypeEnum.INPUT,
             annotations: Optional[Dict[str, str]] = None,
-    ) -> ValidateResponse:
+    ) -> ScanResponse:
         """
-        validate_managed() runs the provided messages (prompts) through the Acuvity detection engines, applies policies, and returns the results. Alternatively, you can run model output through the detection engines.
-        Returns a ValidateResponse object on success, and raises different exceptions on failure.
+        scan_managed() runs the provided messages (prompts) through the Acuvity detection engines, applies policies, and returns the results. Alternatively, you can run model output through the detection engines.
+        Returns a ScanResponse object on success, and raises different exceptions on failure.
 
         This function does **NOT** allow to use different analyzers or redactions as all policies including content policies are being **managed** by the Acuvity backend.
         To configure different analyzers and redactions you must do so in the Acuvity backend.
 
-        :param messages: the messages to validate. These are the prompts that you want to validate. Required if no files or a direct request object are provided.
-        :param files: the files to validate. These are the files that you want to validate. Required if no messages or a direct request object are provided. Can be used in addition to messages.
-        :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the validate API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
-        :param type: the type of the validation. This can be either "Input" or "Output". Defaults to "Input". Use "Output" if you want to run model output through the detection engines.
+        :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
+        :param files: the files to scan. These are the files that you want to scan. Required if no messages or a direct request object are provided. Can be used in addition to messages.
+        :param request: the raw request object to send to validate. This is the raw request object that will be sent to validate. Required if no message or files are provided. If you use this, then all further options are being ignored. This is the most advanced option to use the scan API and provides you with the most customization. However, it is not recommended to use this if you don't need anything that cannot be done without it.
+        :param type: the type of the validation. This can be either ScanRequestTypeEnum.INPUT or ScanRequestTypeEnum.OUTPUT. Defaults to ScanRequestTypeEnum.INPUT. Use ScanRequestTypeEnum.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         """
-        return self.__validate(
-            True,
+        return self.__scan(
             *messages,
             files=files,
             request=request,
@@ -509,23 +510,21 @@ class AcuvityClient:
             annotations=annotations,
         )
 
-    def __validate(
+    def __scan(
             self,
-            managed: bool,
             *messages: str,
             files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-            request: Optional[ValidateRequest] = None,
-            type: Union[ValidateRequestTypeEnum,str] = ValidateRequestTypeEnum("Input"),
+            request: Optional[ScanRequest] = None,
+            type: Union[ScanRequestTypeEnum,str] = ScanRequestTypeEnum.INPUT,
             annotations: Optional[Dict[str, str]] = None,
             analyzers: Optional[List[str]] = None,
             bypass_hash: Optional[str] = None,
-            anonymization: Union[AnonymizationEnum, str, None] = None,
+            anonymization: Union[ScanRequestAnonymizationEnum, str, None] = None,
             redactions: Optional[List[str]] = None,
             keywords: Optional[List[str]] = None,
-    ) -> ValidateResponse:
+    ) -> ScanResponse:
         if request is None:
-            request = ValidateRequest.model_construct()
-            request._managed = managed
+            request = ScanRequest.model_construct()
 
             # messages must be strings
             for message in messages:
@@ -554,18 +553,17 @@ class AcuvityClient:
                 for process_file in process_files:
                     with open(process_file, 'rb') as file:
                         file_content = file.read()
-                        encoded_content = base64.b64encode(file_content).decode('utf-8')
-                        extractions.append(ExtractionRequest(Content=encoded_content))
+                        extractions.append(ExtractionRequest(data=file_content))
             if len(extractions) > 0:
                 request.extractions = extractions
 
             # type must be either "Input" or "Output"
-            if isinstance(type, ValidateRequestTypeEnum):
+            if isinstance(type, ScanRequestTypeEnum):
                 request.type = type
             elif isinstance(type, str):
                 if type != "Input" and type != "Output":
                     raise ValueError("type must be either 'Input' or 'Output'")
-                request.type = ValidateRequestTypeEnum(type)
+                request.type = ScanRequestTypeEnum(type)
             else:
                 raise ValueError("type must be a 'str' or 'ValidateRequestTypeEnum'")
 
@@ -578,75 +576,73 @@ class AcuvityClient:
                         raise ValueError("annotations must be strings")
                 request.annotations = annotations
 
-            if not managed:
-                # analyzers must be a list of strings
-                if analyzers is not None:
-                    if not isinstance(analyzers, List):
-                        raise ValueError("analyzers must be a list")
-                    analyzers_list = self.list_analyzer_groups() + self.list_analyzers()
-                    for analyzer in analyzers:
-                        if not isinstance(analyzer, str):
-                            raise ValueError("analyzers must be strings")
-                        if analyzer.startswith(("+", "-")):
-                            analyzer = analyzer[1:]
-                        if analyzer not in analyzers_list:
-                            raise ValueError(f"analyzer '{analyzer}' is not in list of analyzer groups or analyzers: {analyzers_list}")
-                    request.analyzers = analyzers
+            # analyzers must be a list of strings
+            if analyzers is not None:
+                if not isinstance(analyzers, List):
+                    raise ValueError("analyzers must be a list")
+                analyzers_list = self.list_analyzer_groups() + self.list_analyzers()
+                for analyzer in analyzers:
+                    if not isinstance(analyzer, str):
+                        raise ValueError("analyzers must be strings")
+                    if analyzer.startswith(("+", "-")):
+                        analyzer = analyzer[1:]
+                    if analyzer not in analyzers_list:
+                        raise ValueError(f"analyzer '{analyzer}' is not in list of analyzer groups or analyzers: {analyzers_list}")
+                request.analyzers = analyzers
 
-                # bypass_hash must be a string
-                if bypass_hash is not None:
-                    if not isinstance(bypass_hash, str):
-                        raise ValueError("bypass_hash must be a string")
-                    request.bypassHash = bypass_hash
+            # bypass_hash must be a string
+            if bypass_hash is not None:
+                if not isinstance(bypass_hash, str):
+                    raise ValueError("bypass_hash must be a string")
+                request.bypass_hash = bypass_hash
 
-                # anonymization must be "FixedSize" or "VariableSize"
-                if anonymization is not None:
-                    if isinstance(anonymization, AnonymizationEnum):
-                        request.anonymization = anonymization
-                    elif isinstance(anonymization, str):
-                        if anonymization != "FixedSize" and anonymization != "VariableSize":
-                            raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
-                        request.anonymization = AnonymizationEnum(anonymization)
-                    else:
-                        raise ValueError("anonymization must be a 'str' or 'AnonymizationEnum'")
+            # anonymization must be "FixedSize" or "VariableSize"
+            if anonymization is not None:
+                if isinstance(anonymization, ScanRequestAnonymizationEnum):
+                    request.anonymization = anonymization
+                elif isinstance(anonymization, str):
+                    if anonymization != "FixedSize" and anonymization != "VariableSize":
+                        raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
+                    request.anonymization = ScanRequestAnonymizationEnum(anonymization)
+                else:
+                    raise ValueError("anonymization must be a 'str' or 'ScanRequestAnonymizationEnum'")
 
-                # redactions must be a list of strings
-                if redactions is not None:
-                    if not isinstance(redactions, List):
-                        raise ValueError("redactions must be a list")
-                    for redaction in redactions:
-                        if not isinstance(redaction, str):
-                            raise ValueError("redactions must be strings")
-                    request.redactions = redactions
+            # redactions must be a list of strings
+            if redactions is not None:
+                if not isinstance(redactions, List):
+                    raise ValueError("redactions must be a list")
+                for redaction in redactions:
+                    if not isinstance(redaction, str):
+                        raise ValueError("redactions must be strings")
+                request.redactions = redactions
 
-                # keywords must be a list of strings
-                if keywords is not None:
-                    if not isinstance(keywords, List):
-                        raise ValueError("keywords must be a list")
-                    for keyword in keywords:
-                        if not isinstance(keyword, str):
-                            raise ValueError("keywords must be strings")
-                    request.keywords = keywords
+            # keywords must be a list of strings
+            if keywords is not None:
+                if not isinstance(keywords, List):
+                    raise ValueError("keywords must be a list")
+                for keyword in keywords:
+                    if not isinstance(keyword, str):
+                        raise ValueError("keywords must be strings")
+                request.keywords = keywords
 
             # last but not least, ensure the request is valid now
-            # this is a bug if it is not and we should abort immediately
+            # if we were building this request, then this is a bug if it is not
+            # and we should abort immediately
             try:
-                ValidateRequest.model_validate(request)
+                ScanRequest.model_validate(request)
             except ValidationError as e:
                 raise RuntimeError(f"BUG: request object is invalid: {e}") from e
         else:
-            if not isinstance(request, ValidateRequest):
-                raise ValueError("request must be a ValidateRequest object")
-            request._managed = managed
+            if not isinstance(request, ScanRequest):
+                raise ValueError("request must be a ScanRequest object")
             try:
-                ValidateRequest.model_validate(request)
+                ScanRequest.model_validate(request)
             except ValidationError as e:
                 raise ValueError(f"request object is invalid: {e}") from e
 
         # now execute the request
-        # path = "/_acuvity/validate/managed" if managed else "/_acuvity/validate/unmanaged"
         path = "/_acuvity/scan"
-        return self.apex_post(path, request, ValidateResponse)
+        return self.apex_post(path, request, ScanResponse)
 
     def list_analyzer_groups(self) -> List[str]:
         return list(self._available_analyzers.keys())
