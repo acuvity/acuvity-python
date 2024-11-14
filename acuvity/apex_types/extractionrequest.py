@@ -26,11 +26,11 @@ import base64
 
 class ExtractionRequest(ElementalModel):
     """
-    Represents the extractection that the user wants to extract.
+    Represents the extraction that the user wants to extract.
 
     Attributes:
         annotations: Annotations attached to the extraction.
-        data: The data extracted.
+        data: The binary data to request extraction for.
         internal: If true, this extraction is for internal use only.
         label: A means of distinguishing what was extracted, such as prompt, input file or code.
         lua_id: An internal field for lua code. it is ignored by the API.
@@ -57,7 +57,7 @@ class ExtractionRequest(ElementalModel):
     data: Optional[bytes] = Field(
         None,
         alias="data",
-        description="The data extracted.",
+        description="The binary data to request extraction for.",
     )
     internal: Optional[bool] = Field(
         None,
@@ -85,7 +85,7 @@ class ExtractionRequest(ElementalModel):
 
     # Use field_serializer to encode Base64 when serializing
     @field_serializer("data")
-    def __data_base64_encode(cls, value: bytes) -> str:
+    def __data_base64_encode(self, value: bytes, _info) -> str:
         return base64.b64encode(value).decode("utf-8")
 
     def model_dump(self, *args, **kwargs):

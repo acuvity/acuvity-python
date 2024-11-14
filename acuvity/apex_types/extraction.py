@@ -21,9 +21,8 @@
 from .elemental import ElementalModel
 from .modality import Modality
 from .textualdetection import TextualDetection
-from pydantic import ConfigDict, Field, field_serializer, field_validator
+from pydantic import ConfigDict, Field
 from typing import Dict, List, Optional
-import base64
 
 
 class Extraction(ElementalModel):
@@ -86,7 +85,7 @@ class Extraction(ElementalModel):
         description="The level of general confidentiality of the input.",
         examples=[0.900000],
     )
-    data: Optional[bytes] = Field(
+    data: Optional[str] = Field(
         None,
         alias="data",
         description="The data extracted.",
@@ -162,19 +161,6 @@ class Extraction(ElementalModel):
         alias="topics",
         description="The topic of the classification.",
     )
-
-    # additional methods for the model
-    # Use field_validator to decode Base64 when initializing
-    @field_validator("data", mode="before")
-    def __data_base64_decode(cls, value: str) -> bytes:
-        if isinstance(value, str):
-            return base64.b64decode(value)
-        return value
-
-    # Use field_serializer to encode Base64 when serializing
-    @field_serializer("data")
-    def __data_base64_encode(cls, value: bytes) -> str:
-        return base64.b64encode(value).decode("utf-8")
 
     def model_dump(self, *args, **kwargs):
         # Overriding this method allows us to set defaults

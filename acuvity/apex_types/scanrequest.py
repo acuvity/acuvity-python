@@ -53,9 +53,9 @@ class ScanRequest(ElementalModel):
         anonymization: How to anonymize the data. If deanonymize is true, then VariablSize is required.
         bypass_hash: In the case of a contentPolicy that asks for a confirmation, this is the hash you must send back to bypass the block. This is only useful when a content policy has been set.
         content_policy: ContentPolicy allows to pass optional Rego content policy. If not set, The action is always Allow, and there cannot be any alerts raised etc If it is set, it will be run, and the final decision will be computed based on that policy. If the rego code does not start with package main, then the needed classic package definition and  acuvity imports will be added automatically. If the code starts with package main, then everything remains untouched.
-        extractions: The extractions to log.
+        extractions: The extractions to request.
         keywords: The keywords found during classification.
-        messages: Messages to process and provide detections for.
+        messages: Messages to process and provide detections for. Use data in extractions for processing binary data.
         minimal_logging: If true, the system will not log the contents that were scanned.
         redactions: The redactions that has been performed.
         type: The type of text.
@@ -109,7 +109,7 @@ class ScanRequest(ElementalModel):
     extractions: Optional[List[ExtractionRequest]] = Field(
         None,
         alias="extractions",
-        description="The extractions to log.",
+        description="The extractions to request.",
     )
     keywords: Optional[List[str]] = Field(
         None,
@@ -119,7 +119,7 @@ class ScanRequest(ElementalModel):
     messages: Optional[List[str]] = Field(
         None,
         alias="messages",
-        description="Messages to process and provide detections for.",
+        description="Messages to process and provide detections for. Use data in extractions for processing binary data.",
     )
     minimal_logging: Optional[bool] = Field(
         None,
