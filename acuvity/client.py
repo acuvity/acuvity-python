@@ -22,7 +22,7 @@ import jwt
 import logging
 import functools
 
-from .apex_types import ElementalObject, RequestElementalObject, ResponseElementalObject, ElementalError, ExtractionRequest, ScanRequest, ScanResponse, ScanRequestAnonymizationEnum, ScanRequestTypeEnum, ScanExternalUser
+from .apex_types import ElementalObject, RequestElementalObject, ResponseElementalObject, ElementalError, ExtractionRequest, ScanRequest, ScanResponse, ScanRequestAnonymizationEnum, ScanRequestTypeEnum, ScanExternalUser, Analyzer
 from .api_types import ApexInfo
 from pydantic import ValidationError
 
@@ -102,30 +102,9 @@ class AcuvityClient:
         self._retry_max_attempts: int = retry_max_attempts
         self._retry_max_wait: int = retry_max_wait
 
-        # we initialize the available analyzers here as they are static right now
-        # this will need to change once they become dynamic, but even then we can cache them within the client
-        self._available_analyzers = {
-            "PIIs": [
-                "ner_detector",
-                "pii_detector",
-            ],
-            "Secrets": [
-                "secrets_detector",
-            ],
-            "Topics": [
-                "text_multi_classifier",
-                "text_classifier_corporate",
-            ],
-            "Exploits": [
-                "prompt_injection",
-                "harmful_content",
-                "jailbreak",
-            ],
-            "Languages": [
-                "language_detector",
-                "gibberish_detector",
-            ],
-        }
+        # we make sure we have an available property for the analyzers
+        # however, we simply set this to None, and we'll initialize it later lazily when needed
+        self._available_analyzers: Optional[List[Analyzer]] = None
 
         # check for msgpack
         if use_msgpack:
@@ -474,7 +453,7 @@ class AcuvityClient:
         :param files: the files to scan. These are the files that you want to scan. Required if no messages or a direct request object are provided. Can be used in addition to messages.
         :param type: the type of the validation. This can be either ScanRequestTypeEnum.INPUT or ScanRequestTypeEnum.OUTPUT. Defaults to ScanRequestTypeEnum.INPUT. Use ScanRequestTypeEnum.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
-        :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+pii_detector", "-ner_detector"] will include the PII detector and exclude the NER detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided.
+        :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+image-classifier", "-modality-detector"] will include the image classifier and exclude the modality detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided. Call `list_analyzers()` and/or its variants to get a list of available analyzers.
         :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
         :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
         :param redactions: the redactions to apply. If your want to redact certain parts of the returned detections, you can provide a list of redactions that you want to apply. If not provided, no redactions will be applied.
@@ -644,7 +623,7 @@ class AcuvityClient:
             if analyzers is not None:
                 if not isinstance(analyzers, List):
                     raise ValueError("analyzers must be a list")
-                analyzers_list = self.list_analyzer_groups() + self.list_analyzers()
+                analyzers_list = self.list_analyzer_groups() + self.list_analyzer_names()
                 for analyzer in analyzers:
                     if not isinstance(analyzer, str):
                         raise ValueError("analyzers must be strings")
@@ -726,13 +705,36 @@ class AcuvityClient:
         path = "/_acuvity/scan"
         return self.apex_post(path, request, ScanResponse)
 
+    def list_analyzers(self) -> List[Analyzer]:
+        """
+        list_analyzers() returns a detailed list with descriptions of all available analyzers.
+
+        If you are simply looking for a list of strings of available analyzers that you can pass to a scan request,
+        you can use list_analyzer_names() and list_analyzer_groups() instead.
+        """
+        if self._available_analyzers is None:
+            self._available_analyzers = self.apex_get("/_acuvity/analyzers", Analyzer)
+        return self._available_analyzers
+
     def list_analyzer_groups(self) -> List[str]:
-        return list(self._available_analyzers.keys())
-    
-    def list_analyzers(self, group: Optional[str] = None) -> List[str]:
-        if group is None:
-            return [analyzer for analyzers in self._available_analyzers.values() for analyzer in analyzers]
-        return self._available_analyzers[group]
+        """
+        list_analyzer_groups() returns a list of all available analyzer groups. These can be passed in a scan request
+        to activate/deactivate a whole group of analyzers at once.
+        """
+        if self._available_analyzers is None:
+            self._available_analyzers = self.apex_get("/_acuvity/analyzers", Analyzer)
+        return sorted(set([ a.group for a in self._available_analyzers ]))
+
+    def list_analyzer_names(self, group: Optional[str] = None) -> List[str]:
+        """
+        list_analyzer_names() returns a list of all available analyzer names. These can be passed in a scan request
+        to activate/deactivate specific analyzers.
+
+        :param group: the group of analyzers to filter the list by. If not provided, all analyzers will be returned.
+        """
+        if self._available_analyzers is None:
+            self._available_analyzers = self.apex_get("/_acuvity/analyzers", Analyzer)
+        return sorted([ a.id for a in self._available_analyzers if group is None or a.group == group ])
 
 # TODO: implement async client as well
 #class AsyncAcuvityClient:

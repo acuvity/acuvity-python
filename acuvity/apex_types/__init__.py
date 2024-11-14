@@ -23,6 +23,9 @@ from .elemental import ElementalModel, ElementalObject, RequestElementalObject, 
 
 # Now import all the models that were generated for easy access when the package is imported
 from .alertevent import AlertEvent # noqa: F401
+from .analyzer import Analyzer # noqa: F401
+from .analyzermodel import AnalyzerModel # noqa: F401
+from .detector import Detector # noqa: F401
 from .extraction import Extraction # noqa: F401
 from .extractionrequest import ExtractionRequest # noqa: F401
 from .latency import Latency # noqa: F401

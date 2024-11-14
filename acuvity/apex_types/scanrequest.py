@@ -22,7 +22,7 @@ from .elemental import ElementalModel
 from .extractionrequest import ExtractionRequest
 from .scanexternaluser import ScanExternalUser
 from enum import Enum
-from pydantic import ConfigDict, Field, ValidationInfo, field_validator, model_validator
+from pydantic import ConfigDict, Field, model_validator
 from typing import Dict, List, Optional
 
 
@@ -141,16 +141,6 @@ class ScanRequest(ElementalModel):
         alias="user",
         description="The user information that the ScanRequest is passing on to the policy engine.",
     )
-
-    # additional validation methods for model fields
-    @field_validator("analyzers", mode="after")
-    def __analyzers_validate_analyzers(cls, analyzers: List[str], info: ValidationInfo):
-        valid_analyzers = ["PIIs", "Secrets", "Topics", "Confidentiality", "Exploits", "Languages"]
-        for analyzer in analyzers:
-            if analyzer.startswith(("+", "-")):
-                analyzer = analyzer[1:]
-            if analyzer not in valid_analyzers:
-                raise ValueError(f"{info.field_name} contains an invalid analyzer '{analyzer}'. Must be one of: {valid_analyzers}")
 
     # additional validation methods for the model
     @model_validator(mode='after')
