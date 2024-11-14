@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import base64
 import os
 import ssl
 import httpx
@@ -177,7 +176,8 @@ class AcuvityClient:
 
         try:
             parsed_url = urlparse(api_url)
-            domain = parsed_url.netloc
+            # use hostname as opposed to netloc because we *only* want the domain, and not the domain:port notation
+            domain = parsed_url.hostname
             if domain == "":
                 raise ValueError("no domain in URL")
             self.api_domain = domain
@@ -232,7 +232,8 @@ class AcuvityClient:
 
         try:
             parsed_url = urlparse(apex_url)
-            domain = parsed_url.netloc
+            # use hostname as opposed to netloc because we *only* want the domain, and not the domain:port notation
+            domain = parsed_url.hostname
             if domain == "":
                 raise ValueError(f"Apex URL: no domain in URL: {self.apex_url}")
             self.apex_domain = domain
@@ -323,6 +324,18 @@ class AcuvityClient:
             # nothing to fix here, just raise
             # but as it is a TransportError, we need to catch it here
             raise e
+        except httpx.ConnectError as e:
+            # unfortunately, we cannot distinguish between SSL errors and simple network connection problems
+            # it would really be great if ssl.SSLError would be a cause somewhere in the chain
+            # we resort to string matching
+            err_str = str(e)
+            if "SSL:" in err_str:
+                # SSL errors cannot be retried, just raise
+                raise e
+            # otherwise we treat it like a TransportError and retry
+            # this can be simple network connection problems which can be temporary
+            logger.warning(f"Request to {url} failed with ConnectError: {e}. Retrying...")
+            raise RequestRetryException(f"ConnectError: {e}")
         except httpx.TransportError as e:
             logger.warning(f"Request to {url} failed with TransportError: {e}. Retrying...")
             raise RequestRetryException(f"TransportError: {e}")
@@ -422,7 +435,8 @@ class AcuvityClient:
                 redirect_url = response.headers.get("Location")
                 if redirect_url:
                     parsed_url = urlparse(redirect_url)
-                    domain = parsed_url.netloc
+                    # use hostname as opposed to netloc because we *only* want the domain, and not the domain:port notation
+                    domain = parsed_url.hostname
                     if domain != "":
                         self.http_client.cookies.set("x-a3s-token", self.token, domain=domain)
 
