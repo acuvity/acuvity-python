@@ -206,7 +206,8 @@ class AcuvityClient:
                         logger.warning("Apex dynamic signing CA certs discovered, but custom HTTP client used. Certificate validation might fail against servers that are using a certificate from those CAs.")
             except Exception as e:
                 raise ValueError("failed to detect apex URL: could not retrieve well-known Apex info") from e
-            apex_url = f"https://{apex_info.url}" if not apex_info.url.startswith(("https://", "http://")) else apex_info.url
+            apex_port = f":{apex_info.port}" if apex_info.port is not None else ""
+            apex_url = f"https://{apex_info.url}{apex_port}" if not apex_info.url.startswith(("https://", "http://")) else f"{apex_info.url}{apex_port}"
         self.apex_url = apex_url
 
         try:

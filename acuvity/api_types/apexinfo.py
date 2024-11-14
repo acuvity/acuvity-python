@@ -33,3 +33,5 @@ class ApexInfo(ElementalModel):
 
     url: str = Field(..., description="The URL of the Apex.")
     cas: Optional[str] = Field(None, description="The CA certificates that verify the certificates that this apex is serving.", alias="CAs")
+    port: Optional[int] = Field(None, description="The port of the Apex.")
+    port_no_mtls: Optional[int] = Field(None, description="The port of the Apex without mTLS.", alias="portNoMTLS")
