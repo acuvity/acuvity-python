@@ -15,7 +15,6 @@
 # limitations under the License.
 
 import os
-import ssl
 import httpx
 import json
 import jwt
@@ -70,10 +69,10 @@ class AcuvityClientException(Exception):
 
 class AcuvityClient:
     """
-    AcuvityClient is a synchronous client to use the Acuvity API or more importantly the Acuvity APEX API
+    AcuvityClient is a synchronous client to use the Acuvity API or more importantly the Acuvity Apex API
     which is the center piece for the Python SDK.
 
-    It offers the Acuvity Validate APIs in convenience wrappers around the actual API calls.
+    It offers the Acuvity Scan APIs in convenience wrappers around the actual API calls.
     """
     def __init__(
             self,
@@ -96,7 +95,7 @@ class AcuvityClient:
         :param api_url: the URL of the Acuvity API to use. If not provided, it will be detected from the environment variable ACUVITY_API_URL or it will be derived from the token. If that fails, the initialization fails.
         :param apex_url: the URL of the Acuvity Apex service to use. If not provided, it will be detected from the environment variable ACUVITY_APEX_URL or it will be derived from an API call. If that fails, the initialization fails.
         :param http_client: the HTTP client to use for making requests. If not provided, a new client will be created.
-        :param use_msgpack: whether to use msgpack for serialization. If True, the 'msgpack' extra must be installed, and this will raise an exception otherwise. Defaults to True if msgpack is installed.
+        :param use_msgpack: whether to use msgpack for serialization. If True, the 'msgpack' extra must be installed, and this will raise an exception otherwise. Defaults to False even if msgpack is installed. This must be be specifically enabled to get used.
         :param retry_max_attempts: the maximum number of retry attempts to make on failed requests that can be retried. Defaults to 10.
         :param retry_max_wait: the maximum number of seconds to wait for all retry attempts. Defaults to 300 seconds.
         """
@@ -215,7 +214,7 @@ class AcuvityClient:
         # that we sent to the apex - even on redirects
         self.http_client.cookies.set("x-a3s-token", self.token, domain=self.apex_domain)
 
-    def _build_headers(self, method: str, domain: str) -> Dict[str, str]:
+    def _build_headers(self, method: str, domain: Optional[str] = None) -> Dict[str, str]:
         # we always send our namespace
         ret = {
             "X-Namespace": self.namespace,
@@ -268,9 +267,11 @@ class AcuvityClient:
         # - IO errors
         # - potential connection errors
         parsed_url = urlparse(url)
-        domain = parsed_url.netloc
+        domain = parsed_url.hostname
         if domain == "":
             raise ValueError(f"_make_request: no domain in URL: {url}")
+        if domain != self.api_domain and domain != self.apex_domain:
+            domain = None
         headers = self._build_headers(method, domain)
         try:
             resp = self.http_client.request(
@@ -345,7 +346,7 @@ class AcuvityClient:
             logger.debug("Content-Type is msgpack")
             data = msgpack.unpackb(content)       
         elif content_type is not None and isinstance(content_type, str) and content_type.lower().startswith("application/json"):
-            logger.debug("Content-TYpe is JSON")
+            logger.debug("Content-Type is JSON")
             data = json.loads(content)
         else:
             logger.warning(f"Unknown or unsupported Content-Type: {content_type}. Trying to use JSON decoder.")
@@ -596,7 +597,7 @@ class AcuvityClient:
                     raise ValueError("type must be either 'Input' or 'Output'")
                 request.type = ScanRequestTypeEnum(type)
             else:
-                raise ValueError("type must be a 'str' or 'ValidateRequestTypeEnum'")
+                raise ValueError("type must be a 'str' or 'ScanRequestTypeEnum'")
 
             # annotations must be a dictionary of strings
             if annotations is not None:
