@@ -32,6 +32,7 @@ from tenacity import retry, retry_if_exception_type, wait_random_exponential, st
 
 logger = logging.getLogger(__name__)
 
+
 # msgpack is optional and sits behind a 'msgpack' extra
 try:
     import msgpack
@@ -56,6 +57,7 @@ class OutdatedLibraryException(Exception):
     def __init__(self, message: str = "Your 'acuvity' library is outdated. Please update to the latest version."):
         super().__init__(message)
 
+
 class AcuvityClientException(Exception):
     """
     AcuvityClientException is thrown by the AcuvityClient whenever a known and documented error occurs during the execution of a request.
@@ -64,6 +66,7 @@ class AcuvityClientException(Exception):
     def __init__(self, elemental_error: Union[ElementalError, List[ElementalError]], message: str):
         self.error = elemental_error
         super().__init__(message)
+
 
 class AcuvityClient:
     """
@@ -188,22 +191,6 @@ class AcuvityClient:
         if apex_url is None or apex_url == "":
             try:
                 apex_info = self.well_known_apex_info()
-                if apex_info.cas is not None and apex_info.cas != "":
-                    if http_client is None:
-                        # if the API provided us with Apex CA certs, we're going to recreate the
-                        # http_client to make use of them.
-                        sslctx = ssl.create_default_context()
-                        sslctx.load_verify_locations(cadata=apex_info.cas)
-                        self.http_client = httpx.Client(
-                            timeout=httpx.Timeout(timeout=600.0, connect=5.0),
-                            limits=httpx.Limits(max_connections=1000, max_keepalive_connections=100),
-                            follow_redirects=True,
-                            http2=True,
-                            verify=sslctx,
-                        )
-                        self.http_client.cookies.set("x-a3s-token", self.token, domain=self.api_domain)
-                    else:
-                        logger.warning("Apex dynamic signing CA certs discovered, but custom HTTP client used. Certificate validation might fail against servers that are using a certificate from those CAs.")
             except Exception as e:
                 raise ValueError("failed to detect apex URL: could not retrieve well-known Apex info") from e
             apex_port = f":{apex_info.port}" if apex_info.port is not None else ""
