@@ -112,7 +112,7 @@ ScanResponse(
             ...
             piis={'person': 0.85},
             data='In the previous meeting Amanda explained to Jeff the outline of the upcoming project and the anticipated used technologies. Explain the used technologies in more details.',
-            detections=[TextualDetection(end=30, hash='', name='person', score=0.85, start=24, type='PII'), TextualDetection(end=48, hash='', name='person', score=0.85, start=44, type='PII')],
+            detections=[TextualDetection(end=30, key='', name='person', score=0.85, start=24, type='PII'), TextualDetection(end=48, key='', name='person', score=0.85, start=44, type='PII')],
             ...
         )
     ],
@@ -133,8 +133,8 @@ ScanResponse(
         Extraction(
             piis={'person': 0.85},
             data='In the previous meeting PII_PERSON_1 explained to PII_PERSON_2 the outline of the upcoming project and the anticipated used technologies. Explain the used technologies in more details.',
-            detections=[TextualDetection(end=30, hash='PII_PERSON_1', name='person', score=0.85, start=24, type='PII'), TextualDetection(end=48, hash='PII_PERSON_2', name='person', score=0.85, start=44, type='PII')],
-            redactions=[TextualDetection(end=30, hash='PII_PERSON_1', name='person', score=0.85, start=24, type='PII'), TextualDetection(end=48, hash='PII_PERSON_2', name='person', score=0.85, start=44, type='PII')],
+            detections=[TextualDetection(end=30, key='PII_PERSON_1', name='person', score=0.85, start=24, type='PII'), TextualDetection(end=48, key='PII_PERSON_2', name='person', score=0.85, start=44, type='PII')],
+            redactions=[TextualDetection(end=30, key='PII_PERSON_1', name='person', score=0.85, start=24, type='PII'), TextualDetection(end=48, key='PII_PERSON_2', name='person', score=0.85, start=44, type='PII')],
             ...
         )
     ],
