@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "acuvity"
-version = "0.0.8"
+version = "0.1.0"
 description = "The official Acuvity Python SDK."
 authors = ["Acuvity, Inc. <info@acuvity.ai>"]
 maintainers = ["Marcus Heese <marcus@acuvity.ai>"]
