@@ -176,59 +176,6 @@ ScanResponse(
 )
 ```
 
-### Embedded Image in JSON or YAML
-
-The problem with image data is that it can occur in the wild embedded in different formats or variations.
-Here are some examples which will show the same detection capabilities as when we are sending only the image itself:
-
-```python
-client.scan(files=[
-    "./examples/embedded-image.json",
-    "./examples/embedded-image.yaml",
-])
-```
-
-Again, we can see that the same information was extracted.
-
-```text
-ScanResponse(
-    ID=None,
-    alerts=None,
-    annotations=None,
-    decision='Allow',
-    extractions=[
-        Extraction(
-            piis={'phone_number': 1.0, 'us_ssn': 1.0, ...},
-            categories=[Modality(group='text', type='txt')],
-            data='...',
-            detections=[
-                TextualDetection(end=44490, hash=None, name='phone_number', score=0.6, start=10, type='PII'),
-                TextualDetection(end=44490, hash=None, name='us_ssn', score=0.5, start=10, type='PII')
-                ...
-            ],
-            modalities=[Modality(group='text', type='txt')],
-            topics={'code': 0.93, 'image/png': 1.0, 'text/txt': 1.0}
-        ),
-        Extraction(
-            piis={'phone_number': 1.0, 'us_ssn': 1.0, ...},
-            categories=[Modality(group='code', type='yaml')],
-            data='...',
-            detections=[
-                TextualDetection(end=44508, hash=None, name='phone_number', score=0.6, start=28, type='PII'),
-                TextualDetection(end=44508, hash=None, name='us_ssn', score=0.5, start=28, type='PII')
-                ...
-            ],
-            modalities=[Modality(group='code', type='yaml')],
-            topics={'code': 0.93, 'image/png': 1.0, 'text/txt': 1.0}
-            ...
-        )
-    ],
-    ...
-)
-```
-
-**NOTE:** Of course, the same detection capabilities exist for prompt injection detection within images!
-
 ### Enabling or disabling analyzers
 
 All detection capabilities come at a price: latency.
