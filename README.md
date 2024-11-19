@@ -123,7 +123,7 @@ ScanResponse(
 We can now redact detected PII by using the redaction feature for persons, identifying what we want to redact by using the name of the `TextualDetection`: `person`.
 
 ```python
-client.scan("In the previous meeting Amanda explained to Jeff the outline of the upcoming project and the anticipated used technologies. Explain the used technologies in more details.", redactions=["person"])
+client.scan("In the previous meeting Amanda explained to Jeff the outline of the upcoming project and the anticipated used technologies. Explain the used technologies in more details.", redactions=["person"], anonymization="VariableSize")
 ```
 
 ```text
@@ -161,12 +161,15 @@ ScanResponse(
     decision='Allow',
     extractions=[
         Extraction(
-            piis={'phone_number': 1.0, 'us_ssn': 1.0, ...},
+            piis={'address': 1.0, 'location': 1.0, 'person': 0.85, 'ssn': 1.0},
             ...
             data='> The user sent some data we identified as `image/png`',
             detections=[
-                TextualDetection(end=0, hash='', name='us_ssn', score=0.5, start=0, type='PII'),
-                TextualDetection(end=0, hash='', name='phone_number', score=0.6, start=0, type='PII'),
+                TextualDetection(content=None, end=0, key='', name='address', score=1.0, start=0, type='PII'),
+                TextualDetection(content=None, end=0, key='', name='ssn', score=0.6, start=0, type='PII'),
+                TextualDetection(content=None, end=0, key='', name='location', score=0.85, start=0, type='PII'),
+                TextualDetection(content=None, end=0, key='', name='person', score=0.85, start=0, type='PII'),
+                TextualDetection(content=None, end=0, key='', name='person', score=0.85, start=0, type='PII')
                 ...
             ],
             ...
