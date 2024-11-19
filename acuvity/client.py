@@ -111,7 +111,7 @@ class AcuvityClient:
         # check for msgpack
         if use_msgpack:
             if not HAVE_MSGPACK:
-                raise ValueError("msgpack is not available, but use_msgpack is set to True")
+                raise ValueError("msgpack is not available, but use_msgpack is set to True. Install 'acuvity' with msgpack enabled: 'acuvity[msgpack]'")
             self._use_msgpack = True
         else:
             self._use_msgpack = False
