@@ -31,9 +31,8 @@ class ExtractionRequest(ElementalModel):
     Attributes:
         annotations: Annotations attached to the extraction.
         data: The binary data to request extraction for.
-        internal: If true, this extraction is for internal use only.
+        internal: If true, this extraction is for internal use only. This can be used by agentic systems to mark an extraction as internal only as opposed to user facing.
         label: A means of distinguishing what was extracted, such as prompt, input file or code.
-        lua_id: An internal field for lua code. it is ignored by the API.
     """
     # there is a few things to know about elemental based models:
     # - they can never be strict
@@ -62,17 +61,12 @@ class ExtractionRequest(ElementalModel):
     internal: Optional[bool] = Field(
         None,
         alias="internal",
-        description="If true, this extraction is for internal use only.",
+        description="If true, this extraction is for internal use only. This can be used by agentic systems to mark an extraction as internal only as opposed to user facing.",
     )
     label: Optional[str] = Field(
         None,
         alias="label",
         description="A means of distinguishing what was extracted, such as prompt, input file or code.",
-    )
-    lua_id: Optional[str] = Field(
-        None,
-        alias="luaID",
-        description="An internal field for lua code. it is ignored by the API.",
     )
 
     # additional methods for the model

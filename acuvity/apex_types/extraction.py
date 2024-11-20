@@ -39,11 +39,10 @@ class Extraction(ElementalModel):
         exploits: The various exploits attempts.
         hash: The hash of the extraction.
         intent: The estimated intent embodied into the text.
-        internal: If true, this extraction is for internal use only.
+        internal: If true, this extraction is for internal use only. This can be used by agentic systems to mark an extraction as internal only as opposed to user facing.
         keywords: The keywords found during classification.
         label: A means of distinguishing what was extracted, such as prompt, input file or code.
         languages: The language of the classification.
-        lua_id: An internal field for lua code. it is ignored by the API.
         modalities: The modalities of data detected in the data.
         redactions: The redactions that has been performed.
         relevance: The level of general organization relevance of the input.
@@ -113,7 +112,7 @@ class Extraction(ElementalModel):
     internal: Optional[bool] = Field(
         None,
         alias="internal",
-        description="If true, this extraction is for internal use only.",
+        description="If true, this extraction is for internal use only. This can be used by agentic systems to mark an extraction as internal only as opposed to user facing.",
     )
     keywords: Optional[Dict[str, float]] = Field(
         None,
@@ -129,11 +128,6 @@ class Extraction(ElementalModel):
         None,
         alias="languages",
         description="The language of the classification.",
-    )
-    lua_id: Optional[str] = Field(
-        None,
-        alias="luaID",
-        description="An internal field for lua code. it is ignored by the API.",
     )
     modalities: Optional[List[Modality]] = Field(
         None,
