@@ -1,12 +1,12 @@
 lockVersion: 2.0.0
 id: df79860f-ea0e-43a3-8c5a-cacdb6c59895
 management:
-  docChecksum: 2aa47ea85121f08c3ccc81c8f89edc1f
+  docChecksum: 4865d6638281ccecab77002781133c1f
   docVersion: "1.0"
   speakeasyVersion: 1.453.8
   generationVersion: 2.474.15
-  releaseVersion: 0.2.1
-  configChecksum: eaf7bfbe853ac9a0f20b21978d624780
+  releaseVersion: 0.2.2
+  configChecksum: 33921fb1e6616193348d2e16182931bc
   published: true
 features:
   python:
@@ -57,11 +57,9 @@ generatedFiles:
   - docs/models/scanrequest.md
   - docs/models/scanresponse.md
   - docs/models/scanresponsetype.md
-  - docs/models/secrets.md
   - docs/models/security.md
   - docs/models/textualdetection.md
   - docs/models/textualdetectiontype.md
-  - docs/models/topics.md
   - docs/models/type.md
   - docs/models/utils/retryconfig.md
   - docs/sdks/acuvity/README.md

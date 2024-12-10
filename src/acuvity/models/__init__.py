@@ -6,14 +6,7 @@ from .analyzermodel import Analyzermodel, AnalyzermodelTypedDict
 from .apierror import APIError
 from .detector import Detector, DetectorTypedDict
 from .elementalerror import Data, DataTypedDict, Elementalerror, ElementalerrorData
-from .extraction import (
-    Extraction,
-    ExtractionTypedDict,
-    Secrets,
-    SecretsTypedDict,
-    Topics,
-    TopicsTypedDict,
-)
+from .extraction import Extraction, ExtractionTypedDict
 from .extractionrequest import Extractionrequest, ExtractionrequestTypedDict
 from .latency import Latency, LatencyTypedDict
 from .modality import Modality, ModalityTypedDict
@@ -74,14 +67,10 @@ __all__ = [
     "Scanresponse",
     "ScanresponseType",
     "ScanresponseTypedDict",
-    "Secrets",
-    "SecretsTypedDict",
     "Security",
     "SecurityTypedDict",
     "Textualdetection",
     "TextualdetectionType",
     "TextualdetectionTypedDict",
-    "Topics",
-    "TopicsTypedDict",
     "Type",
 ]
