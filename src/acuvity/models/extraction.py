@@ -9,22 +9,6 @@ from typing import Dict, List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class SecretsTypedDict(TypedDict):
-    r"""The secrets found during classification."""
-
-
-class Secrets(BaseModel):
-    r"""The secrets found during classification."""
-
-
-class TopicsTypedDict(TypedDict):
-    r"""The topic of the classification."""
-
-
-class Topics(BaseModel):
-    r"""The topic of the classification."""
-
-
 class ExtractionTypedDict(TypedDict):
     r"""Represents the extracted information to log."""
 
@@ -64,9 +48,9 @@ class ExtractionTypedDict(TypedDict):
     r"""The redactions that has been performed."""
     relevance: NotRequired[float]
     r"""The level of general organization relevance of the input."""
-    secrets: NotRequired[SecretsTypedDict]
+    secrets: NotRequired[Dict[str, float]]
     r"""The secrets found during classification."""
-    topics: NotRequired[TopicsTypedDict]
+    topics: NotRequired[Dict[str, float]]
     r"""The topic of the classification."""
 
 
@@ -125,8 +109,8 @@ class Extraction(BaseModel):
     relevance: Optional[float] = None
     r"""The level of general organization relevance of the input."""
 
-    secrets: Optional[Secrets] = None
+    secrets: Optional[Dict[str, float]] = None
     r"""The secrets found during classification."""
 
-    topics: Optional[Topics] = None
+    topics: Optional[Dict[str, float]] = None
     r"""The topic of the classification."""
