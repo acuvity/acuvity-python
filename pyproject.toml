@@ -1,50 +1,55 @@
 [tool.poetry]
 name = "acuvity"
-version = "0.1.1"
-description = "The official Acuvity Python SDK."
-authors = ["Acuvity, Inc. <info@acuvity.ai>"]
-maintainers = ["Marcus Heese <marcus@acuvity.ai>"]
-readme = "README.md"
-license = "Apache-2.0"
-homepage = "https://github.com/acuvity/acuvity-python"
-repository = "https://github.com/acuvity/acuvity-python"
-documentation = "https://github.com/acuvity/acuvity-python"
-keywords = ["security", "genai", "ai", "prompt_detection", "jailbreak"]
-classifiers = [
-  "Typing :: Typed",
-  "Intended Audience :: Developers",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
-  "Operating System :: OS Independent",
-  "Operating System :: POSIX",
-  "Operating System :: MacOS",
-  "Operating System :: POSIX :: Linux",
-  "Operating System :: Microsoft :: Windows",
-  "Topic :: Security",
-  "Topic :: Scientific/Engineering :: Artificial Intelligence",
-  "Topic :: Software Development :: Libraries :: Python Modules",
-  "License :: OSI Approved :: Apache Software License"
+version = "0.2.0"
+description = "Acvuvity Python SDK"
+authors = ["Acuvity, Inc.",]
+readme = "README-PYPI.md"
+packages = [
+    { include = "acuvity", from = "src" }
 ]
+include = ["py.typed", "src/acuvity/py.typed"]
 
-[tool.poetry.urls]
-"Bug Tracker" = "https://github.com/acuvity/acuvity-python/issues"
+[tool.setuptools.package-data]
+"*" = ["py.typed", "src/acuvity/py.typed"]
+
+[virtualenvs]
+in-project = true
 
 [tool.poetry.dependencies]
 python = "^3.8"
-httpx = {version = ">=0.23.0, <1", extras = ["http2"]}
+eval-type-backport = "^0.2.0"
+httpx = "^0.28.1"
+jsonpath-python = "^1.0.6"
+pydantic = "~2.10.3"
 pyjwt = "^2.9.0"
-pydantic = ">=1.9.0, <3"
-msgpack = {version = "^1.1.0", optional = true}
-tenacity = "^9.0.0"
+python-dateutil = "^2.8.2"
+typing-inspect = "^0.9.0"
 
-[tool.poetry.extras]
-msgpack = ["msgpack"]
+[tool.poetry.group.dev.dependencies]
+mypy = "==1.13.0"
+pylint = "==3.2.3"
+types-python-dateutil = "^2.9.0.20240316"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.mypy]
+disable_error_code = "misc"
+
+[[tool.mypy.overrides]]
+module = "typing_inspect"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "jsonpath"
+ignore_missing_imports = true
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+
+

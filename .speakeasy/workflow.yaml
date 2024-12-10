@@ -1,0 +1,20 @@
+workflowVersion: 1.0.0
+speakeasyVersion: latest
+sources:
+    Acuvity-OAS:
+        inputs:
+            - location: ./apex-openapi.yaml
+        registry:
+            location: registry.speakeasyapi.dev/acuvity-9dx/acuvity/acuvity-oas
+targets:
+    python:
+        target: python
+        source: Acuvity-OAS
+        output: .
+        publish:
+            pypi:
+                token: $pypi_token
+        codeSamples:
+            registry:
+                location: registry.speakeasyapi.dev/acuvity-9dx/acuvity/acuvity-oas-python-code-samples
+            blocking: false

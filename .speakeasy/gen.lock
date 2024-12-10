@@ -1,0 +1,136 @@
+lockVersion: 2.0.0
+id: df79860f-ea0e-43a3-8c5a-cacdb6c59895
+management:
+  docChecksum: 0ea251e50d0b82675ed642274f22ff6a
+  docVersion: "1.0"
+  speakeasyVersion: 1.453.8
+  generationVersion: 2.474.15
+  releaseVersion: 0.2.0
+  configChecksum: 0168985a45e6d676a96313e4cc3af641
+features:
+  python:
+    additionalDependencies: 1.0.0
+    constsAndDefaults: 1.0.5
+    core: 5.6.11
+    defaultEnabledRetries: 0.2.0
+    devContainers: 3.0.0
+    enumUnions: 0.1.0
+    envVarSecurityUsage: 0.3.2
+    examples: 3.0.0
+    globalSecurity: 3.0.2
+    globalSecurityCallbacks: 1.0.0
+    globalServerURLs: 3.0.0
+    methodArguments: 1.0.2
+    nameOverrides: 3.0.0
+    nullables: 1.0.0
+    operationTimeout: 0.3.0
+    responseFormat: 1.0.1
+    retries: 3.0.2
+    sdkHooks: 1.0.0
+generatedFiles:
+  - .devcontainer/README.md
+  - .devcontainer/devcontainer.json
+  - .devcontainer/setup.sh
+  - .gitattributes
+  - .python-version
+  - .vscode/settings.json
+  - USAGE.md
+  - docs/models/additionalproperties.md
+  - docs/models/alertevent.md
+  - docs/models/analyzer.md
+  - docs/models/analyzermodel.md
+  - docs/models/anonymization.md
+  - docs/models/authtype.md
+  - docs/models/data.md
+  - docs/models/decision.md
+  - docs/models/detector.md
+  - docs/models/elementalerror.md
+  - docs/models/extraction.md
+  - docs/models/extractionrequest.md
+  - docs/models/latency.md
+  - docs/models/modality.md
+  - docs/models/principal.md
+  - docs/models/principalapp.md
+  - docs/models/principaltype.md
+  - docs/models/principaluser.md
+  - docs/models/scanexternaluser.md
+  - docs/models/scanrequest.md
+  - docs/models/scanresponse.md
+  - docs/models/scanresponsetype.md
+  - docs/models/secrets.md
+  - docs/models/security.md
+  - docs/models/textualdetection.md
+  - docs/models/textualdetectiontype.md
+  - docs/models/topics.md
+  - docs/models/type.md
+  - docs/models/utils/retryconfig.md
+  - docs/sdks/acuvity/README.md
+  - docs/sdks/apex/README.md
+  - poetry.toml
+  - py.typed
+  - pylintrc
+  - pyproject.toml
+  - scripts/prepare-readme.py
+  - scripts/publish.sh
+  - src/acuvity/__init__.py
+  - src/acuvity/_hooks/__init__.py
+  - src/acuvity/_hooks/sdkhooks.py
+  - src/acuvity/_hooks/types.py
+  - src/acuvity/_version.py
+  - src/acuvity/apex.py
+  - src/acuvity/basesdk.py
+  - src/acuvity/httpclient.py
+  - src/acuvity/models/__init__.py
+  - src/acuvity/models/alertevent.py
+  - src/acuvity/models/analyzer.py
+  - src/acuvity/models/analyzermodel.py
+  - src/acuvity/models/apierror.py
+  - src/acuvity/models/detector.py
+  - src/acuvity/models/elementalerror.py
+  - src/acuvity/models/extraction.py
+  - src/acuvity/models/extractionrequest.py
+  - src/acuvity/models/latency.py
+  - src/acuvity/models/modality.py
+  - src/acuvity/models/principal.py
+  - src/acuvity/models/principalapp.py
+  - src/acuvity/models/principaluser.py
+  - src/acuvity/models/scanexternaluser.py
+  - src/acuvity/models/scanrequest.py
+  - src/acuvity/models/scanresponse.py
+  - src/acuvity/models/security.py
+  - src/acuvity/models/textualdetection.py
+  - src/acuvity/py.typed
+  - src/acuvity/sdkconfiguration.py
+  - src/acuvity/types/__init__.py
+  - src/acuvity/types/basemodel.py
+  - src/acuvity/utils/__init__.py
+  - src/acuvity/utils/annotations.py
+  - src/acuvity/utils/enums.py
+  - src/acuvity/utils/eventstreaming.py
+  - src/acuvity/utils/forms.py
+  - src/acuvity/utils/headers.py
+  - src/acuvity/utils/logger.py
+  - src/acuvity/utils/metadata.py
+  - src/acuvity/utils/queryparams.py
+  - src/acuvity/utils/requestbodies.py
+  - src/acuvity/utils/retries.py
+  - src/acuvity/utils/security.py
+  - src/acuvity/utils/serializers.py
+  - src/acuvity/utils/url.py
+  - src/acuvity/utils/values.py
+examples:
+  get-all-Analyzers:
+    speakeasy-default-get-all-analyzers:
+      responses:
+        "200":
+          application/json: [{"triggers": ["Code/*"]}, {"triggers": ["Code/*"]}, {"triggers": ["Code/*"]}]
+        "400": {}
+  create-ScanRequest-as-ScanResponse:
+    speakeasy-default-create-scan-request-as-scan-response:
+      requestBody:
+        application/json: {"bypassHash": "Alice", "user": {"claims": ["@org=acuvity.ai", "given_name=John", "family_name=Doe"], "name": "Alice"}}
+      responses:
+        "200":
+          application/json: {"alerts": [{"alertDefinition": "warning-notification", "principal": {"app": {"labels": ["country=us", "another-label"], "name": "MyApp", "tier": "frontend"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}}], "extractions": [{"categories": [], "confidentiality": 0.9, "modalities": [{"group": "image", "type": "png"}, {"group": "image", "type": "png"}, {"group": "image", "type": "png"}], "relevance": 0.9}, {"categories": [{"group": "image", "type": "png"}, {"group": "image", "type": "png"}], "confidentiality": 0.9, "modalities": [{"group": "image", "type": "png"}, {"group": "image", "type": "png"}, {"group": "image", "type": "png"}], "relevance": 0.9}], "principal": {"app": {"labels": ["country=us", "another-label"], "name": "MyApp", "tier": "frontend"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}, "provider": "openai"}
+        "400": {}
+generatedTests: {}
