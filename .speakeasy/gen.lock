@@ -1,12 +1,13 @@
 lockVersion: 2.0.0
 id: df79860f-ea0e-43a3-8c5a-cacdb6c59895
 management:
-  docChecksum: 0ea251e50d0b82675ed642274f22ff6a
+  docChecksum: 2aa47ea85121f08c3ccc81c8f89edc1f
   docVersion: "1.0"
   speakeasyVersion: 1.453.8
   generationVersion: 2.474.15
-  releaseVersion: 0.2.0
-  configChecksum: 0168985a45e6d676a96313e4cc3af641
+  releaseVersion: 0.2.1
+  configChecksum: eaf7bfbe853ac9a0f20b21978d624780
+  published: true
 features:
   python:
     additionalDependencies: 1.0.0
@@ -35,7 +36,6 @@ generatedFiles:
   - .python-version
   - .vscode/settings.json
   - USAGE.md
-  - docs/models/additionalproperties.md
   - docs/models/alertevent.md
   - docs/models/analyzer.md
   - docs/models/analyzermodel.md
