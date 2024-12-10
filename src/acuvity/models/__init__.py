@@ -7,8 +7,6 @@ from .apierror import APIError
 from .detector import Detector, DetectorTypedDict
 from .elementalerror import Data, DataTypedDict, Elementalerror, ElementalerrorData
 from .extraction import (
-    AdditionalProperties,
-    AdditionalPropertiesTypedDict,
     Extraction,
     ExtractionTypedDict,
     Secrets,
@@ -39,8 +37,6 @@ from .textualdetection import (
 
 __all__ = [
     "APIError",
-    "AdditionalProperties",
-    "AdditionalPropertiesTypedDict",
     "Alertevent",
     "AlerteventTypedDict",
     "Analyzer",

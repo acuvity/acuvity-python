@@ -9,14 +9,6 @@ from typing import Dict, List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class AdditionalPropertiesTypedDict(TypedDict):
-    r"""The language of the classification."""
-
-
-class AdditionalProperties(BaseModel):
-    r"""The language of the classification."""
-
-
 class SecretsTypedDict(TypedDict):
     r"""The secrets found during classification."""
 
@@ -64,7 +56,7 @@ class ExtractionTypedDict(TypedDict):
     r"""A means of distinguishing what was extracted, such as prompt, input file or
     code.
     """
-    additional_properties: NotRequired[AdditionalPropertiesTypedDict]
+    languages: NotRequired[Dict[str, float]]
     r"""The language of the classification."""
     modalities: NotRequired[List[ModalityTypedDict]]
     r"""The modalities of data detected in the data."""
@@ -121,9 +113,7 @@ class Extraction(BaseModel):
     code.
     """
 
-    additional_properties: Annotated[
-        Optional[AdditionalProperties], pydantic.Field(alias="additionalProperties")
-    ] = None
+    languages: Optional[Dict[str, float]] = None
     r"""The language of the classification."""
 
     modalities: Optional[List[Modality]] = None
