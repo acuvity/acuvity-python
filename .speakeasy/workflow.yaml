@@ -11,6 +11,9 @@ targets:
         target: python
         source: Acuvity-OAS
         output: .
+        publish:
+            pypi:
+                token: $pypi_token
         codeSamples:
             registry:
                 location: registry.speakeasyapi.dev/acuvity-9dx/acuvity/acuvity-oas-python-code-samples
