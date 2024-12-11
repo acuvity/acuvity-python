@@ -5,7 +5,7 @@ sources:
         inputs:
             - location: ./apex-openapi.yaml
         registry:
-            location: registry.speakeasyapi.dev/acuvity-9dx/acuvity/acuvity-oas
+            location: registry.speakeasyapi.dev/acuvity/acuvity/acuvity-oas
 targets:
     python:
         target: python
@@ -16,5 +16,5 @@ targets:
                 token: $pypi_token
         codeSamples:
             registry:
-                location: registry.speakeasyapi.dev/acuvity-9dx/acuvity/acuvity-oas-python-code-samples
+                location: registry.speakeasyapi.dev/acuvity/acuvity/acuvity-oas-python-code-samples
             blocking: false

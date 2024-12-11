@@ -146,7 +146,7 @@ class Acuvity(BaseSDK):
         """
         if self._available_analyzers is None:
             self._available_analyzers = self.apex.list_analyzers()
-        return sorted({ a.group for a in self._available_analyzers })
+        return sorted({ a.group for a in self._available_analyzers if a.group is not None })
 
     def list_analyzer_names(self, group: Optional[str] = None) -> List[str]:
         """
@@ -159,7 +159,7 @@ class Acuvity(BaseSDK):
         """
         if self._available_analyzers is None:
             self._available_analyzers = self.apex.list_analyzers()
-        return sorted([ a.id for a in self._available_analyzers if group is None or a.group == group ])
+        return sorted([ a.id for a in self._available_analyzers if (group is None or a.group == group) and a.id is not None ])
 
     def scan(
         self,
@@ -189,7 +189,7 @@ class Acuvity(BaseSDK):
         :param redactions: the redactions to apply. If your want to redact certain parts of the returned detections, you can provide a list of redactions that you want to apply. If not provided, no redactions will be applied.
         :param keywords: the keywords to detect in the input. If you want to detect certain keywords in the input, you can provide a list of keywords that you want to detect. If not provided, no keyword detection will be run.
         """
-        return self.apex.scan(request=self.__build_request(
+        return self.apex.scan_request(request=self.__build_request(
             *messages,
             files=files,
             request_type=request_type,
@@ -229,7 +229,7 @@ class Acuvity(BaseSDK):
         :param redactions: the redactions to apply. If your want to redact certain parts of the returned detections, you can provide a list of redactions that you want to apply. If not provided, no redactions will be applied.
         :param keywords: the keywords to detect in the input. If you want to detect certain keywords in the input, you can provide a list of keywords that you want to detect. If not provided, no keyword detection will be run.
         """
-        return await self.apex.scan_async(request=self.__build_request(
+        return await self.apex.scan_request_async(request=self.__build_request(
             *messages,
             files=files,
             request_type=request_type,
@@ -269,7 +269,7 @@ class Acuvity(BaseSDK):
         :param access_policy: the access policy to run. This is the rego access policy that you can run. If not provided, no access policy will be applied.
         :param content_policy: the content policy to run. This is the rego content policy that you can run. If not provided, no content policy will be applied.
         """
-        return self.apex.scan(request=self.__build_request_for_scan_and_police(
+        return self.apex.scan_request(request=self.__build_request_for_scan_and_police(
             *messages,
             files=files,
             request_type=request_type,
@@ -307,7 +307,7 @@ class Acuvity(BaseSDK):
         :param access_policy: the access policy to run. This is the rego access policy that you can run. If not provided, no access policy will be applied.
         :param content_policy: the content policy to run. This is the rego content policy that you can run. If not provided, no content policy will be applied.
         """
-        return await self.apex.scan_async(request=self.__build_request_for_scan_and_police(
+        return await self.apex.scan_request_async(request=self.__build_request_for_scan_and_police(
             *messages,
             files=files,
             request_type=request_type,
