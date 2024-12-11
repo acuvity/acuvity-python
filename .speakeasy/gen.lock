@@ -70,7 +70,6 @@ generatedFiles:
   - pyproject.toml
   - scripts/prepare-readme.py
   - scripts/publish.sh
-  - src/acuvity/__init__.py
   - src/acuvity/_hooks/__init__.py
   - src/acuvity/_hooks/sdkhooks.py
   - src/acuvity/_hooks/types.py
@@ -98,6 +97,7 @@ generatedFiles:
   - src/acuvity/models/security.py
   - src/acuvity/models/textualdetection.py
   - src/acuvity/py.typed
+  - src/acuvity/sdk.py
   - src/acuvity/sdkconfiguration.py
   - src/acuvity/types/__init__.py
   - src/acuvity/types/basemodel.py
