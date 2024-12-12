@@ -3,8 +3,9 @@
 from __future__ import annotations
 from acuvity.types import BaseModel
 from enum import Enum
+import pydantic
 from typing import Optional
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class TextualdetectionType(str, Enum):
@@ -19,15 +20,19 @@ class TextualdetectionTypedDict(TypedDict):
     r"""Represents a textual detection done by policy."""
 
     end: NotRequired[int]
-    r"""The end position of the detection."""
+    r"""The end position of the detection in the original data."""
     key: NotRequired[str]
     r"""The key that is used in the name's place, If empty, a sequence of X's are used."""
     name: NotRequired[str]
     r"""The name of the detection."""
+    redacted_end: NotRequired[int]
+    r"""The end position of the detection in the redacted data."""
+    redacted_start: NotRequired[int]
+    r"""The start position of the detection in the redacted data."""
     score: NotRequired[float]
     r"""The confidence score of the detection."""
     start: NotRequired[int]
-    r"""The start position of the detection."""
+    r"""The start position of the detection in the original data."""
     type: NotRequired[TextualdetectionType]
     r"""The type of detection."""
 
@@ -36,7 +41,7 @@ class Textualdetection(BaseModel):
     r"""Represents a textual detection done by policy."""
 
     end: Optional[int] = None
-    r"""The end position of the detection."""
+    r"""The end position of the detection in the original data."""
 
     key: Optional[str] = None
     r"""The key that is used in the name's place, If empty, a sequence of X's are used."""
@@ -44,11 +49,19 @@ class Textualdetection(BaseModel):
     name: Optional[str] = None
     r"""The name of the detection."""
 
+    redacted_end: Annotated[Optional[int], pydantic.Field(alias="redactedEnd")] = None
+    r"""The end position of the detection in the redacted data."""
+
+    redacted_start: Annotated[Optional[int], pydantic.Field(alias="redactedStart")] = (
+        None
+    )
+    r"""The start position of the detection in the redacted data."""
+
     score: Optional[float] = None
     r"""The confidence score of the detection."""
 
     start: Optional[int] = None
-    r"""The start position of the detection."""
+    r"""The start position of the detection in the original data."""
 
     type: Optional[TextualdetectionType] = None
     r"""The type of detection."""
