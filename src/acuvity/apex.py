@@ -179,7 +179,7 @@ class Apex(BaseSDK):
             http_res,
         )
 
-    def scan(
+    def scan_request(
         self,
         *,
         request: Union[
@@ -277,7 +277,7 @@ class Apex(BaseSDK):
             http_res,
         )
 
-    async def scan_async(
+    async def scan_request_async(
         self,
         *,
         request: Union[

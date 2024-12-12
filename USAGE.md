@@ -14,7 +14,8 @@ with Acuvity(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
-    res = acuvity.apex.scan(request={
+
+    res = acuvity.apex.scan_request(request={
         "bypass_hash": "Alice",
         "user": {
             "claims": [
@@ -47,7 +48,8 @@ async def main():
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
     ) as acuvity:
-        res = await acuvity.apex.scan_async(request={
+
+        res = await acuvity.apex.scan_request_async(request={
             "bypass_hash": "Alice",
             "user": {
                 "claims": [
@@ -81,6 +83,7 @@ with Acuvity(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
+
     res = acuvity.apex.list_analyzers()
 
     if res is not None:
@@ -104,6 +107,7 @@ async def main():
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
     ) as acuvity:
+
         res = await acuvity.apex.list_analyzers_async()
 
         if res is not None:

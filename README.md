@@ -1,9 +1,8 @@
 # acuvity
 
-Developer-friendly & type-safe Python SDK specifically catered to leverage *acuvity* API.
+Developer-friendly & type-safe Python SDK specifically catered to leverage the Acuvity APIs - in particularly the Apex API.
 
 <div align="left">
-    <a href="https://www.speakeasy.com/?utm_source=acuvity&utm_campaign=python"><img src="https://custom-icon-badges.demolab.com/badge/-Built%20By%20Speakeasy-212015?style=for-the-badge&logoColor=FBE331&logo=speakeasy&labelColor=545454" /></a>
     <a href="https://www.apache.org/licenses/LICENSE-2.0.html">
         <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" style="width: 100px; height: 28px;" />
     </a>
@@ -67,12 +66,23 @@ Generally, the SDK will work well with most IDEs out of the box. However, when u
 - [PyCharm Pydantic Plugin](https://docs.pydantic.dev/latest/integrations/pycharm/)
 <!-- End IDE Support [idesupport] -->
 
-<!-- Start SDK Example Usage [usage] -->
+<!-- No SDK Example Usage [usage] -->
 ## SDK Example Usage
 
 ### Process a scan request
 
-Now you can submit a scan request using the Scan API.
+For the most simple example of using the Scan API, ensure that you have your app token set in the `ACUVITY_TOKEN` environment variable.
+You can then run the following:
+
+```python
+from acuvity import Acuvity
+
+c = Acuvity()
+res = c.apex.scan("My prompt I want to scan")
+print(res)
+```
+
+Here is a more elaborate scan request using the Scan API and making use of the builtin context manager.
 
 ```python
 # Synchronous Example
@@ -82,20 +92,14 @@ import os
 
 with Acuvity(
     security=acuvity.Security(
+        # this is the default and can be omitted
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
-    res = acuvity.apex.scan(request={
-        "bypass_hash": "Alice",
-        "user": {
-            "claims": [
-                "@org=acuvity.ai",
-                "given_name=John",
-                "family_name=Doe",
-            ],
-            "name": "Alice",
-        },
-    })
+
+    res = acuvity.apex.scan(
+        "Using a weather forecasting service, provide me with a weather forecast for the next ten days for Sunnyvale, CA."
+    )
 
     if res is not None:
         # handle response
@@ -115,20 +119,14 @@ import os
 async def main():
     async with Acuvity(
         security=acuvity.Security(
+            # this is the default and can be omitted
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
     ) as acuvity:
-        res = await acuvity.apex.scan_async(request={
-            "bypass_hash": "Alice",
-            "user": {
-                "claims": [
-                    "@org=acuvity.ai",
-                    "given_name=John",
-                    "family_name=Doe",
-                ],
-                "name": "Alice",
-            },
-        })
+
+        res = await acuvity.apex.scan_async(
+            "Using a weather forecasting service, provide me with a weather forecast for the next ten days for Sunnyvale, CA."
+        )
 
         if res is not None:
             # handle response
@@ -149,9 +147,11 @@ import os
 
 with Acuvity(
     security=acuvity.Security(
+        # this is the default and can be omitted
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
+
     res = acuvity.apex.list_analyzers()
 
     if res is not None:
@@ -172,9 +172,11 @@ import os
 async def main():
     async with Acuvity(
         security=acuvity.Security(
+            # this is the default and can be omitted
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
     ) as acuvity:
+
         res = await acuvity.apex.list_analyzers_async()
 
         if res is not None:
@@ -183,7 +185,9 @@ async def main():
 
 asyncio.run(main())
 ```
-<!-- End SDK Example Usage [usage] -->
+
+**NOTE:** If you simply want to get a list of analyzer names or groups that can be used in the scan API, use `list_analyzer_names()` or `list_analyzer_groups()` instead.
+<!-- No SDK Example Usage [usage] -->
 
 <!-- Start Available Resources and Operations [operations] -->
 ## Available Resources and Operations
@@ -195,7 +199,7 @@ asyncio.run(main())
 ### [apex](docs/sdks/apex/README.md)
 
 * [list_analyzers](docs/sdks/apex/README.md#list_analyzers) - List of all available analyzers.
-* [scan](docs/sdks/apex/README.md#scan) - Processes the scan request.
+* [scan_request](docs/sdks/apex/README.md#scan_request) - Processes the scan request.
 
 </details>
 <!-- End Available Resources and Operations [operations] -->
@@ -217,6 +221,7 @@ with Acuvity(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
+
     res = acuvity.apex.list_analyzers(,
         RetryConfig("backoff", BackoffStrategy(1, 50, 1.1, 100), False))
 
@@ -239,6 +244,7 @@ with Acuvity(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
+
     res = acuvity.apex.list_analyzers()
 
     if res is not None:
@@ -283,6 +289,7 @@ with Acuvity(
 ) as acuvity:
     res = None
     try:
+
         res = acuvity.apex.list_analyzers()
 
         if res is not None:
@@ -298,14 +305,18 @@ with Acuvity(
 ```
 <!-- End Error Handling [errors] -->
 
-<!-- Start Server Selection [server] -->
+<!-- No Server Selection [server] -->
 ## Server Selection
 
 ### Server Variables
 
-The default server `https://{apex_domain}:{apex_port}` contains variables and is set to `https://apex.acuvity.ai:443` by default. To override default values, the following parameters are available when initializing the SDK client instance:
+The default server `https://{apex_domain}:{apex_port}` contains variables and is set to `https://apex.acuvity.ai:443` by default. Note that the default values **DO NOT** point to a valid and existing Apex URL as they are specific and unique to every organization. Therefore both variables must be set. The following parameters are available when initializing the SDK client instance:
  * `apex_domain: str`
  * `apex_port: str`
+
+However, if no `server_url` or `apex_domain` is set, the Apex URL is being automatically determined based on the provided token (either inside of the `Security` object or set in the `ACUVITY_TOKEN` environment variable).
+Note that this is going to make additional internal (synchronous) API calls to the Acuvity backend to determine the Apex URL.
+This is a one-time operation that runs during the initialization of the `Acuvity` class.
 
 ### Override Server URL Per-Client
 
@@ -321,6 +332,7 @@ with Acuvity(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
+
     res = acuvity.apex.list_analyzers()
 
     if res is not None:
@@ -328,7 +340,7 @@ with Acuvity(
         pass
 
 ```
-<!-- End Server Selection [server] -->
+<!-- No Server Selection [server] -->
 
 <!-- Start Custom HTTP Client [http-client] -->
 ## Custom HTTP Client
@@ -434,6 +446,7 @@ with Acuvity(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
+
     res = acuvity.apex.list_analyzers()
 
     if res is not None:
@@ -474,5 +487,3 @@ looking for the latest version.
 
 While we value open-source contributions to this SDK, this library is generated programmatically. Any manual changes added to internal files will be overwritten on the next generation. 
 We look forward to hearing your feedback. Feel free to open a PR or an issue with a proof of concept and we'll do our best to include it in a future release. 
-
-### SDK Created by [Speakeasy](https://www.speakeasy.com/?utm_source=acuvity&utm_campaign=python)

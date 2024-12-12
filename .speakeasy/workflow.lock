@@ -1,9 +1,9 @@
-speakeasyVersion: 1.453.8
+speakeasyVersion: 1.454.2
 sources:
     Acuvity-OAS:
         sourceNamespace: acuvity-oas
-        sourceRevisionDigest: sha256:53dd5a68eb5a2e8fc27860e9d257fd9a8c785e2a5d52776353836d6d67b5126a
-        sourceBlobDigest: sha256:30c2163e89c5b18ec80a1b1f38c6a8e6344ebd6a7d3345b4c0569db7a87324e7
+        sourceRevisionDigest: sha256:5de85c23bba733b90f7ea0da97d66b0d45555f289cf1bb63ce3c06820d3e4b97
+        sourceBlobDigest: sha256:1b8cdd6de0c09150e511e0919ed5777aa9748331ff234294ca11e5fa302db0b4
         tags:
             - latest
             - "1.0"
@@ -18,10 +18,10 @@ targets:
     python:
         source: Acuvity-OAS
         sourceNamespace: acuvity-oas
-        sourceRevisionDigest: sha256:53dd5a68eb5a2e8fc27860e9d257fd9a8c785e2a5d52776353836d6d67b5126a
-        sourceBlobDigest: sha256:30c2163e89c5b18ec80a1b1f38c6a8e6344ebd6a7d3345b4c0569db7a87324e7
+        sourceRevisionDigest: sha256:5de85c23bba733b90f7ea0da97d66b0d45555f289cf1bb63ce3c06820d3e4b97
+        sourceBlobDigest: sha256:1b8cdd6de0c09150e511e0919ed5777aa9748331ff234294ca11e5fa302db0b4
         codeSamplesNamespace: acuvity-oas-python-code-samples
-        codeSamplesRevisionDigest: sha256:14a1fd220c7d97bb2699b6120cb2a33726e901a9077cf27ade319aef85093516
+        codeSamplesRevisionDigest: sha256:bb7f43980e1d7ae2273582ca03088e360809c9ca317e1fa519123aa5d03c9244
     typescript:
         source: Acuvity-OAS
         sourceNamespace: acuvity-oas
@@ -37,7 +37,7 @@ workflow:
             inputs:
                 - location: ./apex-openapi.yaml
             registry:
-                location: registry.speakeasyapi.dev/acuvity-9dx/acuvity/acuvity-oas
+                location: registry.speakeasyapi.dev/acuvity/acuvity/acuvity-oas
     targets:
         python:
             target: python
@@ -48,5 +48,5 @@ workflow:
                     token: $pypi_token
             codeSamples:
                 registry:
-                    location: registry.speakeasyapi.dev/acuvity-9dx/acuvity/acuvity-oas-python-code-samples
+                    location: registry.speakeasyapi.dev/acuvity/acuvity/acuvity-oas-python-code-samples
                 blocking: false

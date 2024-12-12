@@ -8,7 +8,7 @@ Apex is the proxy and detectiono API service of Acuvity.
 ### Available Operations
 
 * [list_analyzers](#list_analyzers) - List of all available analyzers.
-* [scan](#scan) - Processes the scan request.
+* [scan_request](#scan_request) - Processes the scan request.
 
 ## list_analyzers
 
@@ -26,6 +26,7 @@ with Acuvity(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
+
     res = acuvity.apex.list_analyzers()
 
     if res is not None:
@@ -51,7 +52,7 @@ with Acuvity(
 | models.Elementalerror | 400, 401, 500         | application/json      |
 | models.APIError       | 4XX, 5XX              | \*/\*                 |
 
-## scan
+## scan_request
 
 Processes the scan request.
 
@@ -67,7 +68,8 @@ with Acuvity(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
 ) as acuvity:
-    res = acuvity.apex.scan(request={
+
+    res = acuvity.apex.scan_request(request={
         "bypass_hash": "Alice",
         "user": {
             "claims": [

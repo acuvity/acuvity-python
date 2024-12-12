@@ -30,8 +30,10 @@ def discover_apex(
     # if there is no token, then we can't perform discovery, and yes everything else will fail too
     token: str = ""
     sec: Optional[BaseModel] = get_security_from_env(security, models.Security)
-    if sec is None or not isinstance(sec, models.Security):
+    if sec is None:
         return apex_domain, apex_port
+    if not isinstance(sec, models.Security):
+        raise ValueError("Security object is not of type Security")
     token = sec.token if sec.token is not None else sec.cookie if sec.cookie is not None else ""
     if token == "":
         return apex_domain, apex_port
@@ -41,17 +43,17 @@ def discover_apex(
         decoded_token = jwt.decode(token, options={"verify_signature": False})
         if "iss" not in decoded_token:
             raise ValueError("token has no 'iss' field")
-    except Exception:
-        return apex_domain, apex_port
+    except Exception as e:
+        raise ValueError(f"invalid token: {e}") from e
 
     # extract the API URL from the token
     api_url = decoded_token["iss"]
     if api_url == "":
-        return apex_domain, apex_port
+        raise ValueError("'iss' field value of token is empty, but should have been the API URL")
 
     def well_known_apex_info(client: HttpClient, token: str, url: str, iteration: int = 0) -> Any:
         if iteration == 3:
-            return None
+            raise ValueError("Too many redirects")
         req = client.build_request("GET", url, headers={"Authorization": f"Bearer {token}"})
         resp = client.send(req, follow_redirects=False) # following redirects automatically will remove the token from the call as headers are not going to be sent anymore
         if resp.is_redirect:
@@ -59,8 +61,8 @@ def discover_apex(
         return resp.json()
     try:
         apex_info = well_known_apex_info(client, token, f"{api_url}/.well-known/acuvity/my-apex.json")
-    except Exception:
-        return apex_domain, apex_port
+    except Exception as e:
+        raise ValueError("Failed to get apex info from well-known endpoint") from e
 
     try:
         # extract the information from the response
@@ -74,7 +76,7 @@ def discover_apex(
             raise ValueError("Apex Info: no port in response")
         if domain == "":
             raise ValueError(f"Apex Info: no domain in URL: f{apex_url}")
-    except Exception:
-        return apex_domain, apex_port
+    except Exception as e:
+        raise ValueError("Failed to extract apex info from response") from e
 
     return domain, port
