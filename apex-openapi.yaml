@@ -191,11 +191,6 @@ components:
           items:
             $ref: '#/components/schemas/modality'
           type: array
-        redactions:
-          description: The redactions that has been performed.
-          items:
-            $ref: '#/components/schemas/textualdetection'
-          type: array
         relevance:
           description: The level of general organization relevance of the input.
           example: 0.9
@@ -519,6 +514,9 @@ components:
         name:
           description: The name of the detection.
           type: string
+        redacted:
+          description: If true this detection has been redacted.
+          type: boolean
         redactedEnd:
           description: The end position of the detection in the redacted data.
           type: integer
