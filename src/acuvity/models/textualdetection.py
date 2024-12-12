@@ -25,6 +25,8 @@ class TextualdetectionTypedDict(TypedDict):
     r"""The key that is used in the name's place, If empty, a sequence of X's are used."""
     name: NotRequired[str]
     r"""The name of the detection."""
+    redacted: NotRequired[bool]
+    r"""If true this detection has been redacted."""
     redacted_end: NotRequired[int]
     r"""The end position of the detection in the redacted data."""
     redacted_start: NotRequired[int]
@@ -48,6 +50,9 @@ class Textualdetection(BaseModel):
 
     name: Optional[str] = None
     r"""The name of the detection."""
+
+    redacted: Optional[bool] = None
+    r"""If true this detection has been redacted."""
 
     redacted_end: Annotated[Optional[int], pydantic.Field(alias="redactedEnd")] = None
     r"""The end position of the detection in the redacted data."""

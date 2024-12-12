@@ -44,8 +44,6 @@ class ExtractionTypedDict(TypedDict):
     r"""The language of the classification."""
     modalities: NotRequired[List[ModalityTypedDict]]
     r"""The modalities of data detected in the data."""
-    redactions: NotRequired[List[TextualdetectionTypedDict]]
-    r"""The redactions that has been performed."""
     relevance: NotRequired[float]
     r"""The level of general organization relevance of the input."""
     secrets: NotRequired[Dict[str, float]]
@@ -102,9 +100,6 @@ class Extraction(BaseModel):
 
     modalities: Optional[List[Modality]] = None
     r"""The modalities of data detected in the data."""
-
-    redactions: Optional[List[Textualdetection]] = None
-    r"""The redactions that has been performed."""
 
     relevance: Optional[float] = None
     r"""The level of general organization relevance of the input."""
