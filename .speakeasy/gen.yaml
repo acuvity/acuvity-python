@@ -26,6 +26,7 @@ python:
   clientServerStatusCodesAsErrors: true
   defaultErrorName: APIError
   description: Acvuvity Python SDK
+  documentationUrl: https://github.com/acuvity/acuvity-python
   enumFormat: enum
   envVarPrefix: ACUVITY
   fixFlags:
@@ -33,6 +34,7 @@ python:
   flattenGlobalSecurity: true
   flattenRequests: false
   flatteningOrder: parameters-first
+  homepage: https://acuvity.ai/
   imports:
     option: openapi
     paths:
