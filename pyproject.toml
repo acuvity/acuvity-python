@@ -1,9 +1,11 @@
 [tool.poetry]
 name = "acuvity"
-version = "0.2.3"
+version = "0.2.4"
 description = "Acvuvity Python SDK"
 authors = ["Acuvity, Inc.",]
 readme = "README-PYPI.md"
+homepage = "https://acuvity.ai/"
+documentation = "https://github.com/acuvity/acuvity-python"
 packages = [
     { include = "acuvity", from = "src" }
 ]
