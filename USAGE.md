@@ -27,9 +27,8 @@ with Acuvity(
         },
     })
 
-    if res is not None:
-        # handle response
-        pass
+    # Handle response
+    print(res)
 ```
 
 </br>
@@ -61,9 +60,8 @@ async def main():
             },
         })
 
-        if res is not None:
-            # handle response
-            pass
+        # Handle response
+        print(res)
 
 asyncio.run(main())
 ```
@@ -86,9 +84,8 @@ with Acuvity(
 
     res = acuvity.apex.list_analyzers()
 
-    if res is not None:
-        # handle response
-        pass
+    # Handle response
+    print(res)
 ```
 
 </br>
@@ -110,9 +107,8 @@ async def main():
 
         res = await acuvity.apex.list_analyzers_async()
 
-        if res is not None:
-            # handle response
-            pass
+        # Handle response
+        print(res)
 
 asyncio.run(main())
 ```

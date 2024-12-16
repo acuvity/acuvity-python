@@ -29,9 +29,8 @@ with Acuvity(
 
     res = acuvity.apex.list_analyzers()
 
-    if res is not None:
-        # handle response
-        pass
+    # Handle response
+    print(res)
 
 ```
 
@@ -81,9 +80,8 @@ with Acuvity(
         },
     })
 
-    if res is not None:
-        # handle response
-        pass
+    # Handle response
+    print(res)
 
 ```
 

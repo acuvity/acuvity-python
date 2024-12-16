@@ -3,16 +3,16 @@ id: df79860f-ea0e-43a3-8c5a-cacdb6c59895
 management:
   docChecksum: 0a6ab5e8278e14c81f061478fbba3556
   docVersion: "1.0"
-  speakeasyVersion: 1.454.2
-  generationVersion: 2.477.4
-  releaseVersion: 0.2.4
-  configChecksum: a4ea5124726e0d419950633dc14d3f24
+  speakeasyVersion: 1.455.7
+  generationVersion: 2.480.1
+  releaseVersion: 0.3.0
+  configChecksum: e508e2f0a4723362972e5d1cac749683
   published: true
 features:
   python:
     additionalDependencies: 1.0.0
     constsAndDefaults: 1.0.5
-    core: 5.6.11
+    core: 5.7.4
     defaultEnabledRetries: 0.2.0
     devContainers: 3.0.0
     enumUnions: 0.1.0
@@ -20,7 +20,7 @@ features:
     examples: 3.0.0
     globalSecurity: 3.0.2
     globalSecurityCallbacks: 1.0.0
-    globalServerURLs: 3.0.0
+    globalServerURLs: 3.1.0
     methodArguments: 1.0.2
     nameOverrides: 3.0.0
     nullables: 1.0.0
