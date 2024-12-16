@@ -225,9 +225,8 @@ with Acuvity(
     res = acuvity.apex.list_analyzers(,
         RetryConfig("backoff", BackoffStrategy(1, 50, 1.1, 100), False))
 
-    if res is not None:
-        # handle response
-        pass
+    # Handle response
+    print(res)
 
 ```
 
@@ -247,9 +246,8 @@ with Acuvity(
 
     res = acuvity.apex.list_analyzers()
 
-    if res is not None:
-        # handle response
-        pass
+    # Handle response
+    print(res)
 
 ```
 <!-- End Retries [retries] -->
@@ -292,9 +290,8 @@ with Acuvity(
 
         res = acuvity.apex.list_analyzers()
 
-        if res is not None:
-            # handle response
-            pass
+        # Handle response
+        print(res)
 
     except models.Elementalerror as e:
         # handle e.data: models.ElementalerrorData
@@ -449,9 +446,8 @@ with Acuvity(
 
     res = acuvity.apex.list_analyzers()
 
-    if res is not None:
-        # handle response
-        pass
+    # Handle response
+    print(res)
 
 ```
 <!-- End Authentication [security] -->
