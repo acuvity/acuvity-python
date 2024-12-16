@@ -1,10 +1,14 @@
-import jwt
+from typing import Any, Callable, Optional, Tuple, Union
 from urllib.parse import urlparse
-from typing import Callable, Optional, Union, Tuple, Any
-from .httpclient import HttpClient
+
+import jwt
+from pydantic import BaseModel
+
 from acuvity import models
 from acuvity.utils import get_security_from_env
-from pydantic import BaseModel
+
+from .httpclient import HttpClient
+
 
 def discover_apex(
     client: HttpClient,
@@ -56,13 +60,17 @@ def discover_apex(
             raise ValueError("Too many redirects")
         req = client.build_request("GET", url, headers={"Authorization": f"Bearer {token}"})
         resp = client.send(req, follow_redirects=False) # following redirects automatically will remove the token from the call as headers are not going to be sent anymore
+
+        if resp.status_code == 401:
+            raise ValueError("Unauthorized: Invalid token or insufficient permissions")
+
         if resp.is_redirect:
             return well_known_apex_info(client, token, resp.headers["Location"], iteration + 1)
         return resp.json()
     try:
         apex_info = well_known_apex_info(client, token, f"{api_url}/.well-known/acuvity/my-apex.json")
     except Exception as e:
-        raise ValueError("Failed to get apex info from well-known endpoint") from e
+        raise ValueError(f"Failed to get apex info from well-known endpoint: {str(e)}") from e
 
     try:
         # extract the information from the response
