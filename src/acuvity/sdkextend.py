@@ -2,6 +2,7 @@
 
 from acuvity import models
 from acuvity.apexdiscovery import discover_apex
+from acuvity.apexextend import ApexExtended
 from acuvity.sdk import Acuvity
 from acuvity.types import OptionalNullable, UNSET
 from .httpclient import AsyncHttpClient, HttpClient
@@ -74,5 +75,10 @@ def __patched_init__(
         debug_logger=debug_logger,
     )
 
-# Monkey-patch the __init__
+# Define the new _init_sdks method
+def __patched_init_sdks(self):
+    self.apex = ApexExtended(self.sdk_configuration)
+
+# Monkey-patch the __init__ and _init_sdks methods
 setattr(Acuvity, "__init__", __patched_init__)
+setattr(Acuvity, "_init_sdks", __patched_init_sdks)

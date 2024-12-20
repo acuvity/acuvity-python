@@ -17,7 +17,7 @@ class Acuvity(BaseSDK):
     r"""Apex API: Acuvity Apex provides access to scan and detection APIs"""
 
     apex: Apex
-    r"""Apex is the proxy and detectiono API service of Acuvity."""
+    r"""This tag is for group 'apex'"""
 
     def __init__(
         self,

@@ -16,7 +16,7 @@ generation:
     oAuth2ClientCredentialsEnabled: true
     oAuth2PasswordEnabled: true
 python:
-  version: 0.2.5
+  version: 0.3.0
   additionalDependencies:
     dev: {}
     main:
@@ -44,7 +44,7 @@ python:
       shared: ""
       webhooks: ""
   inputModelSuffix: input
-  maxMethodParams: 4
+  maxMethodParams: 20
   methodArguments: infer-optional-args
   outputModelSuffix: output
   packageName: acuvity

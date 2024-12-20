@@ -6,8 +6,10 @@ from typing import List
 from typing_extensions import TypedDict
 
 
-class ScanexternaluserTypedDict(TypedDict):
-    r"""ScanExternalUser holds the information about the remote user for a ScanRequest."""
+class PoliceexternaluserTypedDict(TypedDict):
+    r"""PoliceExternalUser holds the information about the remote user for a
+    PoliceRequest.
+    """
 
     claims: List[str]
     r"""List of claims extracted from the user query."""
@@ -15,8 +17,10 @@ class ScanexternaluserTypedDict(TypedDict):
     r"""The name of the external user."""
 
 
-class Scanexternaluser(BaseModel):
-    r"""ScanExternalUser holds the information about the remote user for a ScanRequest."""
+class Policeexternaluser(BaseModel):
+    r"""PoliceExternalUser holds the information about the remote user for a
+    PoliceRequest.
+    """
 
     claims: List[str]
     r"""List of claims extracted from the user query."""
