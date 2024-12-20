@@ -16,7 +16,30 @@ with Acuvity(
 ) as acuvity:
 
     res = acuvity.apex.scan_request(request={
+        "analyzers": [
+            "Detectors",
+            "en-text-prompt_injection-detector",
+            "ocr-handwritten-text-extractor",
+        ],
+        "annotations": {
+            "key1": "value1",
+            "key2": "value2",
+        },
         "bypass_hash": "6f37d752-bce1-4973-88f6-28b6c100ceb8",
+        "keywords": [
+            "legal",
+            "technical",
+            "scientific",
+        ],
+        "messages": [
+            "Summarize the main points of this article in bullet points.",
+            "Generate a list of creative product names for a futuristic tech gadget.",
+        ],
+        "redactions": [
+            "person",
+            "ssn",
+            "location",
+        ],
     })
 
     # Handle response
@@ -41,7 +64,30 @@ async def main():
     ) as acuvity:
 
         res = await acuvity.apex.scan_request_async(request={
+            "analyzers": [
+                "Detectors",
+                "en-text-prompt_injection-detector",
+                "ocr-handwritten-text-extractor",
+            ],
+            "annotations": {
+                "key1": "value1",
+                "key2": "value2",
+            },
             "bypass_hash": "6f37d752-bce1-4973-88f6-28b6c100ceb8",
+            "keywords": [
+                "legal",
+                "technical",
+                "scientific",
+            ],
+            "messages": [
+                "Summarize the main points of this article in bullet points.",
+                "Generate a list of creative product names for a futuristic tech gadget.",
+            ],
+            "redactions": [
+                "person",
+                "ssn",
+                "location",
+            ],
         })
 
         # Handle response
@@ -68,28 +114,6 @@ with Acuvity(
 
     res = acuvity.apex.police_request(request={
         "annotations": {
-            "0": "{",
-            "1": "\n" +
-            "",
-            "2": " ",
-            "3": " ",
-            "4": "\"",
-            "5": "k",
-            "6": "e",
-            "7": "y",
-            "8": "\"",
-            "9": ":",
-            "10": " ",
-            "11": "\"",
-            "12": "v",
-            "13": "a",
-            "14": "l",
-            "15": "u",
-            "16": "e",
-            "17": "\"",
-            "18": "\n" +
-            "",
-            "19": "}",
             "key1": "value1",
             "key2": "value2",
         },
@@ -132,28 +156,6 @@ async def main():
 
         res = await acuvity.apex.police_request_async(request={
             "annotations": {
-                "0": "{",
-                "1": "\n" +
-                "",
-                "2": " ",
-                "3": " ",
-                "4": "\"",
-                "5": "k",
-                "6": "e",
-                "7": "y",
-                "8": "\"",
-                "9": ":",
-                "10": " ",
-                "11": "\"",
-                "12": "v",
-                "13": "a",
-                "14": "l",
-                "15": "u",
-                "16": "e",
-                "17": "\"",
-                "18": "\n" +
-                "",
-                "19": "}",
                 "key1": "value1",
                 "key2": "value2",
             },
