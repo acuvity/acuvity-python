@@ -12,6 +12,9 @@ from typing import Callable, Dict, List, Optional, Tuple, Union
 
 SERVERS = [
     "https://{apex_domain}:{apex_port}",
+    # The Apex API server which is specific to every organization.
+    # The apex_domain and apex_port variables can be determined by a call to
+    # the well-known Apex info endpoint on the backend.
 ]
 """Contains the list of servers available to the SDK"""
 
@@ -27,9 +30,9 @@ class SDKConfiguration:
     server_defaults: List[Dict[str, str]] = field(default_factory=List)
     language: str = "python"
     openapi_doc_version: str = "1.0"
-    sdk_version: str = "0.2.5"
-    gen_version: str = "2.480.1"
-    user_agent: str = "speakeasy-sdk/python 0.2.5 2.480.1 1.0 acuvity"
+    sdk_version: str = "0.3.0"
+    gen_version: str = "2.481.0"
+    user_agent: str = "speakeasy-sdk/python 0.3.0 2.481.0 1.0 acuvity"
     retry_config: OptionalNullable[RetryConfig] = Field(default_factory=lambda: UNSET)
     timeout_ms: Optional[int] = None
 

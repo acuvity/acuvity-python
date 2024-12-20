@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from .extractionrequest import Extractionrequest, ExtractionrequestTypedDict
-from .scanexternaluser import Scanexternaluser, ScanexternaluserTypedDict
 from acuvity.types import BaseModel
 from enum import Enum
 import pydantic
@@ -10,14 +9,14 @@ from typing import Dict, List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class Anonymization(str, Enum):
+class ScanrequestAnonymization(str, Enum):
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
 
     FIXED_SIZE = "FixedSize"
     VARIABLE_SIZE = "VariableSize"
 
 
-class Type(str, Enum):
+class ScanrequestType(str, Enum):
     r"""The type of text."""
 
     INPUT = "Input"
@@ -43,12 +42,12 @@ class ScanrequestTypedDict(TypedDict):
     """
     annotations: NotRequired[Dict[str, str]]
     r"""Annotations attached to the extraction."""
-    anonymization: NotRequired[Anonymization]
+    anonymization: NotRequired[ScanrequestAnonymization]
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
     bypass_hash: NotRequired[str]
     r"""In the case of a contentPolicy that asks for a confirmation, this is the
     hash you must send back to bypass the block. This is only useful when a
-    content policy has been set.
+    content policy has been set or is evaluated remotely.
     """
     content_policy: NotRequired[str]
     r"""ContentPolicy allows to pass optional Rego content policy. If not set,
@@ -71,11 +70,9 @@ class ScanrequestTypedDict(TypedDict):
     minimal_logging: NotRequired[bool]
     r"""If true, the system will not log the contents that were scanned."""
     redactions: NotRequired[List[str]]
-    r"""The redactions that has been performed."""
-    type: NotRequired[Type]
+    r"""The redactions to perform if they are detected."""
+    type: NotRequired[ScanrequestType]
     r"""The type of text."""
-    user: NotRequired[ScanexternaluserTypedDict]
-    r"""ScanExternalUser holds the information about the remote user for a ScanRequest."""
 
 
 class Scanrequest(BaseModel):
@@ -100,13 +97,15 @@ class Scanrequest(BaseModel):
     annotations: Optional[Dict[str, str]] = None
     r"""Annotations attached to the extraction."""
 
-    anonymization: Optional[Anonymization] = Anonymization.FIXED_SIZE
+    anonymization: Optional[ScanrequestAnonymization] = (
+        ScanrequestAnonymization.FIXED_SIZE
+    )
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
 
     bypass_hash: Annotated[Optional[str], pydantic.Field(alias="bypassHash")] = None
     r"""In the case of a contentPolicy that asks for a confirmation, this is the
     hash you must send back to bypass the block. This is only useful when a
-    content policy has been set.
+    content policy has been set or is evaluated remotely.
     """
 
     content_policy: Annotated[Optional[str], pydantic.Field(alias="contentPolicy")] = (
@@ -139,10 +138,7 @@ class Scanrequest(BaseModel):
     r"""If true, the system will not log the contents that were scanned."""
 
     redactions: Optional[List[str]] = None
-    r"""The redactions that has been performed."""
+    r"""The redactions to perform if they are detected."""
 
-    type: Optional[Type] = None
+    type: Optional[ScanrequestType] = None
     r"""The type of text."""
-
-    user: Optional[Scanexternaluser] = None
-    r"""ScanExternalUser holds the information about the remote user for a ScanRequest."""

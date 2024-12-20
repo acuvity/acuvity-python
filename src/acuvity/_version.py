@@ -3,7 +3,7 @@
 import importlib.metadata
 
 __title__: str = "acuvity"
-__version__: str = "0.2.5"
+__version__: str = "0.3.0"
 
 try:
     if __package__ is not None:

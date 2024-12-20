@@ -13,7 +13,7 @@ from typing import Dict, List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class ScanresponseDecision(str, Enum):
+class Decision(str, Enum):
     r"""Tell what was the decision about the data."""
 
     DENY = "Deny"
@@ -23,15 +23,15 @@ class ScanresponseDecision(str, Enum):
     FORBIDDEN_USER = "ForbiddenUser"
 
 
-class ScanresponseType(str, Enum):
+class PoliceresponseType(str, Enum):
     r"""The type of text."""
 
     INPUT = "Input"
     OUTPUT = "Output"
 
 
-class ScanresponseTypedDict(TypedDict):
-    r"""This is a scan response."""
+class PoliceresponseTypedDict(TypedDict):
+    r"""This is a scan and police response."""
 
     principal: PrincipalTypedDict
     r"""Describe the principal."""
@@ -45,7 +45,7 @@ class ScanresponseTypedDict(TypedDict):
     r"""The client used to send the request."""
     client_version: NotRequired[str]
     r"""The version of the client used to send the request."""
-    decision: NotRequired[ScanresponseDecision]
+    decision: NotRequired[Decision]
     r"""Tell what was the decision about the data."""
     extractions: NotRequired[List[ExtractionTypedDict]]
     r"""The extractions to log."""
@@ -63,12 +63,12 @@ class ScanresponseTypedDict(TypedDict):
     r"""The various reasons returned by the policy engine."""
     time: NotRequired[datetime]
     r"""Set the time of the message request."""
-    type: NotRequired[ScanresponseType]
+    type: NotRequired[PoliceresponseType]
     r"""The type of text."""
 
 
-class Scanresponse(BaseModel):
-    r"""This is a scan response."""
+class Policeresponse(BaseModel):
+    r"""This is a scan and police response."""
 
     principal: Principal
     r"""Describe the principal."""
@@ -90,7 +90,7 @@ class Scanresponse(BaseModel):
     )
     r"""The version of the client used to send the request."""
 
-    decision: Optional[ScanresponseDecision] = None
+    decision: Optional[Decision] = None
     r"""Tell what was the decision about the data."""
 
     extractions: Optional[List[Extraction]] = None
@@ -117,5 +117,5 @@ class Scanresponse(BaseModel):
     time: Optional[datetime] = None
     r"""Set the time of the message request."""
 
-    type: Optional[ScanresponseType] = None
+    type: Optional[PoliceresponseType] = None
     r"""The type of text."""

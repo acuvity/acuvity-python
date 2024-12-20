@@ -199,6 +199,7 @@ asyncio.run(main())
 ### [apex](docs/sdks/apex/README.md)
 
 * [list_analyzers](docs/sdks/apex/README.md#list_analyzers) - List of all available analyzers.
+* [police_request](docs/sdks/apex/README.md#police_request) - Processes the scan and police request.
 * [scan_request](docs/sdks/apex/README.md#scan_request) - Processes the scan request.
 
 </details>
