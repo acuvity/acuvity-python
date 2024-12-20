@@ -59,7 +59,7 @@ class ApexExtended(Apex):
         You can also run access policies and content policies by passing them as parameters.
 
         :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
-        :param files: the files to scan. These are the files that you want to scan. Required if no messages or a direct request object are provided. Can be used in addition to messages.
+        :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.
         :param request_type: the type of the validation. This can be either ScanrequestType.INPUT or ScanrequestType.OUTPUT. Defaults to ScanrequestType.INPUT. Use ScanrequestType.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+image-classifier", "-modality-detector"] will include the image classifier and exclude the modality detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided. Call `list_analyzers()` and/or its variants to get a list of available analyzers.
@@ -106,8 +106,7 @@ class ApexExtended(Apex):
         You can also run access policies and content policies by passing them as parameters.
 
         :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
-        :param files: the files to scan. These are the files that you want to scan. Required if no messages or a direct request object are provided. Can be used in addition to messages.
-        :param request_type: the type of the validation. This can be either ScanrequestType.INPUT or ScanrequestType.OUTPUT. Defaults to ScanrequestType.INPUT. Use ScanrequestType.OUTPUT if you want to run model output through the detection engines.
+        :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.        :param request_type: the type of the validation. This can be either ScanrequestType.INPUT or ScanrequestType.OUTPUT. Defaults to ScanrequestType.INPUT. Use ScanrequestType.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+image-classifier", "-modality-detector"] will include the image classifier and exclude the modality detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided. Call `list_analyzers()` and/or its variants to get a list of available analyzers.
         :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
@@ -150,8 +149,7 @@ class ApexExtended(Apex):
         To configure different analyzers and redactions you must do so in the Acuvity backend.
 
         :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
-        :param files: the files to scan. These are the files that you want to scan. Required if no messages or a direct request object are provided. Can be used in addition to messages.
-        :param request_type: the type of the validation. This can be either Type.INPUT or Type.OUTPUT. Defaults to Type.INPUT. Use Type.OUTPUT if you want to run model output through the detection engines.
+        :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.        :param request_type: the type of the validation. This can be either Type.INPUT or Type.OUTPUT. Defaults to Type.INPUT. Use Type.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
         :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
@@ -188,8 +186,7 @@ class ApexExtended(Apex):
         To configure different analyzers and redactions you must do so in the Acuvity backend.
 
         :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
-        :param files: the files to scan. These are the files that you want to scan. Required if no messages or a direct request object are provided. Can be used in addition to messages.
-        :param request_type: the type of the validation. This can be either Type.INPUT or Type.OUTPUT. Defaults to Type.INPUT. Use Type.OUTPUT if you want to run model output through the detection engines.
+        :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.        :param request_type: the type of the validation. This can be either Type.INPUT or Type.OUTPUT. Defaults to Type.INPUT. Use Type.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
         :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
