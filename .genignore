@@ -1,4 +1,5 @@
 /src/acuvity/__init__.py
+/src/acuvity/sdk.pyi
 /src/acuvity/sdkextend.py
 /src/acuvity/apexdiscovery.py
 /src/acuvity/apexextend.py
