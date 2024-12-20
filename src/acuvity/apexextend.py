@@ -132,7 +132,7 @@ def police(
     bypass_hash: Optional[str] = None,
     anonymization: Union[Anonymization, str, None] = None,
     provider: Optional[str] = None,
-    user: Union[Policeexternaluser,Tuple[str, List[str]],Dict[str, Any]],
+    user: Optional[Union[Policeexternaluser,Tuple[str, List[str]],Dict[str, Any]]] = None,
 ) -> Policeresponse:
     """
     police() runs the provided messages (prompts) through the Acuvity detection engines, applies policies, and returns the results. Alternatively, you can run model output through the detection engines.
@@ -151,7 +151,7 @@ def police(
     :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
     :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
     :param provider: the provider to use. This is the provider name that you want to use for policy resolutions. If not provided, it will default to the principal name (the application itself).
-    :param user: the user to use. This is the user name and their claims that you want to use. Required.
+    :param user: the user to use. This is the user name and their claims that you want to use.
     """
     return self.police_request(request=self.__build_police_request(
         *messages,
@@ -173,7 +173,7 @@ async def police_async(
     bypass_hash: Optional[str] = None,
     anonymization: Union[Anonymization, str, None] = None,
     provider: Optional[str] = None,
-    user: Union[Policeexternaluser,Tuple[str, List[str]],Dict[str, Any]],
+    user: Optional[Union[Policeexternaluser,Tuple[str, List[str]],Dict[str, Any]]] = None,
 ) -> Policeresponse:
     """
     police_async() runs the provided messages (prompts) through the Acuvity detection engines, applies policies, and returns the results. Alternatively, you can run model output through the detection engines.
@@ -192,7 +192,7 @@ async def police_async(
     :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
     :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
     :param provider: the provider to use. This is the provider name that you want to use for policy resolutions. If not provided, it will default to the principal name (the application itself).
-    :param user: the user to use. This is the user name and their claims that you want to use. Required.
+    :param user: the user to use. This is the user name and their claims that you want to use.
     """
     return await self.police_request_async(request=self.__build_police_request(
         *messages,
@@ -214,7 +214,7 @@ def __build_police_request(
     bypass_hash: Optional[str] = None,
     anonymization: Union[Anonymization, str, None] = None,
     provider: Optional[str] = None,
-    user: Union[Policeexternaluser,Tuple[str, List[str]],Dict[str, Any]],
+    user: Optional[Union[Policeexternaluser,Tuple[str, List[str]],Dict[str, Any]]] = None,
 ) -> Policerequest:
     request = Policerequest.model_construct()
 
