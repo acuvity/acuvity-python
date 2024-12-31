@@ -21,17 +21,29 @@ class ResponseParser:
         Raises:
             ValidationError: If path is invalid or value doesn't exist
         """
+        if not path or not isinstance(path, str):
+            raise ValidationError("Invalid path: path must be a non-empty string")
+
         try:
             current = response
             for key in path.split('.'):
-                current = current[key]
-
-            if not isinstance(current, (int, float, str)):
-                raise ValidationError(f"Value at path {path} is not a numeric or string type")
+                # Try to convert to integer for array indexing
+                if isinstance(current, list):
+                    try:
+                        index = int(key)
+                        current = current[index]
+                    except ValueError as e:
+                        raise ValidationError(f"Invalid array index: {key}") from e
+                    except IndexError as e:
+                        raise ValidationError(f"Array index out of bounds at: {path}") from e
+                else:
+                    if key not in current:
+                        raise ValidationError(f"Path not found in response {path}")
+                    current = current[key]
 
             return current
         except KeyError as e:
-            raise ValidationError(f"Path {path} not found in response") from e
+            raise ValidationError(f"Path not found in response {path}") from e
         except Exception as e:
             raise ValidationError(f"Error accessing path {path}: {str(e)}") from e
 

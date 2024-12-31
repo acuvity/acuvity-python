@@ -20,6 +20,10 @@ class ThresholdHelper:
         Returns:
             bool: True if the comparison is satisfied
         """
+         # First validate the operator
+        if not isinstance(operator, ThresholdOperator):
+            raise ValidationError(f"Invalid operator: {operator}. Must be a ThresholdOperator enum.")
+
         try:
             numeric_value = float(value)
         except (TypeError, ValueError) as e:
@@ -30,7 +34,7 @@ class ThresholdHelper:
             ThresholdOperator.GREATER_THAN_OR_EQUAL: lambda x, y: x >= y,
             ThresholdOperator.LESS_THAN: lambda x, y: x < y,
             ThresholdOperator.LESS_THAN_OR_EQUAL: lambda x, y: x <= y,
-            ThresholdOperator.EQUAL: lambda x, y: abs(x - y) < 1e-9
+            ThresholdOperator.EQUAL: lambda x, y: x == y
         }
 
         return comparison_ops[operator](numeric_value, threshold)
@@ -77,5 +81,6 @@ class ThresholdHelper:
             threshold_value = float(threshold_str)
         except ValueError as e:
             raise ValidationError(f"Invalid threshold value: {threshold_str}") from e
+
 
         return threshold_value, found_operator
