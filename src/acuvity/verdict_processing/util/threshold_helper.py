@@ -8,42 +8,48 @@ class ThresholdHelper:
     """Helper class for threshold comparisons."""
 
     @staticmethod
-    def compare(value: float, threshold: float, operator: ThresholdOperator) -> bool:
+    def compare(value: Union[int, float, str], threshold: float, operator: ThresholdOperator) -> bool:
         """
         Compare a value against a threshold using the specified operator.
 
         Args:
-            value: The value to compare
+            value: The value to compare (will be converted to float)
             threshold: The threshold to compare against
             operator: The comparison operator to use
 
         Returns:
-            bool: True if the comparison is satisfied, False otherwise
+            bool: True if the comparison is satisfied
         """
-        if not isinstance(value, (int, float)) or not isinstance(threshold, (int, float)):
-            raise ValidationError("Values must be numeric for threshold comparison")
+        try:
+            numeric_value = float(value)
+        except (TypeError, ValueError) as e:
+            raise ValidationError(f"Cannot convert value {value} to float") from e
 
         comparison_ops = {
             ThresholdOperator.GREATER_THAN: lambda x, y: x > y,
             ThresholdOperator.GREATER_THAN_OR_EQUAL: lambda x, y: x >= y,
             ThresholdOperator.LESS_THAN: lambda x, y: x < y,
             ThresholdOperator.LESS_THAN_OR_EQUAL: lambda x, y: x <= y,
-            ThresholdOperator.EQUAL: lambda x, y: abs(x - y) < 1e-9  # Float comparison with epsilon
+            ThresholdOperator.EQUAL: lambda x, y: abs(x - y) < 1e-9
         }
 
-        return comparison_ops[operator](value, threshold)
+        return comparison_ops[operator](numeric_value, threshold)
 
     @staticmethod
-    def parse_threshold(threshold_str: str) -> Tuple[float, ThresholdOperator]:
+    def parse_threshold(threshold_str: Union[str, float]) -> Tuple[float, ThresholdOperator]:
         """
         Parse threshold string into value and operator.
 
         Args:
-            threshold_str: String like '>= 0.7' or '0.7'
+            threshold_str: String like '>= 0.7' or '0.7' or float value
 
         Returns:
             Tuple of (threshold_value, threshold_operator)
         """
+        # Handle numeric input
+        if isinstance(threshold_str, (int, float)):
+            return float(threshold_str), ThresholdOperator.GREATER_THAN_OR_EQUAL
+
         threshold_str = str(threshold_str).strip()
 
         # Mapping of string representations to operators
@@ -69,7 +75,7 @@ class ThresholdHelper:
 
         try:
             threshold_value = float(threshold_str)
-        except ValueError:
-            raise ValidationError(f"Invalid threshold value: {threshold_str}")
+        except ValueError as e:
+            raise ValidationError(f"Invalid threshold value: {threshold_str}") from e
 
         return threshold_value, found_operator

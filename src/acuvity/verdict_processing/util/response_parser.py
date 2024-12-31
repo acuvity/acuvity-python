@@ -30,10 +30,10 @@ class ResponseParser:
                 raise ValidationError(f"Value at path {path} is not a numeric or string type")
 
             return current
-        except KeyError:
-            raise ValidationError(f"Path {path} not found in response")
+        except KeyError as e:
+            raise ValidationError(f"Path {path} not found in response") from e
         except Exception as e:
-            raise ValidationError(f"Error accessing path {path}: {str(e)}")
+            raise ValidationError(f"Error accessing path {path}: {str(e)}") from e
 
     @staticmethod
     def validate_response(response: Dict[str, Any]) -> None:

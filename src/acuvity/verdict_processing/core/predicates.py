@@ -1,7 +1,4 @@
-from typing import Any, Callable, Dict
-
 from ..constants import ThresholdOperator
-from ..models.result import CheckResult
 
 
 class Predicate:
