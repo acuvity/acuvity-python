@@ -50,7 +50,37 @@ def discover_apex(
     except Exception as e:
         raise ValueError(f"invalid token: {e}") from e
 
-    # extract the API URL from the token
+    # check if the token has the apex URL encoded in the token
+    token_apex_url: Optional[str] = None
+    decoded_token_opaque: Optional[dict] = decoded_token.get("opaque", None)
+    if decoded_token_opaque is not None:
+        token_apex_url = decoded_token_opaque.get("apex-url", None)
+
+    # if we have the Apex URL encoded in the token, then we parse and use that directly
+    if token_apex_url is not None:
+        if token_apex_url.startswith(("http://", "https://")):
+            parsed_url = urlparse(token_apex_url)
+            domain = parsed_url.hostname
+            if parsed_url.port is not None:
+                port = f"{parsed_url.port}"
+            else:
+                if parsed_url.scheme == "https":
+                    port = "443"
+                elif parsed_url.scheme == "http":
+                    port = "80"
+                else:
+                    port = None
+            if domain is None or domain == "":
+                raise ValueError(f"JWT Apex URL has no domain: {token_apex_url}")
+            if port is None or port == "":
+                raise ValueError(f"JWT Apex URL has no port or wrong scheme: {token_apex_url}")
+            print(f"Using Apex URL from token: {domain}:{port}")
+            return domain, port
+        else:
+            # we're assuming this must be a domain without a scheme
+            return token_apex_url, "443"
+
+    # otherwise we extract the API URL from the token
     api_url = decoded_token["iss"]
     if api_url == "":
         raise ValueError("'iss' field value of token is empty, but should have been the API URL")
@@ -74,14 +104,19 @@ def discover_apex(
 
     try:
         # extract the information from the response
-        apex_url = apex_info["url"]
+        apex_url: str = apex_info["url"]
+        if apex_url == "":
+            raise ValueError("Apex Info: no URL in response")
         port = f"{apex_info['port']}"
-        # parse the URL to extract the domain
-        # use hostname as opposed to netloc because we *only* want the domain, and not the domain:port notation
-        parsed_url = urlparse(apex_url)
-        domain = parsed_url.hostname
         if port == "":
             raise ValueError("Apex Info: no port in response")
+        if apex_url.startswith(("http://", "https://")):
+            # parse the URL to extract the domain
+            # use hostname as opposed to netloc because we *only* want the domain, and not the domain:port notation
+            parsed_url = urlparse(apex_url)
+            domain = parsed_url.hostname
+        else:
+            domain = apex_url
         if domain == "":
             raise ValueError(f"Apex Info: no domain in URL: f{apex_url}")
     except Exception as e:
