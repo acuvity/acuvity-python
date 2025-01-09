@@ -18,6 +18,7 @@ from acuvity.models import (
     Scanresponse,
     Type,
 )
+from acuvity.models.scanresponsewrapper import ScanResponseWrapper
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.verdict_processing.constants import analyzer_id_name_map
 from acuvity.verdict_processing.models.guard_config import GuardConfigParser
@@ -77,7 +78,7 @@ class ApexExtended(Apex):
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
-    ) -> Scanresponse:
+    ) -> ScanResponseWrapper:
         """
         scan() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a Scanresponse object on success, and raises different exceptions on failure.
@@ -97,7 +98,7 @@ class ApexExtended(Apex):
         :param access_policy: the access policy to run. This is the rego access policy that you can run. If not provided, no access policy will be applied.
         :param content_policy: the content policy to run. This is the rego content policy that you can run. If not provided, no content policy will be applied.
         """
-        return self.scan_request(request=self.__build_scan_request(
+        raw_scan_response = self.scan_request(request=self.__build_scan_request(
             *messages,
             files=files,
             request_type=request_type,
@@ -111,6 +112,7 @@ class ApexExtended(Apex):
             content_policy=content_policy,
             guard_config=guard_config,
         ))
+        return ScanResponseWrapper(raw_scan_response)
 
     async def scan_async(
         self,
@@ -125,7 +127,7 @@ class ApexExtended(Apex):
         keywords: Optional[List[str]] = None,
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
-    ) -> Scanresponse:
+    ) -> ScanResponseWrapper:
         """
         scan_async() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a Scanresponse object on success, and raises different exceptions on failure.
@@ -144,7 +146,7 @@ class ApexExtended(Apex):
         :param access_policy: the access policy to run. This is the rego access policy that you can run. If not provided, no access policy will be applied.
         :param content_policy: the content policy to run. This is the rego content policy that you can run. If not provided, no content policy will be applied.
         """
-        return await self.scan_request_async(request=self.__build_scan_request(
+        raw_response = await self.scan_request_async(request=self.__build_scan_request(
             *messages,
             files=files,
             request_type=request_type,
@@ -157,6 +159,7 @@ class ApexExtended(Apex):
             access_policy=access_policy,
             content_policy=content_policy,
         ))
+        return ScanResponseWrapper(raw_response)
 
     def police(
         self,
