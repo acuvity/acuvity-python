@@ -107,9 +107,9 @@ def discover_apex(
         apex_url: str = apex_info["url"]
         if apex_url == "":
             raise ValueError("Apex Info: no URL in response")
-        port = f"{apex_info['port']}"
+        port = f"{apex_info['portNoMTLS']}"
         if port == "":
-            raise ValueError("Apex Info: no port in response")
+            raise ValueError("Apex Info: no portNoMTLS in response")
         if apex_url.startswith(("http://", "https://")):
             # parse the URL to extract the domain
             # use hostname as opposed to netloc because we *only* want the domain, and not the domain:port notation
