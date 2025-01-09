@@ -1,10 +1,19 @@
 from enum import Enum
+from typing import Dict
 
 
 class Verdict(str, Enum):
     """Enumeration for check verdicts."""
     PASS = "PASS"
     FAIL = "FAIL"
+
+class ComparisonOperator(Enum):
+    """Valid comparison operators for thresholds"""
+    GREATER_THAN = '>'
+    GREATER_EQUAL = '>='
+    EQUAL = '=='
+    LESS_EQUAL = '<='
+    LESS_THAN = '<'
 
 class ThresholdOperator(str, Enum):
     """Enumeration for threshold comparison operators."""
@@ -52,3 +61,22 @@ TOPIC_PREFIXES = {
     'corporate_classifier': 'department',
     'content_classifier': 'category'
 }
+
+analyzer_id_name_map: Dict[str, str] = {
+            'en-text-prompt_injection-detector': 'prompt_injection',
+            'en-text-jailbreak-detector': 'jail_break',
+            'url-malicious-detector': 'malicious_url',
+            'en-text-toxicity-detector': 'toxicity',
+            'en-text-bias-detector': 'bias',
+            'en-text-harmful-content-detector': 'harmful_content',
+            'image-classifier': 'image_classifier',
+            'en-text-corporate-classifier': 'corporate_classifier',
+            'en-text-content-classifier': 'content_classifier',
+            'text-gibberish-classifier': 'gibberish',
+            'text-language-classifier': 'language',
+            'modality-detector': 'modality',
+            'en-text-ner-detector': 'pii_detector',
+            'text-pattern-detector': 'pattern_detector',
+            'en-text-generic-classifier': 'generic_classifier',
+            'text-keyword-detector': 'keyword_detector'
+        }

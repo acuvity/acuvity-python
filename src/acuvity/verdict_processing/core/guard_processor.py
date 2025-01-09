@@ -1,100 +1,145 @@
-from typing import Any, Dict, List, Union
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Union
 
+from ...models.scanresponse import Scanresponse
 from ...utils.logger import get_default_logger
-from ..constants import GUARD_TO_SECTION, TOPIC_PREFIXES, ThresholdOperator, Verdict
-from ..models.config import GuardConfig, ProcessorConfig
+from ..constants import (
+    GUARD_TO_SECTION,
+    TOPIC_PREFIXES,
+    ComparisonOperator,
+    Verdict,
+    analyzer_id_name_map,
+)
 from ..models.errors import ConfigurationError, ValidationError
+from ..models.guard_config import GuardConfig, GuardConfigParser
 from ..models.result import CheckResult, ProcessorResult
-from ..util.threshold_helper import ThresholdHelper
-from .evaluator import CheckEvaluator
+from ..util.response_parser import ResponseParser
+from ..util.threshold_helper import Threshold, ThresholdHelper
 
 logger = get_default_logger()
+
+class CheckEvaluator:
+    """
+    Handles pure check evaluation without considering actions.
+    This evaluator determines if conditions are met based on thresholds.
+    """
+
+    def __init__(self, parser: ResponseParser, threshold_helper: ThresholdHelper):
+        self._parser = parser
+        self._threshold_helper = threshold_helper
+        self._response = None
+
+    def evaluate(
+        self,
+        response: Scanresponse,
+        guard_name: str,
+        threshold: Threshold,
+        match_name: Optional[str] = None
+    ) -> CheckResult:
+        """
+        Evaluates a check condition using a Threshold object.
+
+        Args:
+            response: The response data to check
+            path: Path to the value in the response
+            threshold: Threshold object containing value and operator
+
+        Returns:
+            CheckResult with PASS if condition met, FAIL if not met
+        """
+        try:
+            if not response.extractions:
+                raise ValueError("No extractions found in the response")
+            extraction = response.extractions[0]
+            result = self._parser.get_value(extraction, guard_name, match_name)
+            # Handle different return types
+            # PII and keyword
+            if isinstance(result, tuple) and len(result) == 3:  # (bool, float, int)
+                exists, value, _ = result
+            # exploit, topic, classification, language
+            elif isinstance(result, tuple) and len(result) == 2:  # (bool, float)
+                exists, value = result
+            # pattern and modality
+            elif isinstance(result, bool):  # bool only
+                exists, value = result, 1.0
+            else:
+                raise ValueError("Unexpected return type from get_value")
+
+            if not exists:
+                return CheckResult(
+                    verdict=Verdict.PASS,
+                    guard_name=guard_name,
+                    threshold=threshold.value,
+                    actual_value=value,
+                    details={
+                        'operator': threshold.operator.value,
+                        'condition_met': True,
+                        'reason': 'Guard not found in response'
+                    }
+                )
+            # Use ThresholdHelper for comparison
+            comparison_result = self._threshold_helper.compare(threshold, value)
+
+            return CheckResult(
+                verdict=Verdict.FAIL if comparison_result else Verdict.PASS,
+                guard_name=guard_name,
+                threshold=threshold.value,
+                actual_value=value,
+                details={
+                    'operator': threshold.operator.value,
+                    'condition_met': comparison_result
+                }
+            )
+        except Exception as e:
+            logger.debug("Error in check evaluation: %s", str(e))
+            raise
 
 class GuardProcessor:
     """Handles processing of guard configurations."""
 
-    def __init__(self, response: Dict[str, Any], evaluator: CheckEvaluator, threshold_helper: ThresholdHelper):
-        self._validate_response_sections(response)
-        self._response = response
-        self._evaluator = evaluator
-        self._threshold_helper = threshold_helper
+    DEFAULT_THRESHOLD = Threshold(value=0.0, operator=ComparisonOperator.GREATER_THAN)
 
-    def _validate_response_sections(self, response: Dict[str, Any]) -> None:
-        """Validate that all required sections exist in response."""
-        required_sections = set(GUARD_TO_SECTION.values())
-        missing_sections = required_sections - set(response.keys())
-        if missing_sections:
-            raise ValidationError(f"Response missing required sections: {missing_sections}")
+    def __init__(self, guard_config: Union[str, Path, Dict]):
+        self._parser = ResponseParser()
+        self._threshold_helper = ThresholdHelper()
+        self._evaluator = CheckEvaluator(self._parser, self._threshold_helper)
 
-    def _get_check_path(self, guard_name: str, match_name: str = None) -> str:
-        """
-        Get the check path based on guard type and optional match.
-        Handles special cases for different sections.
-        """
-        section = GUARD_TO_SECTION.get(guard_name)
-        if not section:
-            raise ValidationError(f"Unknown guard type: {guard_name}")
-
-        # Handle topics section with special prefixes
-        if section == 'topics':
-            prefix = TOPIC_PREFIXES.get(guard_name)
-            if not prefix:
-                raise ValidationError(f"Unknown topic prefix for guard: {guard_name}")
-
-            if match_name:
-                return f"{section}.{prefix}/{match_name}"
-            return f"{section}.{prefix}"
-
-        # Handle standard match paths
-        if match_name:
-            return f"{section}.{match_name}"
-
-        # Handle direct paths
-        return f"{section}.{guard_name}"
+        self.guard_config_parser = GuardConfigParser(analyzer_id_name_map)
+        self.guard_config_parser.parse_config(guard_config)
 
     def process_guard_check(
         self,
-        path: str,
-        threshold: Union[float, str],
-        operator: ThresholdOperator,
-        action: str
+        guard_name: str,
+        threshold: Threshold,
+        match_name: Optional[str] = None
     ) -> CheckResult:
         """Process a single guard check with action consideration."""
         try:
             # Get raw evaluation
-            check_result = self._evaluator.evaluate(self._response, path, threshold, operator)
-
-            # Determine final verdict based on action
-            if action.lower() == "deny":
-                final_verdict = Verdict.FAIL if check_result.verdict == Verdict.PASS else Verdict.PASS
-            else:  # "allow"
-                final_verdict = check_result.verdict
+            check_result = self._evaluator.evaluate(self._response, guard_name, threshold, match_name)
 
             return CheckResult(
-                verdict=final_verdict,
-                check_name=path,
+                verdict=check_result.verdict,
+                guard_name=guard_name,
                 threshold=check_result.threshold,
                 actual_value=check_result.actual_value,
                 details={
                     **check_result.details,
-                    'action': action,
-                    'section': path.split('.')[0]
                 }
             )
         except Exception as e:
-            logger.debug("Error processing guard check for path %s ", {path})
+            logger.debug("Error processing guard %s ", {guard_name})
             raise e
 
     def _process_simple_guard(self, guard: GuardConfig) -> CheckResult:
         """Process a simple guard (no matches)."""
-        check_path = self._get_check_path(guard.guard_name)
-        threshold_value, operator = self._threshold_helper.parse_threshold(guard.threshold)
+        thd = guard.threshold
+        if thd is None:
+            thd = self.DEFAULT_THRESHOLD
 
         return self.process_guard_check(
-            check_path,
-            threshold_value,
-            operator,
-            guard.action
+            guard.name,
+            thd
         )
 
     def _process_match_guard(self, guard: GuardConfig) -> List[CheckResult]:
@@ -104,36 +149,36 @@ class GuardProcessor:
             return results
 
         for match_name, match_config in guard.matches.items():
-            check_path = self._get_check_path(guard.guard_name, match_name)
-            threshold_value, operator = self._threshold_helper.parse_threshold(match_config['threshold'])
+            thd = guard.threshold
+            if thd is None:
+                thd = self.DEFAULT_THRESHOLD
 
             result = self.process_guard_check(
-                check_path,
-                threshold_value,
-                operator,
-                guard.action
+                guard.name,
+                thd,
+                match_name
             )
             results.append(result)
 
         return results
 
-    def process_config(self, config: ProcessorConfig) -> ProcessorResult:
+    def get_verdict(self, response: Scanresponse) -> str:
+        self._response = response
+        return self.process_config(self.guard_config_parser).verdict
+
+    def process_config(self, config_parser: GuardConfigParser) -> ProcessorResult:
         """Process the complete guard configuration."""
         try:
-            # Convert to ProcessorConfig if needed
-            if isinstance(config, dict):
-                config = ProcessorConfig(**config)
-
             failed_checks = []
             total_checks = 0
 
-            for guard in config.simple_guards:
+            for guard in config_parser.simple_guards:
                 result = self._process_simple_guard(guard)
                 total_checks += 1
                 if result.verdict == Verdict.FAIL:
                     failed_checks.append(result)
 
-            for guard in config.match_guards:
+            for guard in config_parser.match_guards:
                 results = self._process_match_guard(guard)
                 total_checks += len(results)
                 failed_checks.extend([r for r in results if r.verdict == Verdict.FAIL])
@@ -145,7 +190,6 @@ class GuardProcessor:
                 total_checks=total_checks,
                 details={
                     'failed_checks_count': len(failed_checks),
-                    'sections_checked': sorted(set(r.details['section'] for r in failed_checks))
                 }
             )
 

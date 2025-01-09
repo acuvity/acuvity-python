@@ -1,17 +1,36 @@
 # pylint: disable=protected-access
 
-import os
 import base64
+import os
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
-from acuvity.models import Analyzer, Extractionrequest, Policerequest, Policeresponse, Scanrequest, Scanresponse, ScanrequestType, Type, ScanrequestAnonymization, Anonymization, Policeexternaluser
+
+from acuvity.models import (
+    Analyzer,
+    Anonymization,
+    Extractionrequest,
+    Policeexternaluser,
+    Policerequest,
+    Policeresponse,
+    Scanrequest,
+    ScanrequestAnonymization,
+    ScanrequestType,
+    Scanresponse,
+    Type,
+)
 from acuvity.sdkconfiguration import SDKConfiguration
+from acuvity.verdict_processing.constants import analyzer_id_name_map
+from acuvity.verdict_processing.models.guard_config import GuardConfigParser
 
 from .apex import Apex
+
 
 class ApexExtended(Apex):
     def __init__(self, sdk_config: SDKConfiguration) -> None:
         super().__init__(sdk_config)
         self._available_analyzers: Optional[List[Analyzer]] = None
+        # Initialize ID to name mapping
+        self.analyzer_id_name_map: Dict[str, str] = analyzer_id_name_map
 
     def list_analyzer_groups(self) -> List[str]:
         """
@@ -35,7 +54,14 @@ class ApexExtended(Apex):
         """
         if self._available_analyzers is None:
             self._available_analyzers = self.list_analyzers()
-        return sorted([ a.id for a in self._available_analyzers if (group is None or a.group == group) and a.id is not None ])
+        analyzer_ids = [a.id for a in self._available_analyzers
+                       if (group is None or a.group == group) and a.id is not None]
+
+        # Map IDs to friendly names and filter out any that aren't in our mapping
+        mapped_names = [self.analyzer_id_name_map.get(id_) for id_ in analyzer_ids]
+
+        # Filter out None values and sort
+        return sorted([name for name in mapped_names if name is not None])
 
     def scan(
         self,
@@ -50,6 +76,7 @@ class ApexExtended(Apex):
         keywords: Optional[List[str]] = None,
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
+        guard_config: Optional[Union[str, Path, Dict]] = None,
     ) -> Scanresponse:
         """
         scan() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
@@ -82,6 +109,7 @@ class ApexExtended(Apex):
             keywords=keywords,
             access_policy=access_policy,
             content_policy=content_policy,
+            guard_config=guard_config,
         ))
 
     async def scan_async(
@@ -340,8 +368,14 @@ class ApexExtended(Apex):
         keywords: Optional[List[str]] = None,
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
+        guard_config: Optional[Union[str, Path, Dict]] = None,
     ) -> Scanrequest:
         request = Scanrequest.model_construct()
+
+        # Convert None to [] so we can safely use list methods
+        keywords = keywords or []
+        redactions = redactions or []
+        analyzers = analyzers or []
 
         # messages must be strings
         for message in messages:
@@ -396,19 +430,27 @@ class ApexExtended(Apex):
                     raise ValueError("annotations must be strings")
             request.annotations = annotations
 
+        # now here check the guard config and parse it for the analyzers, redaction and keywords.
+        if guard_config:
+            guard_config_parser = GuardConfigParser(self.analyzer_id_name_map)
+            guard_config_parser.parse_config(guard_config)
+
+            keywords.extend(guard_config_parser.keywords or [])
+            redactions.extend(guard_config_parser.redaction_keys or [])
+            analyzers.extend(guard_config_parser.analyzer_ids or [])
+
         # analyzers must be a list of strings
-        if analyzers is not None:
-            if not isinstance(analyzers, List):
-                raise ValueError("analyzers must be a list")
-            analyzers_list = self.list_analyzer_groups() + self.list_analyzer_names()
-            for analyzer in analyzers:
-                if not isinstance(analyzer, str):
-                    raise ValueError("analyzers must be strings")
-                if analyzer.startswith(("+", "-")):
-                    analyzer = analyzer[1:]
-                if analyzer not in analyzers_list:
-                    raise ValueError(f"analyzer '{analyzer}' is not in list of analyzer groups or analyzers: {analyzers_list}")
-            request.analyzers = analyzers
+        if not isinstance(analyzers, List):
+            raise ValueError("analyzers must be a list")
+        analyzers_list = self.list_analyzer_groups() + self.list_analyzer_names()
+        for analyzer in analyzers:
+            if not isinstance(analyzer, str):
+                raise ValueError("analyzers must be strings")
+            if analyzer.startswith(("+", "-")):
+                analyzer = analyzer[1:]
+            if analyzer not in analyzers_list:
+                raise ValueError(f"analyzer '{analyzer}' is not in list of analyzer groups or analyzers: {analyzers_list}")
+        request.analyzers = analyzers
 
         # bypass_hash must be a string
         if bypass_hash is not None:
@@ -428,22 +470,20 @@ class ApexExtended(Apex):
                 raise ValueError("anonymization must be a 'str' or 'Anonymization'")
 
         # redactions must be a list of strings
-        if redactions is not None:
-            if not isinstance(redactions, List):
-                raise ValueError("redactions must be a list")
-            for redaction in redactions:
-                if not isinstance(redaction, str):
-                    raise ValueError("redactions must be strings")
-            request.redactions = redactions
+        if not isinstance(redactions, list):
+            raise ValueError("redactions must be a list")
+        for redaction in redactions:
+            if not isinstance(redaction, str):
+                raise ValueError("redactions must be strings")
+        request.redactions = redactions
 
         # keywords must be a list of strings
-        if keywords is not None:
-            if not isinstance(keywords, List):
-                raise ValueError("keywords must be a list")
-            for keyword in keywords:
-                if not isinstance(keyword, str):
-                    raise ValueError("keywords must be strings")
-            request.keywords = keywords
+        if not isinstance(keywords, List):
+            raise ValueError("keywords must be a list")
+        for keyword in keywords:
+            if not isinstance(keyword, str):
+                raise ValueError("keywords must be strings")
+        request.keywords = keywords
 
         # local access policy
         if access_policy is not None:

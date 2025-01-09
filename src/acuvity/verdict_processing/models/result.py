@@ -8,7 +8,7 @@ from ..constants import Verdict
 class CheckResult:
     """Result of a single check operation."""
     verdict: Verdict
-    check_name: str
+    guard_name: str
     threshold: float
     actual_value: float
     details: Optional[Dict[str, Any]] = None

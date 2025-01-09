@@ -1,86 +1,70 @@
-from typing import Tuple, Union
+from dataclasses import dataclass
+from typing import Optional
 
-from ..constants import ThresholdOperator
-from ..models.errors import ValidationError
+from ..constants import ComparisonOperator
+from ..models.errors import ThresholdParsingError
 
+
+@dataclass(frozen=True)
+class Threshold:
+    """Immutable threshold configuration"""
+    value: float
+    operator: ComparisonOperator
+
+    def __str__(self) -> str:
+        return f"{self.operator.value} {self.value}"
 
 class ThresholdHelper:
-    """Helper class for threshold comparisons."""
+    """Helper class for parsing and comparing thresholds"""
 
     @staticmethod
-    def compare(value: Union[int, float, str], threshold: float, operator: ThresholdOperator) -> bool:
+    def parse_threshold(threshold_str: str) -> Optional[Threshold]:
         """
-        Compare a value against a threshold using the specified operator.
+        Parse threshold string into Threshold object.
 
         Args:
-            value: The value to compare (will be converted to float)
-            threshold: The threshold to compare against
-            operator: The comparison operator to use
+            threshold_str: Threshold string (e.g. '>= 0.8')
 
         Returns:
-            bool: True if the comparison is satisfied
-        """
-         # First validate the operator
-        if not isinstance(operator, ThresholdOperator):
-            raise ValidationError(f"Invalid operator: {operator}. Must be a ThresholdOperator enum.")
+            Threshold object or None if parsing fails
 
+        Raises:
+            ThresholdParsingError: If threshold format is invalid
+        """
         try:
-            numeric_value = float(value)
-        except (TypeError, ValueError) as e:
-            raise ValidationError(f"Cannot convert value {value} to float") from e
+            operator_str, value_str = threshold_str.split()
+            value = float(value_str)
 
-        comparison_ops = {
-            ThresholdOperator.GREATER_THAN: lambda x, y: x > y,
-            ThresholdOperator.GREATER_THAN_OR_EQUAL: lambda x, y: x >= y,
-            ThresholdOperator.LESS_THAN: lambda x, y: x < y,
-            ThresholdOperator.LESS_THAN_OR_EQUAL: lambda x, y: x <= y,
-            ThresholdOperator.EQUAL: lambda x, y: x == y
-        }
+            try:
+                operator = ComparisonOperator(operator_str)
+            except ValueError as e :
+                raise ThresholdParsingError(f"Invalid operator: {operator_str}") from e
 
-        return comparison_ops[operator](numeric_value, threshold)
+            return Threshold(value=value, operator=operator)
 
-    @staticmethod
-    def parse_threshold(threshold_str: Union[str, float]) -> Tuple[float, ThresholdOperator]:
-        """
-        Parse threshold string into value and operator.
-
-        Args:
-            threshold_str: String like '>= 0.7' or '0.7' or float value
-
-        Returns:
-            Tuple of (threshold_value, threshold_operator)
-        """
-        # Handle numeric input
-        if isinstance(threshold_str, (int, float)):
-            return float(threshold_str), ThresholdOperator.GREATER_THAN_OR_EQUAL
-
-        threshold_str = str(threshold_str).strip()
-
-        # Mapping of string representations to operators
-        operator_map = {
-            '>=': ThresholdOperator.GREATER_THAN_OR_EQUAL,
-            '>': ThresholdOperator.GREATER_THAN,
-            '<=': ThresholdOperator.LESS_THAN_OR_EQUAL,
-            '<': ThresholdOperator.LESS_THAN,
-            '=': ThresholdOperator.EQUAL
-        }
-
-        # Try to find operator in string
-        found_operator = None
-        for op_str, operator in operator_map.items():
-            if threshold_str.startswith(op_str):
-                found_operator = operator
-                threshold_str = threshold_str[len(op_str):].strip()
-                break
-
-        # If no operator found, default to GREATER_THAN_OR_EQUAL
-        if found_operator is None:
-            found_operator = ThresholdOperator.GREATER_THAN_OR_EQUAL
-
-        try:
-            threshold_value = float(threshold_str)
         except ValueError as e:
-            raise ValidationError(f"Invalid threshold value: {threshold_str}") from e
+            raise ThresholdParsingError("Invalid threshold format") from e
 
+    @staticmethod
+    def compare(threshold: Threshold, value: float) -> bool:
+        """
+        Compare a value against a threshold.
 
-        return threshold_value, found_operator
+        Args:
+            threshold: Threshold object containing operator and value
+            value: Value to compare against threshold
+
+        Returns:
+            True if value meets threshold criteria, False otherwise
+        """
+        if threshold.operator == ComparisonOperator.GREATER_THAN:
+            return value > threshold.value
+        elif threshold.operator == ComparisonOperator.GREATER_EQUAL:
+            return value >= threshold.value
+        elif threshold.operator == ComparisonOperator.EQUAL:
+            return value == threshold.value
+        elif threshold.operator == ComparisonOperator.LESS_EQUAL:
+            return value <= threshold.value
+        elif threshold.operator == ComparisonOperator.LESS_THAN:
+            return value < threshold.value
+        return False
