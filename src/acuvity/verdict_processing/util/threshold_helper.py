@@ -59,12 +59,12 @@ class ThresholdHelper:
         """
         if threshold.operator == ComparisonOperator.GREATER_THAN:
             return value > threshold.value
-        elif threshold.operator == ComparisonOperator.GREATER_EQUAL:
+        if threshold.operator == ComparisonOperator.GREATER_EQUAL:
             return value >= threshold.value
-        elif threshold.operator == ComparisonOperator.EQUAL:
+        if threshold.operator == ComparisonOperator.EQUAL:
             return value == threshold.value
-        elif threshold.operator == ComparisonOperator.LESS_EQUAL:
+        if threshold.operator == ComparisonOperator.LESS_EQUAL:
             return value <= threshold.value
-        elif threshold.operator == ComparisonOperator.LESS_THAN:
+        if threshold.operator == ComparisonOperator.LESS_THAN:
             return value < threshold.value
         return False

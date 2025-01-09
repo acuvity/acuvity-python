@@ -1,7 +1,7 @@
 from enum import Enum, auto
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
-from ...models.extraction import Extraction, Textualdetection
+from ...models.extraction import Extraction
 from ..models.errors import ValidationError
 
 
@@ -83,7 +83,7 @@ class ResponseParser:
         try:
             return getter(extraction, guard_name, match_name)
         except Exception as e:
-            raise ValidationError(f"Error getting value for {guard_name}: {str(e)}")
+            raise ValidationError(f"Error getting value for {guard_name}: {str(e)}") from e
 
     def _get_exploit_value(
         self,
@@ -122,12 +122,11 @@ class ResponseParser:
             if value is not None:
                 return True, float(value)
             return False, 0.0
-        else:
-            # Look for any key starting with prefix
-            for key, value in extraction.topics.items():
-                if key.startswith(prefix):
-                    return True, float(value)
-            return False, 0.0
+        # Look for any key starting with prefix
+        for key, value in extraction.topics.items():
+            if key.startswith(prefix):
+                return True, float(value)
+        return False, 0.0
 
     def _get_language_value(
         self,
@@ -142,7 +141,8 @@ class ResponseParser:
         if guard_name == 'gibberish':
             value = extraction.languages.get('gibberish', 1.0)
             return True, value
-        elif match_name:
+
+        if match_name:
             value = extraction.languages.get(match_name)
         else:
             return True, 1.0
@@ -198,11 +198,12 @@ class ResponseParser:
                 return False, 0, 0
             score = max(pii_matches)
             return True, score, count
-        else:
-            # Return all PII values
-            if not extraction.pi_is:
-                return False, 0, 0
-            return True, 1, len(extraction.pi_is)
+
+        # Return all PII values
+        # Return all PII values if no match_name is provided
+        exists = bool(extraction.pi_is)
+        count = len(extraction.pi_is) if extraction.pi_is else 0
+        return exists, 1.0 if exists else 0.0, count
 
     def _get_pattern_value(
         self,

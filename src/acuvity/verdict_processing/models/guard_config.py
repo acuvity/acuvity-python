@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
@@ -177,12 +176,11 @@ class GuardConfigParser:
                 redact=match_data.get('redact', False),
                 count_threshold=match_data.get('count_threshold')
             )
-        else:
-            return MatchConfig(
-                threshold=threshold,
-                redact= False,
-                count_threshold=0
-            )
+        return MatchConfig(
+            threshold=threshold,
+            redact= False,
+            count_threshold=0
+        )
 
     @property
     def match_guards(self) -> List[GuardConfig]:

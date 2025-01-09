@@ -1,16 +1,14 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 from ...models.scanresponse import Scanresponse
 from ...utils.logger import get_default_logger
 from ..constants import (
-    GUARD_TO_SECTION,
-    TOPIC_PREFIXES,
     ComparisonOperator,
     Verdict,
     analyzer_id_name_map,
 )
-from ..models.errors import ConfigurationError, ValidationError
+from ..models.errors import ConfigurationError
 from ..models.guard_config import GuardConfig, GuardConfigParser
 from ..models.result import CheckResult, ProcessorResult
 from ..util.response_parser import ResponseParser
@@ -107,6 +105,8 @@ class GuardProcessor:
         self.guard_config_parser = GuardConfigParser(analyzer_id_name_map)
         self.guard_config_parser.parse_config(guard_config)
 
+        self._response: Optional[Scanresponse] = None
+
     def process_guard_check(
         self,
         guard_name: str,
@@ -115,6 +115,8 @@ class GuardProcessor:
     ) -> CheckResult:
         """Process a single guard check with action consideration."""
         try:
+            if self._response is None:
+                raise ValueError("Response cannot be nil to process the verdict")
             # Get raw evaluation
             check_result = self._evaluator.evaluate(self._response, guard_name, threshold, match_name)
 
@@ -148,7 +150,7 @@ class GuardProcessor:
         if not guard.matches:
             return results
 
-        for match_name, match_config in guard.matches.items():
+        for match_name, _ in guard.matches.items():
             thd = guard.threshold
             if thd is None:
                 thd = self.DEFAULT_THRESHOLD
