@@ -36,7 +36,7 @@ class Apex(BaseSDK):
 
         if server_url is not None:
             base_url = server_url
-        req = self.build_request(
+        req = self._build_request(
             method="GET",
             path="/_acuvity/analyzers",
             base_url=base_url,
@@ -123,7 +123,7 @@ class Apex(BaseSDK):
 
         if server_url is not None:
             base_url = server_url
-        req = self.build_request_async(
+        req = self._build_request_async(
             method="GET",
             path="/_acuvity/analyzers",
             base_url=base_url,
@@ -219,7 +219,7 @@ class Apex(BaseSDK):
             request = utils.unmarshal(request, models.Policerequest)
         request = cast(models.Policerequest, request)
 
-        req = self.build_request(
+        req = self._build_request(
             method="POST",
             path="/_acuvity/police",
             base_url=base_url,
@@ -320,7 +320,7 @@ class Apex(BaseSDK):
             request = utils.unmarshal(request, models.Policerequest)
         request = cast(models.Policerequest, request)
 
-        req = self.build_request_async(
+        req = self._build_request_async(
             method="POST",
             path="/_acuvity/police",
             base_url=base_url,
@@ -421,7 +421,7 @@ class Apex(BaseSDK):
             request = utils.unmarshal(request, models.Scanrequest)
         request = cast(models.Scanrequest, request)
 
-        req = self.build_request(
+        req = self._build_request(
             method="POST",
             path="/_acuvity/scan",
             base_url=base_url,
@@ -522,7 +522,7 @@ class Apex(BaseSDK):
             request = utils.unmarshal(request, models.Scanrequest)
         request = cast(models.Scanrequest, request)
 
-        req = self.build_request_async(
+        req = self._build_request_async(
             method="POST",
             path="/_acuvity/scan",
             base_url=base_url,

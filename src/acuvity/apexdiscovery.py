@@ -76,9 +76,9 @@ def discover_apex(
                 raise ValueError(f"JWT Apex URL has no port or wrong scheme: {token_apex_url}")
             print(f"Using Apex URL from token: {domain}:{port}")
             return domain, port
-        else:
-            # we're assuming this must be a domain without a scheme
-            return token_apex_url, "443"
+
+        # we're assuming this must be a domain without a scheme
+        return token_apex_url, "443"
 
     # otherwise we extract the API URL from the token
     api_url = decoded_token["iss"]

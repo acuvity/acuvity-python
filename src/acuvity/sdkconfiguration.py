@@ -30,9 +30,9 @@ class SDKConfiguration:
     server_defaults: List[Dict[str, str]] = field(default_factory=List)
     language: str = "python"
     openapi_doc_version: str = "1.0"
-    sdk_version: str = "0.3.0"
-    gen_version: str = "2.483.1"
-    user_agent: str = "speakeasy-sdk/python 0.3.0 2.483.1 1.0 acuvity"
+    sdk_version: str = "0.4.0"
+    gen_version: str = "2.488.4"
+    user_agent: str = "speakeasy-sdk/python 0.4.0 2.488.4 1.0 acuvity"
     retry_config: OptionalNullable[RetryConfig] = Field(default_factory=lambda: UNSET)
     timeout_ms: Optional[int] = None
 
