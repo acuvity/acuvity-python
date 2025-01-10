@@ -164,9 +164,9 @@ class GuardProcessor:
 
         return results
 
-    def get_verdict(self, response: Scanresponse) -> str:
+    def get_verdict(self, response: Scanresponse) -> ProcessorResult:
         self._response = response
-        return self.process_config(self.guard_config_parser).verdict
+        return self.process_config(self.guard_config_parser)
 
     def process_config(self, config_parser: GuardConfigParser) -> ProcessorResult:
         """Process the complete guard configuration."""
