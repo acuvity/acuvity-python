@@ -12,7 +12,7 @@ class GuardType(Enum):
     LANGUAGE = auto()        # Can be direct or match-based
     INTENT = auto()          # Match-based in intent
     PII = auto()            # Both direct values and textual detection counts
-    PATTERN = auto()         # In secrets section
+    SECRETS = auto()         # In secrets section
     KEYWORD = auto()         # In textual detections with count
     MODALITY = auto()        # Special handling for modalities list
 
@@ -36,7 +36,7 @@ GUARD_TYPES = {
     'gibberish': GuardType.LANGUAGE,
     'generic_classifier': GuardType.INTENT,
     'pii_detector': GuardType.PII,
-    'pattern_detector': GuardType.PATTERN,
+    'secrets_detector': GuardType.SECRETS,
     'keyword_detector': GuardType.KEYWORD,
     'modality': GuardType.MODALITY
 }
@@ -71,7 +71,7 @@ class ResponseParser:
             GuardType.LANGUAGE: self._get_language_value,
             GuardType.INTENT: self._get_intent_value,
             GuardType.PII: self._get_pii_value,
-            GuardType.PATTERN: self._get_pattern_value,
+            GuardType.SECRETS: self._get_secrets_value,
             GuardType.KEYWORD: self._get_keyword_value,
             GuardType.MODALITY: self._get_modality_value
         }
@@ -151,21 +151,6 @@ class ResponseParser:
             return False, 0
         return True, float(value)
 
-    def _get_intent_value(
-        self,
-        extraction: Extraction,
-        _: str,
-        match_name: Optional[str]
-    ) -> tuple[bool, float]:
-        """Get value from intent section."""
-        if not extraction.intent:
-            return False, 0
-        if not match_name:
-            return True, 1
-
-        value = extraction.intent.get(match_name, 1)
-        return True, float(value)
-
     def _get_pii_value(
         self,
         extraction: Extraction,
@@ -205,7 +190,7 @@ class ResponseParser:
         count = len(extraction.pi_is) if extraction.pi_is else 0
         return exists, 1.0 if exists else 0.0, count
 
-    def _get_pattern_value(
+    def _get_secrets_value(
         self,
         extraction: Extraction,
         _: str,
@@ -214,10 +199,11 @@ class ResponseParser:
         """Get value from secrets section."""
         if not extraction.secrets:
             return False
-        if not match_name:
-            raise ValidationError("Match name required for pattern guard")
+        if match_name:
+            value = extraction.secrets.get(match_name)
+        else:
+            return len(extraction.secrets) > 0
 
-        value = extraction.secrets.get(match_name)
         if value is None:
             return False
         return True
@@ -248,6 +234,21 @@ class ResponseParser:
         max_score = max(keyword_detections)
         # Return count of detections
         return True, max_score, len(keyword_detections)
+
+    def _get_intent_value(
+        self,
+        extraction: Extraction,
+        _: str,
+        match_name: Optional[str]
+    ) -> tuple[bool, float]:
+        """Get value from intent section."""
+        if not extraction.intent:
+            return False, 0
+        if not match_name:
+            return True, 1
+
+        value = extraction.intent.get(match_name, 1)
+        return True, float(value)
 
     def _get_modality_value(
         self,

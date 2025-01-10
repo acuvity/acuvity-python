@@ -5,6 +5,7 @@ from typing import Dict
 import pytest
 import yaml
 
+from acuvity.verdict_processing.constants import analyzer_id_name_map
 from acuvity.verdict_processing.models.errors import (
     GuardParserError,
     ThresholdParsingError,
@@ -24,15 +25,7 @@ def create_test_config(tmp_path: Path, content: str) -> Path:
 class TestGuardConfigParser:
     @pytest.fixture
     def analyzer_map(self) -> Dict[str, str]:
-        return {
-            'en-text-ner-detector': 'pii_detector',
-            'en-text-prompt_injection-detector': 'prompt_injection',
-            'en-text-toxicity-detector': 'toxicity',
-            'en-text-jailbreak-detector': 'jail_break',
-            'en-text-bias-detector': 'bias',
-            'en-text-harmful-content-detector': 'harmful_content',
-            'text-keyword-detector': 'keyword_detector'
-        }
+        return analyzer_id_name_map
 
     @pytest.fixture
     def parser(self, analyzer_map):

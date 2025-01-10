@@ -277,3 +277,14 @@ def test_pii_empty_section(parser):
     assert exists is False
     assert value == 0.0
     assert count == 0
+
+def test_secrets(parser):
+    extraction = Extraction(
+        secrets={
+            "credentials": 1.0
+        }
+    )
+    guard_name = 'secrets_detector'
+    exists = parser.get_value(extraction, guard_name)
+
+    assert exists is True

@@ -76,7 +76,7 @@ analyzer_id_name_map: Dict[str, str] = {
             'text-language-classifier': 'language',
             'modality-detector': 'modality',
             'en-text-ner-detector': 'pii_detector',
-            'text-pattern-detector': 'pattern_detector',
+            'text-pattern-detector': 'secrets_detector',
             'en-text-generic-classifier': 'generic_classifier',
             'text-keyword-detector': 'keyword_detector'
         }

@@ -57,7 +57,7 @@ class CheckEvaluator:
             # exploit, topic, classification, language
             elif isinstance(result, tuple) and len(result) == 2:  # (bool, float)
                 exists, value = result
-            # pattern and modality
+            # secrets and modality
             elif isinstance(result, bool):  # bool only
                 exists, value = result, 1.0
             else:
