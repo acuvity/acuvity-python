@@ -22,9 +22,9 @@ class CheckEvaluator:
     This evaluator determines if conditions are met based on thresholds.
     """
 
-    def __init__(self, parser: ResponseParser, threshold_helper: ThresholdHelper):
-        self._parser = parser
-        self._threshold_helper = threshold_helper
+    def __init__(self):
+        self._parser = ResponseParser()  # Use the existing ResponseParser
+        self._threshold_helper = ThresholdHelper()
         self._response = None
 
     def evaluate(
@@ -98,9 +98,7 @@ class GuardProcessor:
     DEFAULT_THRESHOLD = Threshold(value=0.0, operator=ComparisonOperator.GREATER_THAN)
 
     def __init__(self, guard_config: Union[str, Path, Dict]):
-        self._parser = ResponseParser()
-        self._threshold_helper = ThresholdHelper()
-        self._evaluator = CheckEvaluator(self._parser, self._threshold_helper)
+        self._evaluator = CheckEvaluator()
 
         self.guard_config_parser = GuardConfigParser(analyzer_id_name_map)
         self.guard_config_parser.parse_config(guard_config)

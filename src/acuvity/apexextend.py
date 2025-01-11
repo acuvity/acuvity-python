@@ -18,7 +18,7 @@ from acuvity.models import (
     Scanresponse,
     Type,
 )
-from acuvity.models.scanresponsewrapper import ScanResponseWrapper
+from acuvity.models.scanresponsewrapper import ScanResponseWithVerdict
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.verdict_processing.constants import analyzer_id_name_map
 from acuvity.verdict_processing.models.guard_config import GuardConfigParser
@@ -55,14 +55,49 @@ class ApexExtended(Apex):
         """
         if self._available_analyzers is None:
             self._available_analyzers = self.list_analyzers()
-        analyzer_ids = [a.id for a in self._available_analyzers
-                       if (group is None or a.group == group) and a.id is not None]
+        # analyzer_ids = [a.id for a in self._available_analyzers
+        #                if (group is None or a.group == group) and a.id is not None]
 
+        return sorted([ a.id for a in self._available_analyzers if (group is None or a.group == group) and a.id is not None ])
         # Map IDs to friendly names and filter out any that aren't in our mapping
-        mapped_names = [self.analyzer_id_name_map.get(id_) for id_ in analyzer_ids]
+        # mapped_names = [self.analyzer_id_name_map.get(id_) for id_ in analyzer_ids]
 
-        # Filter out None values and sort
-        return sorted([name for name in mapped_names if name is not None])
+        # # Filter out None values and sort
+        # return sorted([name for name in mapped_names if name is not None])
+
+    def list_detectable_secrets(self) -> list[str]:
+        """
+        list_secrets: returns a list of all available secrets that can be detected.
+        """
+        secrets_detector: list[str] = []
+        if self._available_analyzers is None:
+            self._available_analyzers = self.list_analyzers()
+        for analyzer in self._available_analyzers:
+            if analyzer.detectors:
+                secrets_detector = [
+                    str(detector.name)
+                    for detector in analyzer.detectors
+                    if detector.group == "Secrets"
+                ]
+                return secrets_detector
+        return secrets_detector
+
+    def list_detectable_pii(self) -> list[str]:
+        """
+        list_pii: returns a list of all available secrets that can be detected.
+        """
+        secrets_detector: list[str] = []
+        if self._available_analyzers is None:
+            self._available_analyzers = self.list_analyzers()
+        for analyzer in self._available_analyzers:
+            if analyzer.detectors:
+                secrets_detector = [
+                    str(detector.name)
+                    for detector in analyzer.detectors
+                    if detector.group == "PIIs"
+                ]
+                return secrets_detector
+        return secrets_detector
 
     def scan(
         self,
@@ -78,7 +113,7 @@ class ApexExtended(Apex):
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
-    ) -> ScanResponseWrapper:
+    ) -> ScanResponseWithVerdict:
         """
         scan() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a Scanresponse object on success, and raises different exceptions on failure.
@@ -112,7 +147,7 @@ class ApexExtended(Apex):
             content_policy=content_policy,
             guard_config=guard_config,
         ))
-        return ScanResponseWrapper(raw_scan_response)
+        return ScanResponseWithVerdict(raw_scan_response, guard_config)
 
     async def scan_async(
         self,
@@ -127,7 +162,7 @@ class ApexExtended(Apex):
         keywords: Optional[List[str]] = None,
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
-    ) -> ScanResponseWrapper:
+    ) -> ScanResponseWithVerdict:
         """
         scan_async() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a Scanresponse object on success, and raises different exceptions on failure.
@@ -159,7 +194,7 @@ class ApexExtended(Apex):
             access_policy=access_policy,
             content_policy=content_policy,
         ))
-        return ScanResponseWrapper(raw_response)
+        return ScanResponseWithVerdict(raw_response)
 
     def police(
         self,
@@ -364,18 +399,17 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[ScanrequestType,str] = ScanrequestType.INPUT,
         annotations: Optional[Dict[str, str]] = None,
-        analyzers: Optional[List[str]] = None,
+        analyzers: Optional[List[str]] = [],
         bypass_hash: Optional[str] = None,
         anonymization: Union[ScanrequestAnonymization, str, None] = None,
-        redactions: Optional[List[str]] = None,
-        keywords: Optional[List[str]] = None,
+        redactions: Optional[List[str]] = [],
+        keywords: Optional[List[str]] = [],
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
     ) -> Scanrequest:
         request = Scanrequest.model_construct()
 
-        # Convert None to [] so we can safely use list methods
         keywords = keywords or []
         redactions = redactions or []
         analyzers = analyzers or []
@@ -446,6 +480,7 @@ class ApexExtended(Apex):
         if not isinstance(analyzers, List):
             raise ValueError("analyzers must be a list")
         analyzers_list = self.list_analyzer_groups() + self.list_analyzer_names()
+        print("\n analyzer list -->", analyzers_list)
         for analyzer in analyzers:
             if not isinstance(analyzer, str):
                 raise ValueError("analyzers must be strings")

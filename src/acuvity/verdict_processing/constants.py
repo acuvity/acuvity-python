@@ -15,14 +15,6 @@ class ComparisonOperator(Enum):
     LESS_EQUAL = '<='
     LESS_THAN = '<'
 
-class ThresholdOperator(str, Enum):
-    """Enumeration for threshold comparison operators."""
-    GREATER_THAN = ">"
-    GREATER_THAN_OR_EQUAL = ">="
-    LESS_THAN = "<"
-    LESS_THAN_OR_EQUAL = "<="
-    EQUAL = "="
-
 # Default action for guards
 DEFAULT_ACTION = "deny"
 
@@ -80,3 +72,21 @@ analyzer_id_name_map: Dict[str, str] = {
             'en-text-generic-classifier': 'generic_classifier',
             'text-keyword-detector': 'keyword_detector'
         }
+
+class GuardName(Enum):
+    PROMPT_INJECTION = "prompt_injection"
+    JAIL_BREAK = "jail_break"
+    MALICIOUS_URL = "malicious_url"
+    TOXICITY = "toxicity"
+    BIAS = "bias"
+    HARMFUL_CONTENT = "harmful_content"
+    IMAGE_CLASSIFIER = "image_classifier"
+    CORPORATE_CLASSIFIER = "corporate_classifier"
+    CONTENT_CLASSIFIER = "content_classifier"
+    GIBBERISH = "gibberish"
+    LANGUAGE = "language"
+    MODALITY = "modality"
+    PII_DETECTOR = "pii_detector"
+    SECRETS_DETECTOR = "secrets_detector"
+    GENERIC_CLASSIFIER = "generic_classifier"
+    KEYWORD_DETECTOR = "keyword_detector"
