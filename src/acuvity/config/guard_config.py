@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
-from ..verdict_processing.constants import ComparisonOperator
+from ..verdict_processing.constants import ComparisonOperator, analyzer_id_name_map
 from ..verdict_processing.util.threshold_helper import Threshold
 from ..verdict_processing.models.errors import ConfigValidationError, GuardConfigError, ThresholdParsingError
 
@@ -40,7 +40,7 @@ class GuardConfig:
     """
 
     DEFAULT_THRESHOLD = Threshold(0.0, ComparisonOperator.GREATER_THAN)
-    def __init__(self, analyzer_id_name_map: Dict[str, str]):
+    def __init__(self, config: Union[str, Path, Dict]):
         self._parsed_guards: List[Guard] = []
         """
         Initialize parser with analyzer mapping.
@@ -50,6 +50,7 @@ class GuardConfig:
         """
         self.analyzer_id_name_map = analyzer_id_name_map
         self.analyzer_name_id_map = {v: k for k, v in analyzer_id_name_map.items()}
+        self._parse_config(config)
 
     @staticmethod
     def load_yaml(path: Union[str, Path]) -> Dict[str, Any]:
@@ -71,7 +72,7 @@ class GuardConfig:
         except (yaml.YAMLError, OSError) as e:
             raise GuardConfigError(f"Failed to load config file: {e}") from e
 
-    def parse_config(self, config: Union[str, Path, Dict]) -> List[Guard]:
+    def _parse_config(self, config: Union[str, Path, Dict]) -> List[Guard]:
         """
         Parse guard configuration from file or dictionary.
 

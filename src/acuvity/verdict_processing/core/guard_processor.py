@@ -100,8 +100,7 @@ class GuardProcessor:
     def __init__(self, guard_config: Union[str, Path, Dict]):
         self._evaluator = CheckEvaluator()
 
-        self.guard_config_parser = GuardConfig(analyzer_id_name_map)
-        self.guard_config_parser.parse_config(guard_config)
+        self.guard_config_parser = GuardConfig(guard_config)
 
         self._response: Optional[Scanresponse] = None
 
@@ -118,6 +117,7 @@ class GuardProcessor:
             # Get raw evaluation
             check_result = self._evaluator.evaluate(self._response, guard_name, threshold, match_name)
 
+            # SATYAMTODO: Why are we returning a new checkresult when thats what is coming here ?
             return CheckResult(
                 verdict=check_result.verdict,
                 guard_name=guard_name,

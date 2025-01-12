@@ -15,12 +15,10 @@ from acuvity.models import (
     Scanrequest,
     ScanrequestAnonymization,
     ScanrequestType,
-    Scanresponse,
     Type,
 )
 from acuvity.models.scanresponsewrapper import ScanResponseWithVerdict
 from acuvity.sdkconfiguration import SDKConfiguration
-from acuvity.verdict_processing.constants import analyzer_id_name_map
 from acuvity.config.guard_config import GuardConfig
 
 from .apex import Apex
@@ -30,8 +28,6 @@ class ApexExtended(Apex):
     def __init__(self, sdk_config: SDKConfiguration) -> None:
         super().__init__(sdk_config)
         self._available_analyzers: Optional[List[Analyzer]] = None
-        # Initialize ID to name mapping
-        self.analyzer_id_name_map: Dict[str, str] = analyzer_id_name_map
 
     def list_analyzer_groups(self) -> List[str]:
         """
@@ -55,12 +51,8 @@ class ApexExtended(Apex):
         """
         if self._available_analyzers is None:
             self._available_analyzers = self.list_analyzers()
-        # analyzer_ids = [a.id for a in self._available_analyzers
-        #                if (group is None or a.group == group) and a.id is not None]
 
         return sorted([ a.id for a in self._available_analyzers if (group is None or a.group == group) and a.id is not None ])
-        # Map IDs to friendly names and filter out any that aren't in our mapping
-        # mapped_names = [self.analyzer_id_name_map.get(id_) for id_ in analyzer_ids]
 
         # # Filter out None values and sort
         # return sorted([name for name in mapped_names if name is not None])
@@ -469,8 +461,7 @@ class ApexExtended(Apex):
 
         # now here check the guard config and parse it for the analyzers, redaction and keywords.
         if guard_config:
-            guard_config_parser = GuardConfig(self.analyzer_id_name_map)
-            guard_config_parser.parse_config(guard_config)
+            guard_config_parser = GuardConfig(guard_config)
 
             keywords.extend(guard_config_parser.keywords or [])
             redactions.extend(guard_config_parser.redaction_keys or [])
