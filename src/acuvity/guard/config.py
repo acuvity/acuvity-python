@@ -44,7 +44,7 @@ class GuardConfig:
         Initialize parser with analyzer mapping.
 
         Args:
-            analyzer_id_name_map: Mapping from analyzer IDs to names
+            config: Configuration as a string, filepath or dictionary
         """
         self._parsed_guards: List[Guard] = []
 
@@ -187,6 +187,16 @@ class GuardConfig:
         """
         return [guard for guard in self._parsed_guards
                 if not guard.matches]
+
+    @property
+    def guard_names(self) -> List[GuardName]:
+        """
+        Returns the list of all guards configured
+        """
+        names = []
+        for g in self._parsed_guards:
+            names.append(g.name)
+        return names
 
     @property
     def redaction_keys(self) -> List[str]:

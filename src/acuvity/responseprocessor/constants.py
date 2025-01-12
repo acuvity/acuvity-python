@@ -2,6 +2,8 @@ from enum import Enum
 from typing import Dict
 
 
+from ..guard.constants import GuardName
+
 class Verdict(str, Enum):
     """Enumeration for check verdicts."""
     PASS = "PASS"
@@ -10,57 +12,22 @@ class Verdict(str, Enum):
 # Default action for guards
 DEFAULT_ACTION = "deny"
 
-# Base section mapping for each guard
-GUARD_TO_SECTION = {
-    # Exploits section
-    'prompt_injection': 'exploits',
-    'jail_break': 'exploits',
-    'malicious_url': 'exploits',
+guardname_analyzer_id_map: Dict[GuardName, str] = {
+    # Exploit guards
+    GuardName.PROMPT_INJECTION: 'en-text-prompt_injection-detector',
+    GuardName.JAIL_BREAK: 'en-text-jailbreak-detector',
+    GuardName.MALICIOUS_URL: 'url-malicious-detector',
 
-    # Topics section guards
-    'toxicity': 'topics',
-    'bias': 'topics',
-    'harmful_content': 'topics',
-    'image_classifier': 'topics',
-    'corporate_classifier': 'topics',
-    'content_classifier': 'topics',
+    # Topic guards with prefixes
+    GuardName.TOXICITY: 'en-text-toxicity-detector',
+    GuardName.BIAS: 'en-text-bias-detector',
+    GuardName.HARMFUL_CONTENT: 'en-text-harmful-content-detector',
 
-    # Languages section
-    'gibberish': 'languages',
-    'language': 'languages',
-
-    # Other sections
-    'modality': 'modalities',
-    'pii_detector': 'piis',
-    'pattern_detector': 'detections',
-    'generic_classifier': 'intent'
+    # Other guards
+    GuardName.LANGUAGE: 'text-language-classifier',
+    GuardName.GIBBERISH:'text-gibberish-classifier',
+    GuardName.PII_DETECTOR: 'en-text-ner-detector',
+    GuardName.SECRETS_DETECTOR:'text-pattern-detector',
+    GuardName.KEYWORD_DETECTOR: 'text-keyword-detector',
+    GuardName.MODALITY: 'modality-detector',
 }
-
-# Special prefixes for topics section
-TOPIC_PREFIXES = {
-    'toxicity': 'content/toxic',
-    'bias': 'content/bias',
-    'harmful_content': 'content/harmful',
-    'image_classifier': 'image',
-    'corporate_classifier': 'department',
-    'content_classifier': 'category'
-}
-
-analyzer_id_name_map: Dict[str, str] = {
-            'en-text-prompt_injection-detector': 'prompt_injection',
-            'en-text-jailbreak-detector': 'jail_break',
-            'url-malicious-detector': 'malicious_url',
-            'en-text-toxicity-detector': 'toxicity',
-            'en-text-bias-detector': 'bias',
-            'en-text-harmful-content-detector': 'harmful_content',
-            'image-classifier': 'image_classifier',
-            'en-text-corporate-classifier': 'corporate_classifier',
-            'en-text-content-classifier': 'content_classifier',
-            'text-gibberish-classifier': 'gibberish',
-            'text-language-classifier': 'language',
-            'modality-detector': 'modality',
-            'en-text-ner-detector': 'pii_detector',
-            'text-pattern-detector': 'secrets_detector',
-            'en-text-generic-classifier': 'generic_classifier',
-            'text-keyword-detector': 'keyword_detector'
-        }

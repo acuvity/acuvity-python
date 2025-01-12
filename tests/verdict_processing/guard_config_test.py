@@ -1,17 +1,18 @@
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict
 
 import pytest
 import yaml
 
-from acuvity.responseprocessor.constants import analyzer_id_name_map
 from acuvity.guard.errors import (
     GuardConfigError,
     ThresholdParsingError,
 )
-from acuvity.guard.config import (
+from acuvity.guard.constants import (
     ComparisonOperator,
+)
+
+from acuvity.guard.config import (
     GuardConfig,
 )
 
@@ -23,10 +24,6 @@ def create_test_config(tmp_path: Path, content: str) -> Path:
     return config_path
 
 class TestGuardConfig:
-    @pytest.fixture
-    def analyzer_map(self) -> Dict[str, str]:
-        return analyzer_id_name_map
-
     @pytest.fixture
     def parser(self, analyzer_map):
         return GuardConfig(analyzer_map)

@@ -18,6 +18,7 @@ from acuvity.models import (
     Type,
 )
 from acuvity.responseprocessor.responseverdict import ScanResponseWithVerdict
+from acuvity.responseprocessor.constants import guardname_analyzer_id_map
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.guard.config import GuardConfig
 
@@ -473,7 +474,11 @@ class ApexExtended(Apex):
         if guard_config:
             keywords.extend(guard_config.keywords or [])
             redactions.extend(guard_config.redaction_keys or [])
-            # analyzers.extend(guard_config.analyzer_ids or [])
+            guard_names = guard_config.guard_names or []
+            for guard_name in guard_names:
+                analyzer_id = guardname_analyzer_id_map.get(guard_name)
+                if analyzer_id:
+                    analyzers.append(analyzer_id)
 
         # analyzers must be a list of strings
         if not isinstance(analyzers, List):
