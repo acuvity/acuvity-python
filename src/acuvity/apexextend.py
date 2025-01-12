@@ -21,7 +21,7 @@ from acuvity.models import (
 from acuvity.models.scanresponsewrapper import ScanResponseWithVerdict
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.verdict_processing.constants import analyzer_id_name_map
-from acuvity.verdict_processing.models.guard_config import GuardConfigParser
+from acuvity.config.guard_config import GuardConfig
 
 from .apex import Apex
 
@@ -469,7 +469,7 @@ class ApexExtended(Apex):
 
         # now here check the guard config and parse it for the analyzers, redaction and keywords.
         if guard_config:
-            guard_config_parser = GuardConfigParser(self.analyzer_id_name_map)
+            guard_config_parser = GuardConfig(self.analyzer_id_name_map)
             guard_config_parser.parse_config(guard_config)
 
             keywords.extend(guard_config_parser.keywords or [])

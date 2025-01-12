@@ -7,12 +7,12 @@ import yaml
 
 from acuvity.verdict_processing.constants import analyzer_id_name_map
 from acuvity.verdict_processing.models.errors import (
-    GuardParserError,
+    GuardConfigError,
     ThresholdParsingError,
 )
-from acuvity.verdict_processing.models.guard_config import (
+from acuvity.config.guard_config import (
     ComparisonOperator,
-    GuardConfigParser,
+    GuardConfig,
 )
 
 
@@ -22,14 +22,14 @@ def create_test_config(tmp_path: Path, content: str) -> Path:
     config_path.write_text(dedent(content))
     return config_path
 
-class TestGuardConfigParser:
+class TestGuardConfig:
     @pytest.fixture
     def analyzer_map(self) -> Dict[str, str]:
         return analyzer_id_name_map
 
     @pytest.fixture
     def parser(self, analyzer_map):
-        return GuardConfigParser(analyzer_map)
+        return GuardConfig(analyzer_map)
 
     def test_parse_threshold(self, parser):
         threshold = parser._parse_threshold('>= 0.8')
@@ -82,7 +82,7 @@ class TestGuardConfigParser:
         assert person_match.threshold.operator == ComparisonOperator.GREATER_THAN
         assert person_match.redact is False
 
-    def test_parse_content_safety(self, parser: GuardConfigParser, tmp_path):
+    def test_parse_content_safety(self, parser: GuardConfig, tmp_path):
         config_yaml = """
         guardrails:
           - name: "prompt_injection"
@@ -125,7 +125,7 @@ class TestGuardConfigParser:
         """
 
         config_path = create_test_config(tmp_path, config_yaml)
-        with pytest.raises(GuardParserError):
+        with pytest.raises(GuardConfigError):
             parser.parse_config(config_path)
 
     def test_unknown_analyzer(self, parser, tmp_path):
@@ -135,10 +135,10 @@ class TestGuardConfigParser:
         """
 
         config_path = create_test_config(tmp_path, config_yaml)
-        with pytest.raises(GuardParserError):
+        with pytest.raises(GuardConfigError):
             parser.parse_config(config_path)
 
-    def test_keyword_guard(self, parser: GuardConfigParser, tmp_path: Path):
+    def test_keyword_guard(self, parser: GuardConfig, tmp_path: Path):
         config_yaml = '''
         guardrails:
           - name: "keyword_detector"
@@ -170,7 +170,7 @@ class TestGuardConfigParser:
         assert len(redact_keys) == 2
 
 
-    def test_guard_categorization(self, parser: GuardConfigParser, tmp_path: Path):
+    def test_guard_categorization(self, parser: GuardConfig, tmp_path: Path):
         config_yaml = '''
         guardrails:
           - name: "pii_detector"
@@ -211,7 +211,7 @@ class TestGuardConfigParser:
 
         config_path = create_test_config(tmp_path, config_yaml)
 
-        with pytest.raises(GuardParserError):
+        with pytest.raises(GuardConfigError):
             parser.parse_config(config_path)
 
 if __name__ == '__main__':

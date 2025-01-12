@@ -7,11 +7,11 @@ class ConfigurationError(VerdictProcessingError):
 class ValidationError(VerdictProcessingError):
     """Raised when validation fails."""
 
-class GuardParserError(Exception):
+class GuardConfigError(Exception):
     """Base exception for guard parser errors"""
 
-class ConfigValidationError(GuardParserError):
+class ConfigValidationError(GuardConfigError):
     """Raised when config validation fails"""
 
-class ThresholdParsingError(GuardParserError):
+class ThresholdParsingError(GuardConfigError):
     """Raised when threshold parsing fails"""

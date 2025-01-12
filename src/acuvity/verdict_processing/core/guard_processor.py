@@ -9,7 +9,7 @@ from ..constants import (
     analyzer_id_name_map,
 )
 from ..models.errors import ConfigurationError
-from ..models.guard_config import GuardConfig, GuardConfigParser
+from ...config.guard_config import Guard, GuardConfig
 from ..models.result import CheckResult, ProcessorResult
 from ..util.response_parser import ResponseParser
 from ..util.threshold_helper import Threshold, ThresholdHelper
@@ -100,7 +100,7 @@ class GuardProcessor:
     def __init__(self, guard_config: Union[str, Path, Dict]):
         self._evaluator = CheckEvaluator()
 
-        self.guard_config_parser = GuardConfigParser(analyzer_id_name_map)
+        self.guard_config_parser = GuardConfig(analyzer_id_name_map)
         self.guard_config_parser.parse_config(guard_config)
 
         self._response: Optional[Scanresponse] = None
@@ -131,7 +131,7 @@ class GuardProcessor:
             logger.debug("Error processing guard %s ", {guard_name})
             raise e
 
-    def _process_simple_guard(self, guard: GuardConfig) -> CheckResult:
+    def _process_simple_guard(self, guard: Guard) -> CheckResult:
         """Process a simple guard (no matches)."""
         thd = guard.threshold
         if thd is None:
@@ -142,7 +142,7 @@ class GuardProcessor:
             thd
         )
 
-    def _process_match_guard(self, guard: GuardConfig) -> List[CheckResult]:
+    def _process_match_guard(self, guard: Guard) -> List[CheckResult]:
         """Process a guard with matches."""
         results = []
         if not guard.matches:
@@ -166,7 +166,7 @@ class GuardProcessor:
         self._response = response
         return self.process_config(self.guard_config_parser)
 
-    def process_config(self, config_parser: GuardConfigParser) -> ProcessorResult:
+    def process_config(self, config_parser: GuardConfig) -> ProcessorResult:
         """Process the complete guard configuration."""
         try:
             failed_checks = []

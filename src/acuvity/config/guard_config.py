@@ -6,28 +6,28 @@ from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
-from ..constants import ComparisonOperator
-from ..util.threshold_helper import Threshold
-from .errors import ConfigValidationError, GuardParserError, ThresholdParsingError
+from ..verdict_processing.constants import ComparisonOperator
+from ..verdict_processing.util.threshold_helper import Threshold
+from ..verdict_processing.models.errors import ConfigValidationError, GuardConfigError, ThresholdParsingError
 
 
 @dataclass(frozen=True)
-class MatchConfig:
+class Match:
     """Immutable match configuration"""
     threshold: Optional[Threshold] = None
     redact: bool = False
     count_threshold: Optional[int] = None
 
 @dataclass(frozen=True)
-class GuardConfig:
+class Guard:
     """Immutable guard configuration"""
     name: str
     analyzer_id: str
-    matches: Dict[str, MatchConfig]
+    matches: Dict[str, Match]
     threshold: Optional[Threshold] = None
     count_threshold: Optional[int] = None
 
-class GuardConfigParser:
+class GuardConfig:
     """
     Parser for guard configuration files.
 
@@ -41,7 +41,7 @@ class GuardConfigParser:
 
     DEFAULT_THRESHOLD = Threshold(0.0, ComparisonOperator.GREATER_THAN)
     def __init__(self, analyzer_id_name_map: Dict[str, str]):
-        self._parsed_guards: List[GuardConfig] = []
+        self._parsed_guards: List[Guard] = []
         """
         Initialize parser with analyzer mapping.
 
@@ -63,15 +63,15 @@ class GuardConfigParser:
             Parsed YAML content as dictionary
 
         Raises:
-            GuardParserError: If file cannot be read or parsed
+            GuardConfigError: If file cannot be read or parsed
         """
         try:
             with open(path, encoding='utf-8') as f:
                 return yaml.safe_load(f)
         except (yaml.YAMLError, OSError) as e:
-            raise GuardParserError(f"Failed to load config file: {e}") from e
+            raise GuardConfigError(f"Failed to load config file: {e}") from e
 
-    def parse_config(self, config: Union[str, Path, Dict]) -> List[GuardConfig]:
+    def parse_config(self, config: Union[str, Path, Dict]) -> List[Guard]:
         """
         Parse guard configuration from file or dictionary.
 
@@ -79,10 +79,10 @@ class GuardConfigParser:
             config: Path to YAML file or dictionary containing configuration
 
         Returns:
-            List of parsed GuardConfig objects
+            List of parsed Guard objects
 
         Raises:
-            GuardParserError: If configuration is invalid
+            GuardConfigError: If configuration is invalid
         """
         if isinstance(config, (str, Path)):
             config_data = self.load_yaml(config)
@@ -100,7 +100,7 @@ class GuardConfigParser:
             return self._parsed_guards
 
         except Exception as e:
-            raise GuardParserError(f"Failed to parse config: {e}") from e
+            raise GuardConfigError(f"Failed to parse config: {e}") from e
 
     def _validate_guard(self, guard: Dict) -> bool:
         """
@@ -153,7 +153,7 @@ class GuardConfigParser:
         except ValueError as e:
             raise ThresholdParsingError(f"Invalid threshold format: {e}") from e
 
-    def _parse_match(self, match_key: str, match_data: Dict) -> MatchConfig:
+    def _parse_match(self, match_key: str, match_data: Dict) -> Match:
         """
         Parse match configuration.
 
@@ -162,7 +162,7 @@ class GuardConfigParser:
             match_data: Match configuration dictionary
 
         Returns:
-            MatchConfig object
+            Match object
         """
         threshold = self.DEFAULT_THRESHOLD
         if match_data and 'threshold' in match_data:
@@ -171,35 +171,35 @@ class GuardConfigParser:
             except ThresholdParsingError as e:
                 raise ThresholdParsingError(f"Invalid threshold for match {match_key}") from e
 
-            return MatchConfig(
+            return Match(
                 threshold=threshold,
                 redact=match_data.get('redact', False),
                 count_threshold=match_data.get('count_threshold')
             )
-        return MatchConfig(
+        return Match(
             threshold=threshold,
             redact= False,
             count_threshold=0
         )
 
     @property
-    def match_guards(self) -> List[GuardConfig]:
+    def match_guards(self) -> List[Guard]:
         """
         Returns list of guard configurations that have match patterns.
 
         Returns:
-            List of GuardConfig objects that have 'matches' section
+            List of Guard objects that have 'matches' section
         """
         return [guard for guard in self._parsed_guards
                 if guard.matches]
 
     @property
-    def simple_guards(self) -> List[GuardConfig]:
+    def simple_guards(self) -> List[Guard]:
         """
         Returns list of guard configurations without match patterns.
 
         Returns:
-            List of GuardConfig objects that don't have 'matches' section
+            List of Guard objects that don't have 'matches' section
         """
         return [guard for guard in self._parsed_guards
                 if not guard.matches]
@@ -240,7 +240,7 @@ class GuardConfigParser:
         return ids
 
 
-    def _parse_guard(self, guard: Dict) -> GuardConfig:
+    def _parse_guard(self, guard: Dict) -> Guard:
         """
         Parse individual guard configuration.
 
@@ -248,7 +248,7 @@ class GuardConfigParser:
             guard: Guard configuration dictionary
 
         Returns:
-            GuardConfig object
+            Guard object
 
         Raises:
             ConfigValidationError: If guard configuration is invalid
@@ -271,7 +271,7 @@ class GuardConfigParser:
         for match_key, match_data in guard.get('matches', {}).items():
             matches[match_key] = self._parse_match(match_key, match_data)
 
-        return GuardConfig(
+        return Guard(
             name=name,
             analyzer_id=analyzer_id,
             matches=matches,
