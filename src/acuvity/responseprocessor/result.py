@@ -6,7 +6,7 @@ from .constants import Verdict
 
 
 @dataclass
-class CheckResult:
+class GuardVerdict:
     """Result of a single check operation."""
     verdict: Verdict
     guard_name: GuardName
@@ -15,9 +15,9 @@ class CheckResult:
     details: Optional[Dict[str, Any]] = None
 
 @dataclass
-class ProcessorResult:
+class OverallVerdicts:
     """Result of processing multiple checks or a configuration."""
     verdict: Verdict
-    failed_checks: list[CheckResult]
+    failed_checks: list[GuardVerdict]
     total_checks: int
     details: Optional[Dict[str, Any]] = None

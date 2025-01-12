@@ -1,8 +1,8 @@
 from .constants import Verdict
-from .result import CheckResult, ProcessorResult
+from .result import GuardVerdict, OverallVerdicts
 
 __all__ = [
     'Verdict',
-    'CheckResult',
-    'ProcessorResult',
+    'GuardVerdict',
+    'OverallVerdicts',
 ]

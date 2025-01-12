@@ -1,5 +1,4 @@
-from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import List, Optional
 
 from ..models.scanresponse import Scanresponse
 from ..utils.logger import get_default_logger
@@ -8,7 +7,7 @@ from .constants import (
     Verdict,
 )
 from ..guard.config import Guard, GuardConfig
-from .result import CheckResult, ProcessorResult
+from .result import GuardVerdict, OverallVerdicts
 from .parser import ResponseParser
 
 logger = get_default_logger()
@@ -28,7 +27,7 @@ class CheckEvaluator:
         response: Scanresponse,
         guard: Guard,
         match_name: Optional[str] = None
-    ) -> CheckResult:
+    ) -> GuardVerdict:
         """
         Evaluates a check condition using a Threshold object.
 
@@ -38,7 +37,7 @@ class CheckEvaluator:
             threshold: Threshold object containing value and operator
 
         Returns:
-            CheckResult with PASS if condition met, FAIL if not met
+            GuardVerdict with PASS if condition met, FAIL if not met
         """
         try:
             if not response.extractions:
@@ -59,7 +58,7 @@ class CheckEvaluator:
                 raise ValueError("Unexpected return type from get_value")
 
             if not exists:
-                return CheckResult(
+                return GuardVerdict(
                     verdict=Verdict.PASS,
                     guard_name=guard.name,
                     threshold=guard.threshold.value,
@@ -73,7 +72,7 @@ class CheckEvaluator:
             # Use ThresholdHelper for comparison
             comparison_result = guard.threshold.compare(value)
 
-            return CheckResult(
+            return GuardVerdict(
                 verdict=Verdict.FAIL if comparison_result else Verdict.PASS,
                 guard_name=guard.name,
                 threshold=guard.threshold.value,
@@ -90,18 +89,16 @@ class CheckEvaluator:
 class GuardProcessor:
     """Handles processing of guard configurations."""
 
-    def __init__(self, guard_config: Union[str, Path, Dict]):
+    def __init__(self, response: Scanresponse, guard_config: GuardConfig):
         self._evaluator = CheckEvaluator()
-
-        self.guard_config_parser = GuardConfig(guard_config)
-
-        self._response: Optional[Scanresponse] = None
+        self.guard_config = guard_config
+        self._response = response
 
     def process_guard_check(
         self,
         guard: Guard,
         match_name: Optional[str] = None
-    ) -> CheckResult:
+    ) -> GuardVerdict:
         """Process a single guard check with action consideration."""
         try:
             if self._response is None:
@@ -112,11 +109,11 @@ class GuardProcessor:
             logger.debug("Error processing guard %s ", {guard.name})
             raise e
 
-    def _process_simple_guard(self, guard: Guard) -> CheckResult:
+    def _process_simple_guard(self, guard: Guard) -> GuardVerdict:
         """Process a simple guard (no matches)."""
         return self.process_guard_check(guard)
 
-    def _process_match_guard(self, guard: Guard) -> List[CheckResult]:
+    def _process_match_guard(self, guard: Guard) -> List[GuardVerdict]:
         """Process a guard with matches."""
         results = []
         if not guard.matches:
@@ -131,29 +128,27 @@ class GuardProcessor:
 
         return results
 
-    def get_verdict(self, response: Scanresponse) -> ProcessorResult:
-        self._response = response
-        return self.process_config(self.guard_config_parser)
+    def verdicts(self) -> OverallVerdicts:
+        return self.process_config(self.guard_config)
 
-    def process_config(self, config_parser: GuardConfig) -> ProcessorResult:
+    def process_config(self, guard_config: GuardConfig) -> OverallVerdicts:
         """Process the complete guard configuration."""
         try:
             failed_checks = []
             total_checks = 0
 
-            for guard in config_parser.simple_guards:
+            for guard in guard_config.simple_guards:
                 result = self._process_simple_guard(guard)
                 total_checks += 1
                 if result.verdict == Verdict.FAIL:
                     failed_checks.append(result)
 
-            for guard in config_parser.match_guards:
+            for guard in guard_config.match_guards:
                 results = self._process_match_guard(guard)
                 total_checks += len(results)
                 failed_checks.extend([r for r in results if r.verdict == Verdict.FAIL])
 
-
-            return ProcessorResult(
+            return OverallVerdicts(
                 verdict=Verdict.FAIL if failed_checks else Verdict.PASS,
                 failed_checks=failed_checks,
                 total_checks=total_checks,

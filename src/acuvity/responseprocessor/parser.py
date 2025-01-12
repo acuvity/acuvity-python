@@ -11,7 +11,6 @@ class GuardType(Enum):
     EXPLOIT = auto()         # Direct access in exploits
     TOPIC = auto()           # Needs prefix in topics
     LANGUAGE = auto()        # Can be direct or match-based
-    INTENT = auto()          # Match-based in intent
     PII = auto()             # Both direct values and textual detection counts
     SECRETS = auto()         # In secrets section
     KEYWORD = auto()         # In textual detections with count
@@ -63,7 +62,6 @@ class ResponseParser:
             GuardType.EXPLOIT: self._get_exploit_value,
             GuardType.TOPIC: self._get_topic_value,
             GuardType.LANGUAGE: self._get_language_value,
-            GuardType.INTENT: self._get_intent_value,
             GuardType.PII: self._get_pii_value,
             GuardType.SECRETS: self._get_secrets_value,
             GuardType.KEYWORD: self._get_keyword_value,
@@ -231,21 +229,6 @@ class ResponseParser:
         max_score = max(keyword_detections)
         # Return count of detections
         return True, max_score, len(keyword_detections)
-
-    def _get_intent_value(
-        self,
-        extraction: Extraction,
-        _: str,
-        match_name: Optional[str]
-    ) -> tuple[bool, float]:
-        """Get value from intent section."""
-        if not extraction.intent:
-            return False, 0
-        if not match_name:
-            return True, 1
-
-        value = extraction.intent.get(match_name, 1)
-        return True, float(value)
 
     def _get_modality_value(
         self,
