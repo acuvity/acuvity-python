@@ -17,8 +17,8 @@ from acuvity.models import (
     ScanrequestType,
     Type,
 )
-from acuvity.responseprocessor.responseverdict import ScanResponseWithVerdict
-from acuvity.responseprocessor.constants import guardname_analyzer_id_map
+from acuvity.response.verdict import ResponseVerdict
+from acuvity.response.constants import guardname_analyzer_id_map
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.guard.config import GuardConfig
 
@@ -106,7 +106,7 @@ class ApexExtended(Apex):
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
-    ) -> ScanResponseWithVerdict:
+    ) -> ResponseVerdict:
         """
         scan() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a Scanresponse object on success, and raises different exceptions on failure.
@@ -144,7 +144,7 @@ class ApexExtended(Apex):
             content_policy=content_policy,
             guard_config=gconfig,
         ))
-        return ScanResponseWithVerdict(raw_scan_response, gconfig)
+        return ResponseVerdict(raw_scan_response, gconfig)
 
     async def scan_async(
         self,
@@ -160,7 +160,7 @@ class ApexExtended(Apex):
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
-    ) -> ScanResponseWithVerdict:
+    ) -> ResponseVerdict:
         """
         scan_async() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a Scanresponse object on success, and raises different exceptions on failure.
@@ -197,7 +197,7 @@ class ApexExtended(Apex):
             content_policy=content_policy,
             guard_config=gconfig,
         ))
-        return ScanResponseWithVerdict(raw_response, gconfig)
+        return ResponseVerdict(raw_response, gconfig)
 
     def police(
         self,

@@ -1,14 +1,10 @@
 from acuvity.guard.constants import GuardName
 from acuvity.guard.config import GuardConfig
-from acuvity.responseprocessor.constants import Verdict
-from acuvity.responseprocessor.processor import (
-    GuardProcessor,
-)
-from acuvity.responseprocessor.result import GuardVerdict, OverallVerdicts
+from acuvity.response.processor import ResponseProcessor
+from acuvity.response.result import Verdict, GuardVerdict, OverallVerdicts
+from acuvity.models.scanresponse import Scanresponse
 
-from ..models.scanresponse import Scanresponse
-
-class ScanResponseWithVerdict:
+class ResponseVerdict:
     """
     Wrapper for Scanresponse to add functionality for checking guards.
     """
@@ -20,7 +16,7 @@ class ScanResponseWithVerdict:
 
         # compute the verdict
         try:
-            self.verdict_details = GuardProcessor(self._scan_response, self._guard_config).verdicts()
+            self.verdict_details = ResponseProcessor(self._scan_response, self._guard_config).verdicts()
         except Exception as e:
             raise ValueError(f"Failed to process verdict: {str(e)}") from e
 

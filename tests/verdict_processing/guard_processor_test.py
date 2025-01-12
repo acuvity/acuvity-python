@@ -3,12 +3,12 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from acuvity.responseprocessor.processor import GuardProcessor
+from acuvity.response.processor import ResponseProcessor
 
 
 @pytest.fixture
 def guard_processor_exploit():
-    """Fixture for GuardProcessor configured for EXPLOIT guards."""
+    """Fixture for ResponseProcessor configured for EXPLOIT guards."""
     guard_config = {
         "guardrails": [
             {
@@ -25,7 +25,7 @@ def guard_processor_exploit():
             }
         ]
     }
-    return GuardProcessor(guard_config)
+    return ResponseProcessor(guard_config)
 
 @pytest.fixture
 def mock_response_exploit_pass():
@@ -46,12 +46,12 @@ def mock_response_exploit_fail():
     return response
 
 def test_guard_processor_exploit_pass(guard_processor_exploit, mock_response_exploit_pass):
-    """Tests GuardProcessor for an EXPLOIT guard where the threshold is not crossed."""
+    """Tests ResponseProcessor for an EXPLOIT guard where the threshold is not crossed."""
     verdict = guard_processor_exploit.verdicts(mock_response_exploit_pass).verdict
     assert verdict == "PASS", "The verdict should be PASS when the guard value does not exceed the threshold."
 
 def test_guard_processor_exploit_fail(guard_processor_exploit, mock_response_exploit_fail):
-    """Tests GuardProcessor for an EXPLOIT guard where the threshold is crossed."""
+    """Tests ResponseProcessor for an EXPLOIT guard where the threshold is crossed."""
     verdict = guard_processor_exploit.verdicts(mock_response_exploit_fail).verdict
     assert verdict == "FAIL", "The verdict should be FAIL when the guard value exceeds the threshold."
 
@@ -75,31 +75,31 @@ def mock_response_malicious_url_fail():
     return response
 
 def test_guard_processor_prompt_injection_pass(guard_processor_exploit, mock_response_exploit_pass):
-    """Tests GuardProcessor for a prompt_injection EXPLOIT guard where the threshold is not crossed."""
+    """Tests ResponseProcessor for a prompt_injection EXPLOIT guard where the threshold is not crossed."""
     verdict = guard_processor_exploit.verdicts(mock_response_exploit_pass).verdict
     assert verdict == "PASS", "The verdict should be PASS when the guard value does not exceed the threshold."
 
 def test_guard_processor_prompt_injection_fail(guard_processor_exploit, mock_response_exploit_fail):
-    """Tests GuardProcessor for a prompt_injection EXPLOIT guard where the threshold is crossed."""
+    """Tests ResponseProcessor for a prompt_injection EXPLOIT guard where the threshold is crossed."""
     verdict = guard_processor_exploit.verdicts(mock_response_exploit_fail).verdict
     assert verdict == "FAIL", "The verdict should be FAIL when the guard value exceeds the threshold."
 
 def test_guard_processor_jail_break_pass(guard_processor_exploit, mock_response_jailbreak_pass):
-    """Tests GuardProcessor for a jail_break EXPLOIT guard where the threshold is not crossed."""
+    """Tests ResponseProcessor for a jail_break EXPLOIT guard where the threshold is not crossed."""
     verdict = guard_processor_exploit.verdicts(mock_response_jailbreak_pass).verdict
     assert verdict == "PASS", "The verdict should be PASS when the guard value does not exceed the threshold."
 
 def test_guard_processor_jail_break_fail(guard_processor_exploit, mock_response_jailbreak_fail):
-    """Tests GuardProcessor for a jail_break EXPLOIT guard where the threshold is crossed."""
+    """Tests ResponseProcessor for a jail_break EXPLOIT guard where the threshold is crossed."""
     verdict = guard_processor_exploit.verdicts(mock_response_jailbreak_fail).verdict
     assert verdict == "FAIL", "The verdict should be FAIL when the guard value exceeds the threshold."
 
 def test_guard_processor_malicious_url_pass(guard_processor_exploit, mock_response_malicious_url_pass):
-    """Tests GuardProcessor for a malicious_url EXPLOIT guard where the threshold is not crossed."""
+    """Tests ResponseProcessor for a malicious_url EXPLOIT guard where the threshold is not crossed."""
     verdict = guard_processor_exploit.verdicts(mock_response_malicious_url_pass).verdict
     assert verdict == "PASS", "The verdict should be PASS when the guard value does not exceed the threshold."
 
 def test_guard_processor_malicious_url_fail(guard_processor_exploit, mock_response_malicious_url_fail):
-    """Tests GuardProcessor for a malicious_url EXPLOIT guard where the threshold is crossed."""
+    """Tests ResponseProcessor for a malicious_url EXPLOIT guard where the threshold is crossed."""
     verdict = guard_processor_exploit.verdicts(mock_response_malicious_url_fail).verdict
     assert verdict == "FAIL", "The verdict should be FAIL when the guard value exceeds the threshold."

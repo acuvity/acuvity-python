@@ -1,13 +1,7 @@
-from enum import Enum
 from typing import Dict
 
 
 from ..guard.constants import GuardName
-
-class Verdict(str, Enum):
-    """Enumeration for check verdicts."""
-    PASS = "PASS"
-    FAIL = "FAIL"
 
 # Default action for guards
 DEFAULT_ACTION = "deny"

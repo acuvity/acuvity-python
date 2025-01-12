@@ -1,9 +1,13 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
+from enum import Enum
 
-from ..guard.constants import GuardName
-from .constants import Verdict
+from acuvity.guard.constants import GuardName
 
+class Verdict(str, Enum):
+    """Enumeration for check verdicts."""
+    PASS = "PASS"
+    FAIL = "FAIL"
 
 @dataclass
 class GuardVerdict:
