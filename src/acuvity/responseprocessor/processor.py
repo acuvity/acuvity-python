@@ -1,18 +1,15 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from ...models.scanresponse import Scanresponse
-from ...utils.logger import get_default_logger
-from ..constants import (
-    ComparisonOperator,
+from ..models.scanresponse import Scanresponse
+from ..utils.logger import get_default_logger
+
+from .constants import (
     Verdict,
-    analyzer_id_name_map,
 )
-from ..models.errors import ConfigurationError
-from ...config.guard_config import Guard, GuardConfig
-from ..models.result import CheckResult, ProcessorResult
-from ..util.response_parser import ResponseParser
-from ..util.threshold_helper import Threshold, ThresholdHelper
+from ..guard.config import Guard, GuardConfig
+from .result import CheckResult, ProcessorResult
+from .parser import ResponseParser
 
 logger = get_default_logger()
 
@@ -24,14 +21,12 @@ class CheckEvaluator:
 
     def __init__(self):
         self._parser = ResponseParser()  # Use the existing ResponseParser
-        self._threshold_helper = ThresholdHelper()
         self._response = None
 
     def evaluate(
         self,
         response: Scanresponse,
-        guard_name: str,
-        threshold: Threshold,
+        guard: Guard,
         match_name: Optional[str] = None
     ) -> CheckResult:
         """
@@ -49,7 +44,7 @@ class CheckEvaluator:
             if not response.extractions:
                 raise ValueError("No extractions found in the response")
             extraction = response.extractions[0]
-            result = self._parser.get_value(extraction, guard_name, match_name)
+            result = self._parser.get_value(extraction, guard.name, match_name)
             # Handle different return types
             # PII and keyword
             if isinstance(result, tuple) and len(result) == 3:  # (bool, float, int)
@@ -66,25 +61,25 @@ class CheckEvaluator:
             if not exists:
                 return CheckResult(
                     verdict=Verdict.PASS,
-                    guard_name=guard_name,
-                    threshold=threshold.value,
+                    guard_name=guard.name,
+                    threshold=guard.threshold.value,
                     actual_value=value,
                     details={
-                        'operator': threshold.operator.value,
+                        'operator': guard.threshold.operator.value,
                         'condition_met': True,
                         'reason': 'Guard not found in response'
                     }
                 )
             # Use ThresholdHelper for comparison
-            comparison_result = self._threshold_helper.compare(threshold, value)
+            comparison_result = guard.threshold.compare(value)
 
             return CheckResult(
                 verdict=Verdict.FAIL if comparison_result else Verdict.PASS,
-                guard_name=guard_name,
-                threshold=threshold.value,
+                guard_name=guard.name,
+                threshold=guard.threshold.value,
                 actual_value=value,
                 details={
-                    'operator': threshold.operator.value,
+                    'operator': guard.threshold.operator.value,
                     'condition_met': comparison_result
                 }
             )
@@ -95,8 +90,6 @@ class CheckEvaluator:
 class GuardProcessor:
     """Handles processing of guard configurations."""
 
-    DEFAULT_THRESHOLD = Threshold(value=0.0, operator=ComparisonOperator.GREATER_THAN)
-
     def __init__(self, guard_config: Union[str, Path, Dict]):
         self._evaluator = CheckEvaluator()
 
@@ -106,8 +99,7 @@ class GuardProcessor:
 
     def process_guard_check(
         self,
-        guard_name: str,
-        threshold: Threshold,
+        guard: Guard,
         match_name: Optional[str] = None
     ) -> CheckResult:
         """Process a single guard check with action consideration."""
@@ -115,32 +107,14 @@ class GuardProcessor:
             if self._response is None:
                 raise ValueError("Response cannot be nil to process the verdict")
             # Get raw evaluation
-            check_result = self._evaluator.evaluate(self._response, guard_name, threshold, match_name)
-
-            # SATYAMTODO: Why are we returning a new checkresult when thats what is coming here ?
-            return CheckResult(
-                verdict=check_result.verdict,
-                guard_name=guard_name,
-                threshold=check_result.threshold,
-                actual_value=check_result.actual_value,
-                details={
-                    **check_result.details,
-                }
-            )
+            return self._evaluator.evaluate(self._response, guard, match_name)
         except Exception as e:
-            logger.debug("Error processing guard %s ", {guard_name})
+            logger.debug("Error processing guard %s ", {guard.name})
             raise e
 
     def _process_simple_guard(self, guard: Guard) -> CheckResult:
         """Process a simple guard (no matches)."""
-        thd = guard.threshold
-        if thd is None:
-            thd = self.DEFAULT_THRESHOLD
-
-        return self.process_guard_check(
-            guard.name,
-            thd
-        )
+        return self.process_guard_check(guard)
 
     def _process_match_guard(self, guard: Guard) -> List[CheckResult]:
         """Process a guard with matches."""
@@ -149,13 +123,8 @@ class GuardProcessor:
             return results
 
         for match_name, _ in guard.matches.items():
-            thd = guard.threshold
-            if thd is None:
-                thd = self.DEFAULT_THRESHOLD
-
             result = self.process_guard_check(
-                guard.name,
-                thd,
+                guard,
                 match_name
             )
             results.append(result)
@@ -195,4 +164,4 @@ class GuardProcessor:
 
         except Exception as e:
             logger.debug("Error processing guard config: %s",{str(e)})
-            raise ConfigurationError(f"Failed to process guard configuration: {str(e)}") from e
+            raise ValueError(f"Failed to process guard configuration: {str(e)}") from e

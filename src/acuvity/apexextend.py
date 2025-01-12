@@ -17,9 +17,9 @@ from acuvity.models import (
     ScanrequestType,
     Type,
 )
-from acuvity.models.scanresponsewrapper import ScanResponseWithVerdict
+from acuvity.responseprocessor.responseverdict import ScanResponseWithVerdict
 from acuvity.sdkconfiguration import SDKConfiguration
-from acuvity.config.guard_config import GuardConfig
+from acuvity.guard.config import GuardConfig
 
 from .apex import Apex
 

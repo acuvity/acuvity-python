@@ -1,8 +1,9 @@
 from enum import Enum, auto
 from typing import Optional, Tuple, Union
 
-from ...models.extraction import Extraction
-from ..models.errors import ValidationError
+from ..guard.constants import GuardName
+from ..models.extraction import Extraction
+from ..guard.errors import ValidationError
 
 
 class GuardType(Enum):
@@ -11,7 +12,7 @@ class GuardType(Enum):
     TOPIC = auto()           # Needs prefix in topics
     LANGUAGE = auto()        # Can be direct or match-based
     INTENT = auto()          # Match-based in intent
-    PII = auto()            # Both direct values and textual detection counts
+    PII = auto()             # Both direct values and textual detection counts
     SECRETS = auto()         # In secrets section
     KEYWORD = auto()         # In textual detections with count
     MODALITY = auto()        # Special handling for modalities list
@@ -19,36 +20,29 @@ class GuardType(Enum):
 # Define mappings
 GUARD_TYPES = {
     # Exploit guards
-    'prompt_injection': GuardType.EXPLOIT,
-    'jail_break': GuardType.EXPLOIT,
-    'malicious_url': GuardType.EXPLOIT,
+    GuardName.PROMPT_INJECTION: GuardType.EXPLOIT,
+    GuardName.JAIL_BREAK: GuardType.EXPLOIT,
+    GuardName.MALICIOUS_URL: GuardType.EXPLOIT,
 
     # Topic guards with prefixes
-    'toxicity': GuardType.TOPIC,
-    'bias': GuardType.TOPIC,
-    'harmful_content': GuardType.TOPIC,
-    'image_classifier': GuardType.TOPIC,
-    'corporate_classifier': GuardType.TOPIC,
-    'content_classifier': GuardType.TOPIC,
+    GuardName.TOXICITY: GuardType.TOPIC,
+    GuardName.BIAS: GuardType.TOPIC,
+    GuardName.HARMFUL_CONTENT: GuardType.TOPIC,
 
     # Other guards
-    'language': GuardType.LANGUAGE,
-    'gibberish': GuardType.LANGUAGE,
-    'generic_classifier': GuardType.INTENT,
-    'pii_detector': GuardType.PII,
-    'secrets_detector': GuardType.SECRETS,
-    'keyword_detector': GuardType.KEYWORD,
-    'modality': GuardType.MODALITY
+    GuardName.LANGUAGE: GuardType.LANGUAGE,
+    GuardName.GIBBERISH: GuardType.LANGUAGE,
+    GuardName.PII_DETECTOR: GuardType.PII,
+    GuardName.SECRETS_DETECTOR: GuardType.SECRETS,
+    GuardName.KEYWORD_DETECTOR: GuardType.KEYWORD,
+    GuardName.MODALITY: GuardType.MODALITY
 }
 
 # Topic prefixes mapping
 TOPIC_PREFIXES = {
-    'toxicity': 'content/toxic',
-    'bias': 'content/bias',
-    'harmful_content': 'content/harmful',
-    'image_classifier': 'image',
-    'corporate_classifier': 'department',
-    'content_classifier': 'category'
+    GuardName.TOXICITY: 'content/toxic',
+    GuardName.BIAS: 'content/bias',
+    GuardName.HARMFUL_CONTENT: 'content/harmful',
 }
 
 class ResponseParser:
@@ -57,7 +51,7 @@ class ResponseParser:
     def get_value(
         self,
         extraction: Extraction,
-        guard_name: str,
+        guard_name: GuardName,
         match_name: Optional[str] = None
     ) -> Union[bool, Tuple[bool, float], Tuple[bool, float, int]]:
         """Get value from extraction based on guard type."""
@@ -104,7 +98,7 @@ class ResponseParser:
     def _get_topic_value(
         self,
         extraction: Extraction,
-        guard_name: str,
+        guard_name: GuardName,
         match_name: Optional[str]
     ) -> tuple[bool, float]:
         """Get value from topics section with prefix handling."""

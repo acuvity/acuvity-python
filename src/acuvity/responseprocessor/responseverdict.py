@@ -1,14 +1,15 @@
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from acuvity.verdict_processing.constants import GuardName, Verdict
-from acuvity.verdict_processing.core.guard_processor import (
+from acuvity.guard.constants import GuardName
+from acuvity.responseprocessor.constants import Verdict
+from acuvity.responseprocessor.processor import (
     CheckEvaluator,
     GuardProcessor,
 )
-from acuvity.verdict_processing.models.result import CheckResult, ProcessorResult
+from acuvity.responseprocessor.result import CheckResult, ProcessorResult
 
-from .scanresponse import Scanresponse
+from ..models.scanresponse import Scanresponse
 
 
 class ScanResponseWithVerdict:
@@ -17,14 +18,12 @@ class ScanResponseWithVerdict:
     """
 
     def __init__(self, scan_response: Scanresponse, guard_config: Optional[Union[str, Path, Dict]] = None):
-        if not isinstance(scan_response, Scanresponse):
-            raise TypeError("Expected an instance of Scanresponse")
         self._scan_response = scan_response
         self.verdict_details : Optional[ProcessorResult] = None
         self.guard_config = guard_config
         self._evaluator = CheckEvaluator()
 
-    def verdict(self, guard_or_conf: Optional[Union[GuardName, str, Dict, Path]] = None) -> Union[ProcessorResult, CheckResult]:
+    def verdict(self, guard_or_conf: Optional[Union[GuardName, Dict, Path]] = None) -> Union[ProcessorResult, CheckResult]:
         """
         Dynamically evaluates the scan response or retrieves a single guard's verdict.
 
@@ -51,19 +50,18 @@ class ScanResponseWithVerdict:
                     self.verdict_details = processor.get_verdict(self._scan_response)
                 return self.verdict_details
 
-            if isinstance(guard_or_conf, GuardName) or (isinstance(guard_or_conf, str) and self._is_guard_name(guard_or_conf)):
-                guard_name = guard_or_conf.value if isinstance(guard_or_conf, GuardName) else guard_or_conf
+            if isinstance(guard_or_conf, GuardName):
                 if not self.verdict_details:
                     raise ValueError("Verdict details are not available. Call `verdict()` with a guard_config first.")
 
                 for check in self.verdict_details.failed_checks:
-                    if check.guard_name == guard_name:
+                    if check.guard_name == guard_or_conf:
                         return check
 
                 # If not failed, return PASS
                 return CheckResult(
                         verdict=Verdict.PASS,
-                        guard_name=guard_name,
+                        guard_name=guard_or_conf,
                         threshold=0.0,
                         actual_value=0.0,
                         details={"reason": "No voilations detected for the guard"}
@@ -80,21 +78,6 @@ class ScanResponseWithVerdict:
 
         except Exception as e:
             raise ValueError(f"Failed to process verdict: {str(e)}") from e
-
-    def _is_guard_name(self, guard: str) -> bool:
-        """
-        Check if the input string represents a valid guard name.
-
-        Args:
-            input: Input string to check.
-
-        Returns:
-            bool: True if the input matches a guard name, otherwise False.
-        """
-        # Check against GuardName enum values
-        if guard in {guard.value for guard in GuardName}:
-            return True
-        return False
 
     def __getattr__(self, name):
         """

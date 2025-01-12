@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from acuvity.verdict_processing.core.guard_processor import GuardProcessor
+from acuvity.responseprocessor.processor import GuardProcessor
 
 
 @pytest.fixture

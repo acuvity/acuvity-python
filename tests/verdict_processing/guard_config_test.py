@@ -5,12 +5,12 @@ from typing import Dict
 import pytest
 import yaml
 
-from acuvity.verdict_processing.constants import analyzer_id_name_map
-from acuvity.verdict_processing.models.errors import (
+from acuvity.responseprocessor.constants import analyzer_id_name_map
+from acuvity.guard.errors import (
     GuardConfigError,
     ThresholdParsingError,
 )
-from acuvity.config.guard_config import (
+from acuvity.guard.config import (
     ComparisonOperator,
     GuardConfig,
 )

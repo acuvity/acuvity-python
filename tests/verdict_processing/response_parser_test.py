@@ -1,7 +1,7 @@
 import pytest
 
 from acuvity.models.extraction import Extraction, Textualdetection
-from acuvity.verdict_processing.util.response_parser import ResponseParser
+from acuvity.responseprocessor.parser import ResponseParser
 
 
 @pytest.fixture

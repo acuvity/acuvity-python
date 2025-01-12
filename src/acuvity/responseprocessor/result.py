@@ -1,14 +1,15 @@
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from ..constants import Verdict
+from ..guard.constants import GuardName
+from .constants import Verdict
 
 
 @dataclass
 class CheckResult:
     """Result of a single check operation."""
     verdict: Verdict
-    guard_name: str
+    guard_name: GuardName
     threshold: float
     actual_value: float
     details: Optional[Dict[str, Any]] = None
