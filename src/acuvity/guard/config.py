@@ -39,14 +39,27 @@ class GuardConfig:
     """
 
     DEFAULT_THRESHOLD = Threshold(">0.0")
-    def __init__(self, config: Union[str, Path, Dict]):
-        self._parsed_guards: List[Guard] = []
+    def __init__(self, config: Optional[Union[str, Path, Dict]] = None):
         """
         Initialize parser with analyzer mapping.
 
         Args:
             analyzer_id_name_map: Mapping from analyzer IDs to names
         """
+        self._parsed_guards: List[Guard] = []
+
+        # Handle default configuration
+        if config is None:
+            for guard in GuardName:
+                self._parsed_guards.append(Guard(
+                    name=guard,
+                    matches={},
+                    threshold=self.DEFAULT_THRESHOLD,
+                    count_threshold=0,
+                ))
+            return
+
+        # Use the config provided
         self._parse_config(config)
 
     @staticmethod

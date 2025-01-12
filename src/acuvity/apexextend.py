@@ -125,6 +125,10 @@ class ApexExtended(Apex):
         :param access_policy: the access policy to run. This is the rego access policy that you can run. If not provided, no access policy will be applied.
         :param content_policy: the content policy to run. This is the rego content policy that you can run. If not provided, no content policy will be applied.
         """
+        if guard_config:
+            gconfig = GuardConfig(guard_config)
+        else:
+            gconfig = GuardConfig()
         raw_scan_response = self.scan_request(request=self.__build_scan_request(
             *messages,
             files=files,
@@ -137,9 +141,9 @@ class ApexExtended(Apex):
             keywords=keywords,
             access_policy=access_policy,
             content_policy=content_policy,
-            guard_config=guard_config,
+            guard_config=gconfig,
         ))
-        return ScanResponseWithVerdict(raw_scan_response, guard_config)
+        return ScanResponseWithVerdict(raw_scan_response, gconfig)
 
     async def scan_async(
         self,
@@ -154,6 +158,7 @@ class ApexExtended(Apex):
         keywords: Optional[List[str]] = None,
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
+        guard_config: Optional[Union[str, Path, Dict]] = None,
     ) -> ScanResponseWithVerdict:
         """
         scan_async() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
@@ -173,6 +178,10 @@ class ApexExtended(Apex):
         :param access_policy: the access policy to run. This is the rego access policy that you can run. If not provided, no access policy will be applied.
         :param content_policy: the content policy to run. This is the rego content policy that you can run. If not provided, no content policy will be applied.
         """
+        if guard_config:
+            gconfig = GuardConfig(guard_config)
+        else:
+            gconfig = GuardConfig()
         raw_response = await self.scan_request_async(request=self.__build_scan_request(
             *messages,
             files=files,
@@ -185,8 +194,9 @@ class ApexExtended(Apex):
             keywords=keywords,
             access_policy=access_policy,
             content_policy=content_policy,
+            guard_config=gconfig,
         ))
-        return ScanResponseWithVerdict(raw_response)
+        return ScanResponseWithVerdict(raw_response, gconfig)
 
     def police(
         self,
@@ -398,7 +408,7 @@ class ApexExtended(Apex):
         keywords: Optional[List[str]] = [],
         access_policy: Optional[str] = None,
         content_policy: Optional[str] = None,
-        guard_config: Optional[Union[str, Path, Dict]] = None,
+        guard_config: GuardConfig,
     ) -> Scanrequest:
         request = Scanrequest.model_construct()
 
@@ -461,11 +471,9 @@ class ApexExtended(Apex):
 
         # now here check the guard config and parse it for the analyzers, redaction and keywords.
         if guard_config:
-            guard_config_parser = GuardConfig(guard_config)
-
-            keywords.extend(guard_config_parser.keywords or [])
-            redactions.extend(guard_config_parser.redaction_keys or [])
-            analyzers.extend(guard_config_parser.analyzer_ids or [])
+            keywords.extend(guard_config.keywords or [])
+            redactions.extend(guard_config.redaction_keys or [])
+            # analyzers.extend(guard_config.analyzer_ids or [])
 
         # analyzers must be a list of strings
         if not isinstance(analyzers, List):
