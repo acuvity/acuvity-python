@@ -98,13 +98,6 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[ScanrequestType,str] = ScanrequestType.INPUT,
         annotations: Optional[Dict[str, str]] = None,
-        analyzers: Optional[List[str]] = None,
-        bypass_hash: Optional[str] = None,
-        anonymization: Union[ScanrequestAnonymization, str, None] = None,
-        redactions: Optional[List[str]] = None,
-        keywords: Optional[List[str]] = None,
-        access_policy: Optional[str] = None,
-        content_policy: Optional[str] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
     ) -> ResponseVerdict:
         """
@@ -118,13 +111,7 @@ class ApexExtended(Apex):
         :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.
         :param request_type: the type of the validation. This can be either ScanrequestType.INPUT or ScanrequestType.OUTPUT. Defaults to ScanrequestType.INPUT. Use ScanrequestType.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
-        :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+image-classifier", "-modality-detector"] will include the image classifier and exclude the modality detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided. Call `list_analyzers()` and/or its variants to get a list of available analyzers.
-        :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
-        :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
-        :param redactions: the redactions to apply. If your want to redact certain parts of the returned detections, you can provide a list of redactions that you want to apply. If not provided, no redactions will be applied.
-        :param keywords: the keywords to detect in the input. If you want to detect certain keywords in the input, you can provide a list of keywords that you want to detect. If not provided, no keyword detection will be run.
-        :param access_policy: the access policy to run. This is the rego access policy that you can run. If not provided, no access policy will be applied.
-        :param content_policy: the content policy to run. This is the rego content policy that you can run. If not provided, no content policy will be applied.
+        :param guard_config: TODO.
         """
         if guard_config:
             gconfig = GuardConfig(guard_config)
@@ -135,13 +122,6 @@ class ApexExtended(Apex):
             files=files,
             request_type=request_type,
             annotations=annotations,
-            analyzers=analyzers,
-            bypass_hash=bypass_hash,
-            anonymization=anonymization,
-            redactions=redactions,
-            keywords=keywords,
-            access_policy=access_policy,
-            content_policy=content_policy,
             guard_config=gconfig,
         ))
         return ResponseVerdict(raw_scan_response, gconfig)
@@ -152,13 +132,6 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[ScanrequestType,str] = ScanrequestType.INPUT,
         annotations: Optional[Dict[str, str]] = None,
-        analyzers: Optional[List[str]] = None,
-        bypass_hash: Optional[str] = None,
-        anonymization: Union[ScanrequestAnonymization, str, None] = None,
-        redactions: Optional[List[str]] = None,
-        keywords: Optional[List[str]] = None,
-        access_policy: Optional[str] = None,
-        content_policy: Optional[str] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
     ) -> ResponseVerdict:
         """
@@ -172,12 +145,7 @@ class ApexExtended(Apex):
         :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.        :param request_type: the type of the validation. This can be either ScanrequestType.INPUT or ScanrequestType.OUTPUT. Defaults to ScanrequestType.INPUT. Use ScanrequestType.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+image-classifier", "-modality-detector"] will include the image classifier and exclude the modality detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided. Call `list_analyzers()` and/or its variants to get a list of available analyzers.
-        :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
-        :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
-        :param redactions: the redactions to apply. If your want to redact certain parts of the returned detections, you can provide a list of redactions that you want to apply. If not provided, no redactions will be applied.
-        :param keywords: the keywords to detect in the input. If you want to detect certain keywords in the input, you can provide a list of keywords that you want to detect. If not provided, no keyword detection will be run.
-        :param access_policy: the access policy to run. This is the rego access policy that you can run. If not provided, no access policy will be applied.
-        :param content_policy: the content policy to run. This is the rego content policy that you can run. If not provided, no content policy will be applied.
+        :param guard_config: TODO.
         """
         if guard_config:
             gconfig = GuardConfig(guard_config)
@@ -188,13 +156,6 @@ class ApexExtended(Apex):
             files=files,
             request_type=request_type,
             annotations=annotations,
-            analyzers=analyzers,
-            bypass_hash=bypass_hash,
-            anonymization=anonymization,
-            redactions=redactions,
-            keywords=keywords,
-            access_policy=access_policy,
-            content_policy=content_policy,
             guard_config=gconfig,
         ))
         return ResponseVerdict(raw_response, gconfig)
@@ -403,12 +364,9 @@ class ApexExtended(Apex):
         request_type: Union[ScanrequestType,str] = ScanrequestType.INPUT,
         annotations: Optional[Dict[str, str]] = None,
         analyzers: Optional[List[str]] = [],
-        bypass_hash: Optional[str] = None,
         anonymization: Union[ScanrequestAnonymization, str, None] = None,
         redactions: Optional[List[str]] = [],
         keywords: Optional[List[str]] = [],
-        access_policy: Optional[str] = None,
-        content_policy: Optional[str] = None,
         guard_config: GuardConfig,
     ) -> Scanrequest:
         request = Scanrequest.model_construct()
@@ -494,12 +452,6 @@ class ApexExtended(Apex):
                 raise ValueError(f"analyzer '{analyzer}' is not in list of analyzer groups or analyzers: {analyzers_list}")
         request.analyzers = analyzers
 
-        # bypass_hash must be a string
-        if bypass_hash is not None:
-            if not isinstance(bypass_hash, str):
-                raise ValueError("bypass_hash must be a string")
-            request.bypass_hash = bypass_hash
-
         # anonymization must be "FixedSize" or "VariableSize"
         if anonymization is not None:
             if isinstance(anonymization, ScanrequestAnonymization):
@@ -526,17 +478,5 @@ class ApexExtended(Apex):
             if not isinstance(keyword, str):
                 raise ValueError("keywords must be strings")
         request.keywords = keywords
-
-        # local access policy
-        if access_policy is not None:
-            if not isinstance(access_policy, str):
-                raise ValueError("access_policy must be a string")
-            request.access_policy = access_policy
-
-        # local content policy
-        if content_policy is not None:
-            if not isinstance(content_policy, str):
-                raise ValueError("content_policy must be a string")
-            request.content_policy = content_policy
 
         return request
