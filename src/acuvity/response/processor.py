@@ -3,7 +3,7 @@ from typing import List, Optional
 from acuvity.guard.config import Guard, GuardConfig
 from acuvity.models.scanresponse import Scanresponse
 from acuvity.response.evaluator import ResponseEvaluator
-from acuvity.response.result import GuardVerdict, OverallVerdicts, Verdict
+from acuvity.response.result import GuardMatch, Matches, ResponseMatch
 from acuvity.utils.logger import get_default_logger
 
 logger = get_default_logger()
@@ -20,7 +20,7 @@ class ResponseProcessor:
         self,
         guard: Guard,
         match_name: Optional[str] = None
-    ) -> GuardVerdict:
+    ) -> GuardMatch:
         """Process a single guard check with action consideration."""
         try:
             if self._response is None:
@@ -31,11 +31,11 @@ class ResponseProcessor:
             logger.debug("Error processing guard %s ", {guard.name})
             raise e
 
-    def _process_simple_guard(self, guard: Guard) -> GuardVerdict:
+    def _process_simple_guard(self, guard: Guard) -> GuardMatch:
         """Process a simple guard (no matches)."""
         return self.process_guard_check(guard)
 
-    def _process_match_guard(self, guard: Guard) -> List[GuardVerdict]:
+    def _process_match_guard(self, guard: Guard) -> List[GuardMatch]:
         """Process a guard with matches."""
         results = []
         if not guard.matches:
@@ -50,30 +50,27 @@ class ResponseProcessor:
 
         return results
 
-    def verdicts(self) -> OverallVerdicts:
+    def verdicts(self) -> Matches:
         """Process the complete guard configuration."""
         try:
-            failed_checks = []
-            total_checks = 0
+            matched_checks = []
+            all_checks = []
 
             for guard in self.guard_config.simple_guards:
                 result = self._process_simple_guard(guard)
-                total_checks += 1
-                if result.verdict == Verdict.FAIL:
-                    failed_checks.append(result)
+                if result.response_match == ResponseMatch.YES:
+                    matched_checks.append(result)
+                all_checks.append(result)
 
             for guard in self.guard_config.match_guards:
                 results = self._process_match_guard(guard)
-                total_checks += len(results)
-                failed_checks.extend([r for r in results if r.verdict == Verdict.FAIL])
+                matched_checks.extend([r for r in results if r.response_match == ResponseMatch.YES])
+                all_checks.append(results)
 
-            return OverallVerdicts(
-                verdict=Verdict.FAIL if failed_checks else Verdict.PASS,
-                failed_checks=failed_checks,
-                total_checks=total_checks,
-                details={
-                    'failed_checks_count': len(failed_checks),
-                }
+            return Matches(
+                response_match=ResponseMatch.YES if matched_checks else ResponseMatch.NO,
+                matched_checks=matched_checks,
+                all_checks=all_checks
             )
 
         except Exception as e:

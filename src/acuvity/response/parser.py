@@ -130,8 +130,8 @@ class ResponseParser:
         if not extraction.languages:
             return False, 0
 
-        if guard_name == 'gibberish':
-            value = extraction.languages.get('gibberish')
+        if guard_name == GuardName.GIBBERISH:
+            value = extraction.languages.get(str(GuardName.GIBBERISH))
             if value:
                 return True, value
             else:
@@ -140,7 +140,7 @@ class ResponseParser:
         if match_name:
             value = extraction.languages.get(match_name)
         else:
-            return len(extraction.languages) > 0, 1.0
+            return len(extraction.languages) > 0 , 1.0
 
         if value is None:
             return False, 0

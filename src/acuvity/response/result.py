@@ -1,27 +1,27 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
 from enum import Enum
+from typing import Any, Dict, Optional
 
 from acuvity.guard.constants import GuardName
+from acuvity.guard.threshold import Threshold
 
-class Verdict(str, Enum):
+
+class ResponseMatch(str, Enum):
     """Enumeration for check verdicts."""
-    PASS = "PASS"
-    FAIL = "FAIL"
+    YES = "YES"
+    NO = "NO"
 
 @dataclass
-class GuardVerdict:
+class GuardMatch:
     """Result of a single check operation."""
-    verdict: Verdict
+    response_match: ResponseMatch
     guard_name: GuardName
-    threshold: float
     actual_value: float
-    details: Optional[Dict[str, Any]] = None
+    threshold: str
 
 @dataclass
-class OverallVerdicts:
+class Matches:
     """Result of processing multiple checks or a configuration."""
-    verdict: Verdict
-    failed_checks: list[GuardVerdict]
-    total_checks: int
-    details: Optional[Dict[str, Any]] = None
+    response_match: ResponseMatch
+    matched_checks: list[GuardMatch]
+    all_checks: list[GuardMatch]

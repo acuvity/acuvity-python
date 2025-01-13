@@ -1,7 +1,4 @@
-class VerdictProcessingError(Exception):
-    """Base exception for response processing errors."""
-
-class ValidationError(VerdictProcessingError):
+class ValidationError(Exception):
     """Raised when validation fails."""
 
 class GuardConfigError(Exception):

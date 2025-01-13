@@ -19,7 +19,7 @@ from acuvity.models import (
     Type,
 )
 from acuvity.response.constants import guardname_analyzer_id_map
-from acuvity.response.verdict import ResponseVerdict
+from acuvity.response.match import ScanResponseMatch
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.utils.logger import get_default_logger
 
@@ -102,7 +102,7 @@ class ApexExtended(Apex):
         request_type: Union[ScanrequestType,str] = ScanrequestType.INPUT,
         annotations: Optional[Dict[str, str]] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
-    ) -> ResponseVerdict:
+    ) -> ScanResponseMatch:
         """
         scan() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a Scanresponse object on success, and raises different exceptions on failure.
@@ -132,7 +132,7 @@ class ApexExtended(Apex):
             annotations=annotations,
             guard_config=gconfig,
         ))
-        return ResponseVerdict(raw_scan_response, gconfig)
+        return ScanResponseMatch(raw_scan_response, gconfig)
 
     async def scan_async(
         self,
@@ -141,7 +141,7 @@ class ApexExtended(Apex):
         request_type: Union[ScanrequestType,str] = ScanrequestType.INPUT,
         annotations: Optional[Dict[str, str]] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
-    ) -> ResponseVerdict:
+    ) -> ScanResponseMatch:
         """
         scan_async() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
         Returns a Scanresponse object on success, and raises different exceptions on failure.
@@ -166,7 +166,7 @@ class ApexExtended(Apex):
             annotations=annotations,
             guard_config=gconfig,
         ))
-        return ResponseVerdict(raw_response, gconfig)
+        return ScanResponseMatch(raw_response, gconfig)
 
     def police(
         self,

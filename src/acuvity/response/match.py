@@ -1,10 +1,11 @@
-from acuvity.guard.constants import GuardName
 from acuvity.guard.config import GuardConfig
-from acuvity.response.processor import ResponseProcessor
-from acuvity.response.result import Verdict, GuardVerdict, OverallVerdicts
+from acuvity.guard.constants import GuardName
 from acuvity.models.scanresponse import Scanresponse
+from acuvity.response.processor import ResponseProcessor
+from acuvity.response.result import GuardMatch, Matches, ResponseMatch
 
-class ResponseVerdict:
+
+class ScanResponseMatch:
     """
     Wrapper for Scanresponse to add functionality for checking guards.
     """
@@ -20,13 +21,13 @@ class ResponseVerdict:
         except Exception as e:
             raise ValueError(f"Failed to process verdict: {str(e)}") from e
 
-    def verdicts(self) -> OverallVerdicts:
+    def verdicts(self) -> Matches:
         """
         Returns the overall verdict of the scan response.
         """
         return self.verdict_details
 
-    def guard_verdict(self, guard: GuardName) -> GuardVerdict:
+    def guard_verdict(self, guard: GuardName) -> GuardMatch:
         """
         Retrieves a single guard's verdict.
 
@@ -34,19 +35,19 @@ class ResponseVerdict:
             guard: Name of the guard for querying a specific guard's verdict.
 
         Returns:
-            GuardVerdict for a specific guard.
+            GuardMatch for a specific guard.
         """
-        for check in self.verdict_details.failed_checks:
+        for check in self.verdict_details.matched_checks:
             if check.guard_name == guard:
                 return check
 
         # If not failed, return PASS
-        return GuardVerdict(
-                verdict=Verdict.PASS,
+        return GuardMatch(
+                response_match=ResponseMatch.NO,
                 guard_name=guard,
                 threshold=0.0,
                 actual_value=0.0,
-                details={"reason": "No voilations detected for the guard"}
+                details={"reason": "No matches detected for the guard"}
         )
 
     def __getattr__(self, name):

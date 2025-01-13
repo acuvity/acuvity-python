@@ -4,7 +4,7 @@ from ..guard.config import Guard
 from ..models.scanresponse import Scanresponse
 from ..utils.logger import get_default_logger
 from .parser import ResponseParser
-from .result import GuardVerdict, Verdict
+from .result import GuardMatch, ResponseMatch
 
 logger = get_default_logger()
 
@@ -23,7 +23,7 @@ class ResponseEvaluator:
         response: Scanresponse,
         guard: Guard,
         match_name: Optional[str] = None
-    ) -> GuardVerdict:
+    ) -> GuardMatch:
         """
         Evaluates a check condition using a Threshold object.
 
@@ -33,7 +33,7 @@ class ResponseEvaluator:
             threshold: Threshold object containing value and operator
 
         Returns:
-            GuardVerdict with PASS if condition met, FAIL if not met
+            GuardMatch with PASS if condition met, FAIL if not met
         """
         try:
             if not response.extractions:
@@ -54,29 +54,20 @@ class ResponseEvaluator:
                 raise ValueError("Unexpected return type from get_value")
 
             if not exists:
-                return GuardVerdict(
-                    verdict=Verdict.PASS,
+                return GuardMatch(
+                    response_match=ResponseMatch.NO,
                     guard_name=guard.name,
-                    threshold=guard.threshold.value,
-                    actual_value=value,
-                    details={
-                        'operator': guard.threshold.operator.value,
-                        'condition_met': True,
-                        'reason': 'Guard not found in response'
-                    }
+                    threshold=str(guard.threshold),
+                    actual_value=value
                 )
             # Use ThresholdHelper for comparison
             comparison_result = guard.threshold.compare(value)
 
-            return GuardVerdict(
-                verdict=Verdict.FAIL if comparison_result else Verdict.PASS,
+            return GuardMatch(
+                response_match=ResponseMatch.YES if comparison_result else ResponseMatch.NO,
                 guard_name=guard.name,
-                threshold=guard.threshold.value,
-                actual_value=value,
-                details={
-                    'operator': guard.threshold.operator.value,
-                    'condition_met': comparison_result
-                }
+                threshold=str(guard.threshold),
+                actual_value=value
             )
         except Exception as e:
             logger.debug("Error in check evaluation: %s", str(e))
