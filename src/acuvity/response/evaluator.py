@@ -1,12 +1,10 @@
 from typing import Optional
 
+from ..guard.config import Guard
 from ..models.scanresponse import Scanresponse
 from ..utils.logger import get_default_logger
-
-from .result import Verdict
-from ..guard.config import Guard
-from .result import GuardVerdict
 from .parser import ResponseParser
+from .result import GuardVerdict, Verdict
 
 logger = get_default_logger()
 

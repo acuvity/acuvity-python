@@ -1,12 +1,10 @@
 from typing import List, Optional
 
-from acuvity.response.result import Verdict, GuardVerdict, OverallVerdicts
-from acuvity.response.evaluator import ResponseEvaluator
-
-from acuvity.models.scanresponse import Scanresponse
-from acuvity.utils.logger import get_default_logger
 from acuvity.guard.config import Guard, GuardConfig
-
+from acuvity.models.scanresponse import Scanresponse
+from acuvity.response.evaluator import ResponseEvaluator
+from acuvity.response.result import GuardVerdict, OverallVerdicts, Verdict
+from acuvity.utils.logger import get_default_logger
 
 logger = get_default_logger()
 

@@ -2,8 +2,9 @@ from enum import Enum, auto
 from typing import Optional, Tuple, Union
 
 from acuvity.guard.constants import GuardName
-from acuvity.models.extraction import Extraction
 from acuvity.guard.errors import ValidationError
+from acuvity.models.extraction import Extraction
+
 
 class GuardType(Enum):
     """Types of guards and their corresponding sections in Extraction."""

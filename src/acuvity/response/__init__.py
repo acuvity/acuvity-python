@@ -1,4 +1,5 @@
-from .constants import Verdict
+from acuvity.response.verdict import Verdict
+
 from .result import GuardVerdict, OverallVerdicts
 
 __all__ = [

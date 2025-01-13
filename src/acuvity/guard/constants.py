@@ -1,4 +1,6 @@
 from enum import Enum
+from typing import Optional
+
 
 class ComparisonOperator(Enum):
     """Valid comparison operators for thresholds"""
@@ -15,15 +17,11 @@ class GuardName(Enum):
     TOXICITY = "toxicity"
     BIAS = "bias"
     HARMFUL_CONTENT = "harmful_content"
-    IMAGE_CLASSIFIER = "image_classifier"
-    CORPORATE_CLASSIFIER = "corporate_classifier"
-    CONTENT_CLASSIFIER = "content_classifier"
     GIBBERISH = "gibberish"
     LANGUAGE = "language"
     MODALITY = "modality"
     PII_DETECTOR = "pii_detector"
     SECRETS_DETECTOR = "secrets_detector"
-    GENERIC_CLASSIFIER = "generic_classifier"
     KEYWORD_DETECTOR = "keyword_detector"
 
     @classmethod
@@ -41,3 +39,10 @@ class GuardName(Enum):
         if guard in {guard.value for guard in GuardName}:
             return True
         return False
+
+    @classmethod
+    def get(cls, name: str) -> Optional['GuardName']:
+        try:
+            return cls(name.lower())
+        except ValueError:
+            return None

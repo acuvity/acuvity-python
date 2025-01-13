@@ -4,16 +4,15 @@ from textwrap import dedent
 import pytest
 import yaml
 
-from acuvity.guard.errors import (
-    GuardConfigError,
-    ThresholdParsingError,
+from acuvity.guard.config import (
+    GuardConfig,
 )
 from acuvity.guard.constants import (
     ComparisonOperator,
 )
-
-from acuvity.guard.config import (
-    GuardConfig,
+from acuvity.guard.errors import (
+    GuardConfigError,
+    ThresholdParsingError,
 )
 
 
@@ -157,7 +156,6 @@ class TestGuardConfig:
         config_path = create_test_config(tmp_path, config_yaml)
         parser.parse_config(config_path)
 
-        print("total guards ", len(parser.simple_guards))
         # Check match guards
         match_guards = parser.match_guards
         assert len(match_guards) == 2

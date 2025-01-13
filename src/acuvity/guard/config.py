@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 
 from .constants import GuardName
-from .threshold import Threshold
 from .errors import ConfigValidationError, GuardConfigError, ThresholdParsingError
+from .threshold import Threshold
 
 
 @dataclass(frozen=True)
@@ -38,7 +38,7 @@ class GuardConfig:
     2. Simple Guards: Guards without matches (e.g., prompt_injection, toxicity)
     """
 
-    DEFAULT_THRESHOLD = Threshold(">0.0")
+    DEFAULT_THRESHOLD = Threshold("> 0.0")
     def __init__(self, config: Optional[Union[str, Path, Dict]] = None):
         """
         Initialize parser with analyzer mapping.
@@ -51,12 +51,14 @@ class GuardConfig:
         # Handle default configuration
         if config is None:
             for guard in GuardName:
-                self._parsed_guards.append(Guard(
-                    name=guard,
-                    matches={},
-                    threshold=self.DEFAULT_THRESHOLD,
-                    count_threshold=0,
-                ))
+                # skip keyword detector in default
+                if guard != GuardName.KEYWORD_DETECTOR:
+                    self._parsed_guards.append(Guard(
+                        name=guard,
+                        matches={},
+                        threshold=self.DEFAULT_THRESHOLD,
+                        count_threshold=0,
+                    ))
             return
 
         # Use the config provided
@@ -251,9 +253,11 @@ class GuardConfig:
         for match_key, match_data in guard.get('matches', {}).items():
             matches[match_key] = self._parse_match(match_key, match_data)
 
-        return Guard(
-            name=name,
-            matches=matches,
-            threshold=threshold,
-            count_threshold=guard.get('count_threshold')
-        )
+        guard_name = GuardName.get(name)
+        if guard_name:
+            return Guard(
+                name=guard_name,
+                matches=matches,
+                threshold=threshold,
+                count_threshold=guard.get('count_threshold')
+            )

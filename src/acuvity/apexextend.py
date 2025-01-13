@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
+from acuvity.guard.config import GuardConfig
 from acuvity.models import (
     Analyzer,
     Anonymization,
@@ -17,10 +18,12 @@ from acuvity.models import (
     ScanrequestType,
     Type,
 )
-from acuvity.response.verdict import ResponseVerdict
 from acuvity.response.constants import guardname_analyzer_id_map
+from acuvity.response.verdict import ResponseVerdict
 from acuvity.sdkconfiguration import SDKConfiguration
-from acuvity.guard.config import GuardConfig
+from acuvity.utils.logger import get_default_logger
+
+logger = get_default_logger()
 
 from .apex import Apex
 
@@ -113,10 +116,15 @@ class ApexExtended(Apex):
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param guard_config: TODO.
         """
-        if guard_config:
-            gconfig = GuardConfig(guard_config)
-        else:
-            gconfig = GuardConfig()
+        try:
+            if guard_config:
+                gconfig = GuardConfig(guard_config)
+            else:
+                gconfig = GuardConfig()
+        except Exception as e:
+            logger.debug("Error while processing the guard config")
+            raise ValueError("Cannot process the guard config") from e
+
         raw_scan_response = self.scan_request(request=self.__build_scan_request(
             *messages,
             files=files,
@@ -442,7 +450,6 @@ class ApexExtended(Apex):
         if not isinstance(analyzers, List):
             raise ValueError("analyzers must be a list")
         analyzers_list = self.list_analyzer_groups() + self.list_analyzer_names()
-        print("\n analyzer list -->", analyzers_list)
         for analyzer in analyzers:
             if not isinstance(analyzer, str):
                 raise ValueError("analyzers must be strings")
