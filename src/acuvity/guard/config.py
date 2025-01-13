@@ -16,7 +16,7 @@ class Match:
     """Immutable match configuration"""
     threshold: Threshold
     redact: bool = False
-    count_threshold: Optional[int] = None
+    count_threshold: int = 0
 
 @dataclass(frozen=True)
 class Guard:
@@ -24,7 +24,7 @@ class Guard:
     name: GuardName
     matches: Dict[str, Match]
     threshold: Threshold
-    count_threshold: Optional[int] = None
+    count_threshold: int = 0
 
 class GuardConfig:
     """
@@ -39,7 +39,7 @@ class GuardConfig:
     """
 
     DEFAULT_THRESHOLD = Threshold("> 0.0")
-    def __init__(self, config: Optional[Union[str, Path, Dict]] = None):
+    def __init__(self, config: Optional[Union[str, Path, Dict, List[Guard]]] = None):
         """
         Initialize parser with analyzer mapping.
 
@@ -84,7 +84,7 @@ class GuardConfig:
         except (yaml.YAMLError, OSError) as e:
             raise GuardConfigError(f"Failed to load config file: {e}") from e
 
-    def _parse_config(self, config: Union[str, Path, Dict]) -> List[Guard]:
+    def _parse_config(self, config: Union[str, Path, Dict, List[Guard]]) -> List[Guard]:
         """
         Parse guard configuration from file or dictionary.
 
@@ -97,10 +97,16 @@ class GuardConfig:
         Raises:
             GuardConfigError: If configuration is invalid
         """
+        # Handle list of guard dictionaries
+        if isinstance(config, list):
+            self._parsed_guards = config
+            return self._parsed_guards
+
         if isinstance(config, (str, Path)):
             config_data = self.load_yaml(config)
         else:
             config_data = config
+
 
         try:
             # Handle both single guard and multiple guardrails format
@@ -160,7 +166,7 @@ class GuardConfig:
             return Match(
                 threshold=threshold,
                 redact=match_data.get('redact', False),
-                count_threshold=match_data.get('count_threshold')
+                count_threshold=match_data.get('count_threshold', 0)
             )
         return Match(
             threshold=threshold,
@@ -259,5 +265,5 @@ class GuardConfig:
                 name=guard_name,
                 matches=matches,
                 threshold=threshold,
-                count_threshold=guard.get('count_threshold')
+                count_threshold=guard.get('count_threshold', 0)
             )

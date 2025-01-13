@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Optional
 
 from acuvity.guard.constants import GuardName
-from acuvity.guard.threshold import Threshold
 
 
 class ResponseMatch(str, Enum):
@@ -18,6 +16,7 @@ class GuardMatch:
     guard_name: GuardName
     actual_value: float
     threshold: str
+    match_count: int = 0
 
 @dataclass
 class Matches:

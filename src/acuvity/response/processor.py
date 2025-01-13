@@ -35,27 +35,35 @@ class ResponseProcessor:
         """Process a simple guard (no matches)."""
         return self.process_guard_check(guard)
 
-    def _process_match_guard(self, guard: Guard) -> List[GuardMatch]:
+    def _process_match_guard(self, guard: Guard) -> GuardMatch:
         """Process a guard with matches."""
-        results = []
-        if not guard.matches:
-            return results
-
-        for match_name, _ in guard.matches.items():
+        result_match = ResponseMatch.NO
+        match_counter = 0
+        for match_name, match_name_guard in guard.matches.items():
             result = self.process_guard_check(
                 guard,
                 match_name
             )
-            results.append(result)
+            # increment the match_counter only if eval is YES and it crosess the individual count_threshold .
+            if result.response_match == ResponseMatch.YES and result.match_count >= match_name_guard.count_threshold:
+                match_counter += result.match_count
+            # if any one match, then flagged or if threshold given then check if greater.
+            if match_counter >= guard.count_threshold:
+                result_match = ResponseMatch.YES
 
-        return results
+        return GuardMatch(
+                    response_match=result_match,
+                    guard_name=guard.name,
+                    threshold=str(guard.threshold),
+                    actual_value=1.0,
+                    match_count=match_counter
+                )
 
     def matches(self) -> Matches:
         """Process the complete guard configuration."""
         try:
             matched_checks = []
             all_checks = []
-
             for guard in self.guard_config.simple_guards:
                 result = self._process_simple_guard(guard)
                 if result.response_match == ResponseMatch.YES:
@@ -64,7 +72,8 @@ class ResponseProcessor:
 
             for guard in self.guard_config.match_guards:
                 results = self._process_match_guard(guard)
-                matched_checks.extend([r for r in results if r.response_match == ResponseMatch.YES])
+                if results.response_match == ResponseMatch.YES:
+                    matched_checks.append(results)
                 all_checks.append(results)
 
             return Matches(

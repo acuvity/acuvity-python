@@ -42,8 +42,9 @@ class ResponseEvaluator:
             result = self._parser.get_value(extraction, guard.name, match_name)
             # Handle different return types
             # PII and keyword
+            match_count = None
             if isinstance(result, tuple) and len(result) == 3:  # (bool, float, int)
-                exists, value, _ = result
+                exists, value, match_count = result
             # exploit, topic, classification, language
             elif isinstance(result, tuple) and len(result) == 2:  # (bool, float)
                 exists, value = result
@@ -67,7 +68,8 @@ class ResponseEvaluator:
                 response_match=ResponseMatch.YES if comparison_result else ResponseMatch.NO,
                 guard_name=guard.name,
                 threshold=str(guard.threshold),
-                actual_value=value
+                actual_value=value,
+                match_count=match_count if match_count else 0
             )
         except Exception as e:
             logger.debug("Error in check evaluation: %s", str(e))
