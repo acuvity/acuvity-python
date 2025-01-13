@@ -1,9 +1,10 @@
 from enum import Enum, auto
-from typing import Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 from acuvity.guard.constants import GuardName
 from acuvity.guard.errors import ValidationError
 from acuvity.models.extraction import Extraction
+from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
 
 
 class GuardType(Enum):
@@ -44,6 +45,18 @@ TOPIC_PREFIXES = {
     GuardName.HARMFUL_CONTENT: 'content/harmful',
 }
 
+DETECTIONTYPE_MAP = {
+    TextualdetectionType.KEYWORD : "keywords",
+    TextualdetectionType.PII: "pi_is",
+    TextualdetectionType.SECRET : "secrets"
+}
+
+GUARDNAME_TO_DETECTIONTYPE = {
+    GuardName.KEYWORD_DETECTOR : TextualdetectionType.KEYWORD,
+    GuardName.SECRETS_DETECTOR: TextualdetectionType.SECRET,
+    GuardName.PII_DETECTOR: TextualdetectionType.PII
+}
+
 class ResponseParser:
     """Parser for accessing values in Extraction response based on guard types."""
 
@@ -59,13 +72,13 @@ class ResponseParser:
             raise ValidationError(f"Unknown guard type: {guard_name}")
 
         value_getters = {
-            GuardType.EXPLOIT: self._get_exploit_value,
-            GuardType.TOPIC: self._get_topic_value,
+            GuardType.EXPLOIT: self._get_guard_value,
+            GuardType.TOPIC: self._get_guard_value,
+            GuardType.MODALITY: self._get_modality_value,
             GuardType.LANGUAGE: self._get_language_value,
-            GuardType.PII: self._get_pii_value,
-            GuardType.SECRETS: self._get_secrets_value,
-            GuardType.KEYWORD: self._get_keyword_value,
-            GuardType.MODALITY: self._get_modality_value
+            GuardType.PII: self.get_text_detections,
+            GuardType.SECRETS: self.get_text_detections,
+            GuardType.KEYWORD: self.get_text_detections,
         }
 
         getter = value_getters.get(guard_type)
@@ -77,53 +90,35 @@ class ResponseParser:
         except Exception as e:
             raise ValidationError(f"Error getting value for {guard_name}: {str(e)}") from e
 
-    def _get_exploit_value(
-        self,
-        extraction: Extraction,
-        guard_name: str,
-        _: Optional[str] = None
-    ) -> tuple[bool, float]:
-        """Get value from exploits section."""
-        if not extraction.exploits:
-            return False, 0
-
-        value = extraction.exploits.get(guard_name)
-        if value is None:
-            return False, 0
-
-        return True, float(value)
-
-    def _get_topic_value(
+    def _get_guard_value(
         self,
         extraction: Extraction,
         guard_name: GuardName,
-        match_name: Optional[str]
+        _: Optional[str]
     ) -> tuple[bool, float]:
         """Get value from topics section with prefix handling."""
-        if not extraction.topics:
-            return False, 0
 
         prefix = TOPIC_PREFIXES.get(guard_name)
         if not prefix:
-            raise ValidationError(f"No topic prefix for {guard_name}")
-
-        if match_name:
-            # Exact match with match_name
-            key = f"{prefix}/{match_name}"
-            value = extraction.topics.get(key)
+            if not extraction.exploits:
+                return False , 0.0
+            value = extraction.exploits.get(str(guard_name))
+            if value is None:
+                return False, 0
+            return True, float(value)
+        else:
+            if not extraction.topics:
+                return False, 0
+            value = extraction.topics.get(prefix)
             if value is not None:
                 return True, float(value)
             return False, 0.0
-        # Look for any key starting with prefix
-        for key, value in extraction.topics.items():
-            if key.startswith(prefix):
-                return True, float(value)
-        return False, 0.0
+
 
     def _get_language_value(
         self,
         extraction: Extraction,
-        guard_name: str,
+        guard_name: GuardName,
         match_name: Optional[str]
     ) -> tuple[bool, float]:
         """Get value from languages section."""
@@ -146,107 +141,68 @@ class ResponseParser:
             return False, 0
         return True, float(value)
 
-    def _get_pii_value(
-        self,
-        extraction: Extraction,
-        _: str,
-        match_name: Optional[str]
-    ) -> tuple[bool, float, int]:
-        """
-        Get PII values. If match_name is provided, returns count from textual detections.
-        Otherwise, returns all PII values.
-        """
-        if not extraction.pi_is and not extraction.detections:
+
+    def get_text_detections(
+            self,
+            extraction: Extraction,
+            guard_name: GuardName,
+            match_name: Optional[str]
+    )-> tuple[bool, float, int]:
+
+        # Get the detection type for this guard
+        guard = GuardName.valid(str(guard_name))
+        if not guard:
+            raise ValidationError(f"No matching detection type for guard: {guard_name}")
+
+        detection_type = GUARDNAME_TO_DETECTIONTYPE.get(guard_name)
+        if not detection_type:
+            raise ValidationError(f"No matching detection type for guard: {guard_name}")
+
+        # Get the field name for this detection type
+        field_name = DETECTIONTYPE_MAP.get(detection_type)
+        if not field_name:
+            raise ValidationError(f"No matching field for detection type: {detection_type}")
+
+        # Get the relevant match_keys dictionary using getattr
+        match_keys = getattr(extraction, field_name, {}) or {}
+        detections = extraction.detections or []
+
+
+        detections = extraction.detections
+        if not match_keys and not detections:
             return False, 0, 0
 
         if match_name:
             # Count occurrences in textual detections
-            if not extraction.detections:
+            if not detections:
                 return False, 0, 0
-            pii_matches = []
-            pii_matches = [
-                d.score for d in extraction.detections
-                if d.type == "PII" and d.name == match_name and d.score is not None
+            text_matches = []
+            text_matches = [
+                d.score for d in detections
+                if d.type == detection_type and d.name == match_name and d.score is not None
             ]
 
-            count = len(pii_matches)
-            # If no textual detections, check `pi_is` for the match
-            if count == 0 and extraction.pi_is and match_name in extraction.pi_is:
-                return True, extraction.pi_is[match_name], 1
+            count = len(text_matches)
+            # If no textual detections, check `match_keys` for the match
+            if count == 0 and match_keys and match_name in match_keys:
+                return True, match_keys[match_name], 1
 
             if count == 0:
                 return False, 0, 0
-            score = max(pii_matches)
+            score = max(text_matches)
             return True, score, count
 
-        # Return all PII values
-        # Return all PII values if no match_name is provided
-        exists = bool(extraction.pi_is)
-        count = len(extraction.pi_is) if extraction.pi_is else 0
+        # Return all text match values if no match_name is provided
+        exists = bool(match_keys)
+        count = len(match_keys) if match_keys else 0
         return exists, 1.0 if exists else 0.0, count
-
-    def _get_secrets_value(
-        self,
-        extraction: Extraction,
-        _: str,
-        match_name: Optional[str]
-    ) -> bool:
-        """Get value from secrets section."""
-        if not extraction.secrets:
-            return False
-        if match_name:
-            value = extraction.secrets.get(match_name)
-        else:
-            return len(extraction.secrets) > 0
-
-        if value is None:
-            return False
-        return True
-
-    def _get_keyword_value(
-        self,
-        extraction: Extraction,
-        _: str,
-        match_name: Optional[str]
-    ) -> tuple[bool, float, int]:
-        """
-        Get keyword detector values. Returns both the keyword confidence
-        and count of occurrences.
-        """
-        if not extraction.detections:
-            return False, 0, 0
-        if not match_name:
-            raise ValidationError("Match name required for keyword detector")
-
-        # Find all detections for this keyword
-        keyword_detections = [
-            d.score for d in extraction.detections
-            if d.type == "Keyword" and d.name == match_name and d.score is not None
-        ]
-
-        if not keyword_detections:
-            return False, 0, 0
-        max_score = max(keyword_detections)
-        # Return count of detections
-        return True, max_score, len(keyword_detections)
 
     def _get_modality_value(
         self,
         extraction: Extraction,
-        _: str,
+        _: GuardName,
         match_name: Optional[str] = None
     ) -> bool:
-        """
-        Check if modality exists in the extraction.
-
-        Args:
-            extraction: The Extraction instance
-            _: Unused guard name
-            match_name: Optional specific modality to check for
-
-        Returns:
-            bool: True if modality exists, False if not
-        """
         if not extraction.modalities:
             return False  # No modalities at all
 

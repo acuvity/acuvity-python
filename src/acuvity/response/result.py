@@ -7,7 +7,7 @@ from acuvity.guard.threshold import Threshold
 
 
 class ResponseMatch(str, Enum):
-    """Enumeration for check verdicts."""
+    """Enumeration for check matches."""
     YES = "YES"
     NO = "NO"
 

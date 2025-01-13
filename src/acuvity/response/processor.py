@@ -24,7 +24,7 @@ class ResponseProcessor:
         """Process a single guard check with action consideration."""
         try:
             if self._response is None:
-                raise ValueError("Response cannot be nil to process the verdict")
+                raise ValueError("Response cannot be nil to process the match")
             # Get raw evaluation
             return self._evaluator.evaluate(self._response, guard, match_name)
         except Exception as e:
@@ -50,7 +50,7 @@ class ResponseProcessor:
 
         return results
 
-    def verdicts(self) -> Matches:
+    def matches(self) -> Matches:
         """Process the complete guard configuration."""
         try:
             matched_checks = []

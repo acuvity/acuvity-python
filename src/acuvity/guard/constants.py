@@ -16,13 +16,19 @@ class GuardName(Enum):
     MALICIOUS_URL = "malicious_url"
     TOXICITY = "toxicity"
     BIAS = "bias"
-    HARMFUL_CONTENT = "harmful_content"
+    HARMFUL_CONTENT = "harmful"
     GIBBERISH = "gibberish"
     LANGUAGE = "language"
     MODALITY = "modality"
     PII_DETECTOR = "pii_detector"
     SECRETS_DETECTOR = "secrets_detector"
     KEYWORD_DETECTOR = "keyword_detector"
+
+    def __str__(self) -> str:
+        """
+        Return the string representation of the enum member (i.e., its value).
+        """
+        return self.value
 
     @classmethod
     def valid(cls, guard: str) -> bool:
