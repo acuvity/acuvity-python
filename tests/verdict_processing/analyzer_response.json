@@ -161,38 +161,6 @@
         "enabled": true
     },
     {
-        "name": "Gibberish detector",
-        "ID": "text-gibberish-classifier",
-        "description": "Detect if a text doesn't look like a spoken language.",
-        "group": "Classifiers",
-        "models": [
-            {
-                "name": "madhurjindal/autonlp-Gibberish-Detector-492513457",
-                "revision": "34458f96f2220507bf3d8d06ac81f43998601767"
-            }
-        ],
-        "detectors": [
-            {
-                "name": "gibberish",
-                "label": "noise",
-                "description": "Gibberish language",
-                "group": "Languages",
-                "positional": false
-            },
-            {
-                "name": "gibberish",
-                "label": "word salad",
-                "description": "Gibberish language",
-                "group": "Languages",
-                "positional": false
-            }
-        ],
-        "triggers": [
-            "Text/*"
-        ],
-        "enabled": true
-    },
-    {
         "name": "Bias detector",
         "ID": "en-text-bias-detector",
         "description": "Detect if an english text contains bias.",

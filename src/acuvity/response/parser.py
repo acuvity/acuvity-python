@@ -31,7 +31,6 @@ GUARD_TYPES = {
 
     # Other guards
     GuardName.LANGUAGE: GuardType.LANGUAGE,
-    GuardName.GIBBERISH: GuardType.LANGUAGE,
     GuardName.PII_DETECTOR: GuardType.PII,
     GuardName.SECRETS_DETECTOR: GuardType.SECRETS,
     GuardName.KEYWORD_DETECTOR: GuardType.KEYWORD,
@@ -74,8 +73,8 @@ class ResponseParser:
         value_getters = {
             GuardType.EXPLOIT: self._get_guard_value,
             GuardType.TOPIC: self._get_guard_value,
+            GuardType.LANGUAGE: self._get_guard_value,
             GuardType.MODALITY: self._get_modality_value,
-            GuardType.LANGUAGE: self._get_language_value,
             GuardType.PII: self.get_text_detections,
             GuardType.SECRETS: self.get_text_detections,
             GuardType.KEYWORD: self.get_text_detections,
@@ -113,33 +112,6 @@ class ResponseParser:
             if value is not None:
                 return True, float(value)
             return False, 0.0
-
-
-    def _get_language_value(
-        self,
-        extraction: Extraction,
-        guard_name: GuardName,
-        match_name: Optional[str]
-    ) -> tuple[bool, float]:
-        """Get value from languages section."""
-        if not extraction.languages:
-            return False, 0
-
-        if guard_name == GuardName.GIBBERISH:
-            value = extraction.languages.get(str(GuardName.GIBBERISH))
-            if value:
-                return True, value
-            else:
-                return False, 0.0
-
-        if match_name:
-            value = extraction.languages.get(match_name)
-        else:
-            return len(extraction.languages) > 0 , 1.0
-
-        if value is None:
-            return False, 0
-        return True, float(value)
 
 
     def get_text_detections(

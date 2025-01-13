@@ -17,7 +17,6 @@ class GuardName(Enum):
     TOXICITY = "toxicity"
     BIAS = "bias"
     HARMFUL_CONTENT = "harmful"
-    GIBBERISH = "gibberish"
     LANGUAGE = "language"
     MODALITY = "modality"
     PII_DETECTOR = "pii_detector"
