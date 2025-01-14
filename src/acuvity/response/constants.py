@@ -19,7 +19,6 @@ guardname_analyzer_id_map: Dict[GuardName, str] = {
 
     # Other guards
     GuardName.LANGUAGE: 'text-language-classifier',
-    GuardName.GIBBERISH:'text-gibberish-classifier',
     GuardName.PII_DETECTOR: 'en-text-ner-detector',
     GuardName.SECRETS_DETECTOR:'text-pattern-detector',
     GuardName.KEYWORD_DETECTOR: 'text-keyword-detector',

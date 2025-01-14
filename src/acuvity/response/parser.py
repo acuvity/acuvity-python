@@ -32,7 +32,6 @@ GUARD_TYPES = {
 
     # Other guards
     GuardName.LANGUAGE: GuardType.LANGUAGE,
-    GuardName.GIBBERISH: GuardType.LANGUAGE,
     GuardName.PII_DETECTOR: GuardType.PII,
     GuardName.SECRETS_DETECTOR: GuardType.SECRETS,
     GuardName.KEYWORD_DETECTOR: GuardType.KEYWORD,
@@ -75,8 +74,8 @@ class ResponseParser:
         value_getters = {
             GuardType.EXPLOIT: self._get_guard_value,
             GuardType.TOPIC: self._get_guard_value,
-            GuardType.MODALITY: self._get_modality_value,
             GuardType.LANGUAGE: self._get_language_value,
+            GuardType.MODALITY: self._get_modality_value,
             GuardType.PII: self.get_text_detections,
             GuardType.SECRETS: self.get_text_detections,
             GuardType.KEYWORD: self.get_text_detections,
@@ -126,13 +125,6 @@ class ResponseParser:
         if not extraction.languages:
             return False, 0
 
-        if guard.name == GuardName.GIBBERISH:
-            value = extraction.languages.get(str(GuardName.GIBBERISH))
-            if value:
-                return True, value
-            else:
-                return False, 0.0
-
         if match_name:
             value = extraction.languages.get(match_name)
         else:
@@ -163,8 +155,6 @@ class ResponseParser:
         match_keys = getattr(extraction, field_name, {}) or {}
         detections = extraction.detections or []
 
-
-        detections = extraction.detections
         if not match_keys and not detections:
             return False, 0, 0
 
