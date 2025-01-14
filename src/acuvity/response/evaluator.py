@@ -39,7 +39,7 @@ class ResponseEvaluator:
             if not response.extractions:
                 raise ValueError("No extractions found in the response")
             extraction = response.extractions[0]
-            result = self._parser.get_value(extraction, guard.name, match_name)
+            result = self._parser.get_value(extraction, guard, match_name)
             # Handle different return types
             # PII and keyword
             match_count = None

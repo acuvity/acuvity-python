@@ -1,6 +1,7 @@
 from enum import Enum, auto
 from typing import Dict, List, Optional, Tuple, Union
 
+from acuvity.guard.config import Guard
 from acuvity.guard.constants import GuardName
 from acuvity.guard.errors import ValidationError
 from acuvity.models.extraction import Extraction
@@ -63,13 +64,13 @@ class ResponseParser:
     def get_value(
         self,
         extraction: Extraction,
-        guard_name: GuardName,
+        guard: Guard,
         match_name: Optional[str] = None
     ) -> Union[bool, Tuple[bool, float], Tuple[bool, float, int]]:
         """Get value from extraction based on guard type."""
-        guard_type = GUARD_TYPES.get(guard_name)
+        guard_type = GUARD_TYPES.get(guard.name)
         if not guard_type:
-            raise ValidationError(f"Unknown guard type: {guard_name}")
+            raise ValidationError(f"Unknown guard type: {guard.name}")
 
         value_getters = {
             GuardType.EXPLOIT: self._get_guard_value,
@@ -86,23 +87,23 @@ class ResponseParser:
             raise ValidationError(f"No handler for guard type: {guard_type}")
 
         try:
-            return getter(extraction, guard_name, match_name)
+            return getter(extraction, guard, match_name)
         except Exception as e:
-            raise ValidationError(f"Error getting value for {guard_name}: {str(e)}") from e
+            raise ValidationError(f"Error getting value for {guard.name}: {str(e)}") from e
 
     def _get_guard_value(
         self,
         extraction: Extraction,
-        guard_name: GuardName,
+        guard: Guard,
         _: Optional[str]
     ) -> tuple[bool, float]:
         """Get value from topics section with prefix handling."""
 
-        prefix = TOPIC_PREFIXES.get(guard_name)
+        prefix = TOPIC_PREFIXES.get(guard.name)
         if not prefix:
             if not extraction.exploits:
                 return False , 0.0
-            value = extraction.exploits.get(str(guard_name))
+            value = extraction.exploits.get(str(guard.name))
             if value is None:
                 return False, 0
             return True, float(value)
@@ -118,14 +119,14 @@ class ResponseParser:
     def _get_language_value(
         self,
         extraction: Extraction,
-        guard_name: GuardName,
+        guard: Guard,
         match_name: Optional[str]
     ) -> tuple[bool, float]:
         """Get value from languages section."""
         if not extraction.languages:
             return False, 0
 
-        if guard_name == GuardName.GIBBERISH:
+        if guard.name == GuardName.GIBBERISH:
             value = extraction.languages.get(str(GuardName.GIBBERISH))
             if value:
                 return True, value
@@ -145,18 +146,13 @@ class ResponseParser:
     def get_text_detections(
             self,
             extraction: Extraction,
-            guard_name: GuardName,
+            guard: Guard,
             match_name: Optional[str]
     )-> tuple[bool, float, int]:
 
-        # Get the detection type for this guard
-        guard = GuardName.valid(str(guard_name))
-        if not guard:
-            raise ValidationError(f"No matching detection type for guard: {guard_name}")
-
-        detection_type = GUARDNAME_TO_DETECTIONTYPE.get(guard_name)
+        detection_type = GUARDNAME_TO_DETECTIONTYPE.get(guard.name)
         if not detection_type:
-            raise ValidationError(f"No matching detection type for guard: {guard_name}")
+            raise ValidationError(f"No matching detection type for guard: {guard.name}")
 
         # Get the field name for this detection type
         field_name = DETECTIONTYPE_MAP.get(detection_type)
@@ -179,7 +175,7 @@ class ResponseParser:
             text_matches = []
             text_matches = [
                 d.score for d in detections
-                if d.type == detection_type and d.name == match_name and d.score is not None
+                if d.type == detection_type and d.name == match_name and d.score is not None  and guard.threshold.compare(d.score)
             ]
 
             count = len(text_matches)
@@ -189,6 +185,7 @@ class ResponseParser:
 
             if count == 0:
                 return False, 0, 0
+
             score = max(text_matches)
             return True, score, count
 

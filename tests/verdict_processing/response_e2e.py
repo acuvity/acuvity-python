@@ -259,3 +259,156 @@ class TestResponseProcessingE2E:
         assert len(result.matched_checks) == 2
         guard_names = {check.guard_name for check in result.matched_checks}
         assert guard_names == {GuardName.PII_DETECTOR, GuardName.PROMPT_INJECTION}
+
+    def test_mixed_thresholds_with_partial_matches(
+    self,
+        create_pii_extraction,
+        create_exploit_extraction
+    ):
+        """
+        Complex scenario 1: Mixed threshold matches where some pass and some fail
+        - PII: Only 2 types qualify (email and SSN, person fails)
+        - Prompt injection: Passes
+        - Multiple high-confidence but insufficient count emails
+        Expected: Only prompt injection should match
+        """
+        # Create PII extraction with:
+        # - 3 high confidence emails (above threshold but won't matter as person fails)
+        # - 1 person with too low confidence
+        # - 1 SSN above threshold
+        pii_extraction = create_pii_extraction(
+            email_detections=[0.95, 0.2, 0.10],  # 3 high confidence emails
+            person_detections=[0.95],              # Person below required 1.0
+            ssn_detections=[0.95]                  # SSN above threshold
+        )
+
+        # Create exploit extraction with high confidence
+        exploit_extraction = create_exploit_extraction(prompt_injection_score=0.85)
+
+        # Combine extractions
+        combined_extraction = Extraction(
+            detections=pii_extraction.detections,
+            pi_is=pii_extraction.pi_is,
+            exploits=exploit_extraction.exploits
+        )
+
+        # Create guard configuration
+        guard_config = GuardConfig(
+            [
+                Guard(
+                    name=GuardName.PROMPT_INJECTION,
+                    threshold=Threshold(">= 0.8"),
+                    matches={}
+                ),
+                Guard(
+                    name=GuardName.PII_DETECTOR,
+                    threshold=Threshold(">= 0.8"),
+                    count_threshold=3,  # Needs all 3 types to qualify
+                    matches={
+                        "email": Match(threshold=Threshold(">= 0.8"), count_threshold=2),
+                        "person": Match(threshold=Threshold(">= 1.0"), count_threshold=1),  # Must be exactly 1.0
+                        "ssn": Match(threshold=Threshold(">= 0.9"), count_threshold=1)
+                    }
+                )
+            ]
+        )
+
+        # Process
+        response = Scanresponse(principal=Principal(type=PrincipalType.APP),extractions=[combined_extraction])
+        processor = ResponseProcessor(response, guard_config)
+        result = processor.matches()
+
+        # Verify
+        assert result.response_match == ResponseMatch.YES  # Overall yes because of prompt injection
+        assert len(result.matched_checks) == 1
+        assert result.matched_checks[0].guard_name == GuardName.PROMPT_INJECTION
+
+        # Verify all checks contains both results
+        assert len(result.all_checks) == 2
+        pii_check = next(check for check in result.all_checks if check.guard_name == GuardName.PII_DETECTOR)
+        assert pii_check.response_match == ResponseMatch.NO
+
+    def test_multiple_guards_edge_cases(
+        self,
+        create_pii_extraction,
+        create_exploit_extraction
+    ):
+        """
+        Complex scenario 2: Multiple guards with edge cases
+        - PII: Exactly meets minimum thresholds
+        - Prompt injection: Just below threshold
+        - Add toxicity check: Just above threshold
+        Expected: PII and toxicity should match, prompt injection should fail
+        """
+        # Create PII extraction with exactly meeting thresholds
+        pii_extraction = create_pii_extraction(
+            email_detections=[0.80, 0.80],  # Exactly meets email threshold
+            person_detections=[1.0],        # Exactly meets person threshold
+            ssn_detections=[0.90]           # Exactly meets SSN threshold
+        )
+
+        # Create exploit extraction with borderline cases
+        exploit_extraction = create_exploit_extraction(prompt_injection_score=0.79)  # Just below threshold
+
+        # Combine extractions and add toxicity
+        combined_extraction = Extraction(
+            detections=pii_extraction.detections,
+            pi_is=pii_extraction.pi_is,
+            exploits=exploit_extraction.exploits,
+            topics={
+                "content/toxic": 0.81  # Just above threshold
+            }
+        )
+
+        # Create guard configuration with three different types
+        guard_config = GuardConfig(
+            [
+                Guard(
+                    name=GuardName.PROMPT_INJECTION,
+                    threshold=Threshold(">= 0.8"),
+                    matches={}
+                ),
+                Guard(
+                    name=GuardName.TOXICITY,
+                    threshold=Threshold(">= 0.8"),
+                    matches={}
+                ),
+                Guard(
+                    name=GuardName.PII_DETECTOR,
+                    threshold=Threshold(">= 0.8"),
+                    count_threshold=3,
+                    matches={
+                        "email": Match(threshold=Threshold(">= 0.8"), count_threshold=2),
+                        "person": Match(threshold=Threshold(">= 1.0"), count_threshold=1),
+                        "ssn": Match(threshold=Threshold(">= 0.9"), count_threshold=1)
+                    }
+                )
+            ]
+        )
+
+        # Process
+        response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[combined_extraction])
+        processor = ResponseProcessor(response, guard_config)
+        result = processor.matches()
+
+        # Verify
+        assert result.response_match == ResponseMatch.YES
+        assert len(result.matched_checks) == 2
+
+        # Verify specific guards
+        guard_names = {check.guard_name for check in result.matched_checks}
+        assert guard_names == {GuardName.PII_DETECTOR, GuardName.TOXICITY}
+
+        # Verify all checks contains all three results
+        assert len(result.all_checks) == 3
+
+        # Verify individual check results
+        for check in result.all_checks:
+            if check.guard_name == GuardName.PROMPT_INJECTION:
+                assert check.response_match == ResponseMatch.NO
+                assert check.actual_value == 0.79
+            elif check.guard_name == GuardName.TOXICITY:
+                assert check.response_match == ResponseMatch.YES
+                assert check.actual_value == 0.81
+            elif check.guard_name == GuardName.PII_DETECTOR:
+                assert check.response_match == ResponseMatch.YES
