@@ -1,11 +1,11 @@
 from enum import Enum, auto
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 from acuvity.guard.config import Guard
 from acuvity.guard.constants import GuardName
 from acuvity.guard.errors import ValidationError
 from acuvity.models.extraction import Extraction
-from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
+from acuvity.models.textualdetection import TextualdetectionType
 
 
 class GuardType(Enum):
