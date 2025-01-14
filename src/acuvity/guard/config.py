@@ -186,6 +186,16 @@ class GuardConfig:
                 if guard.matches]
 
     @property
+    def parsed_guards(self) -> List[Guard]:
+        """
+        Returns list of guard configurations that have match patterns.
+
+        Returns:
+            List of Guard objects that have 'matches' section
+        """
+        return self._parsed_guards
+
+    @property
     def simple_guards(self) -> List[Guard]:
         """
         Returns list of guard configurations without match patterns.
