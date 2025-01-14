@@ -19,7 +19,7 @@ class ResponseEvaluator:
 
     def evaluate(
         self,
-        extraction: Extraction,
+        response_extraction: Extraction,
         guard: Guard,
         match_name: Optional[str] = None
     ) -> GuardMatch:
@@ -27,7 +27,7 @@ class ResponseEvaluator:
         Evaluates a check condition using a Guard object.
 
         Args:
-            response: The scan response
+            response_extraction: The scan response extraction
             guard: The guard to eval with the response
             match_name: The match match for the guard
 
@@ -35,7 +35,7 @@ class ResponseEvaluator:
             GuardMatch with MATCH.YES if condition met, MATCH>NO if not met
         """
         try:
-            result = self._parser.get_value(extraction, guard, match_name)
+            result = self._parser.get_value(response_extraction, guard, match_name)
             # Handle different return types
             # PII and keyword
             match_count = None
