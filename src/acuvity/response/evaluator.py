@@ -1,7 +1,7 @@
 from typing import Optional
 
 from ..guard.config import Guard
-from ..models.scanresponse import Scanresponse
+from ..models.scanresponse import Extraction
 from ..utils.logger import get_default_logger
 from .parser import ResponseParser
 from .result import GuardMatch, ResponseMatch
@@ -10,8 +10,7 @@ logger = get_default_logger()
 
 class ResponseEvaluator:
     """
-    Handles pure check evaluation without considering actions.
-    This evaluator determines if conditions are met based on thresholds.
+    This ResponseEvaluator determines if conditions are met based on thresholds.
     """
 
     def __init__(self):
@@ -20,25 +19,22 @@ class ResponseEvaluator:
 
     def evaluate(
         self,
-        response: Scanresponse,
+        extraction: Extraction,
         guard: Guard,
         match_name: Optional[str] = None
     ) -> GuardMatch:
         """
-        Evaluates a check condition using a Threshold object.
+        Evaluates a check condition using a Guard object.
 
         Args:
-            response: The response data to check
-            path: Path to the value in the response
-            threshold: Threshold object containing value and operator
+            response: The scan response
+            guard: The guard to eval with the response
+            match_name: The match match for the guard
 
         Returns:
-            GuardMatch with PASS if condition met, FAIL if not met
+            GuardMatch with MATCH.YES if condition met, MATCH>NO if not met
         """
         try:
-            if not response.extractions:
-                raise ValueError("No extractions found in the response")
-            extraction = response.extractions[0]
             result = self._parser.get_value(extraction, guard, match_name)
             # Handle different return types
             # PII and keyword

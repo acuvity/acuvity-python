@@ -30,6 +30,10 @@ class GuardName(Enum):
         return self.value
 
     @classmethod
+    def values(cls) -> list[str]:
+        return [member.value for member in cls]
+
+    @classmethod
     def valid(cls, guard: str) -> bool:
         """
         Check if the input string represents a valid guard name.

@@ -7,7 +7,11 @@ from typing import Any, Dict, List, Optional, Union
 import yaml
 
 from .constants import GuardName
-from .errors import ConfigValidationError, GuardConfigError, ThresholdParsingError
+from .errors import (
+    GuardConfigError,
+    GuardConfigValidationError,
+    GuardThresholdParsingError,
+)
 from .threshold import Threshold
 
 
@@ -38,7 +42,7 @@ class GuardConfig:
     2. Simple Guards: Guards without matches (e.g., prompt_injection, toxicity)
     """
 
-    DEFAULT_THRESHOLD = Threshold("> 0.0")
+    DEFAULT_THRESHOLD = Threshold(">= 0.0")
     def __init__(self, config: Optional[Union[str, Path, Dict, List[Guard]]] = None):
         """
         Initialize parser with analyzer mapping.
@@ -98,8 +102,9 @@ class GuardConfig:
             GuardConfigError: If configuration is invalid
         """
         # Handle list of guard dictionaries
-        if isinstance(config, list):
-            self._parsed_guards = config
+        if isinstance(config, list) and all(isinstance(guard, Guard) for guard in config):
+            self._parsed_guards = [self._parse_guard_obj(guard) for guard in config
+                              if self._validate_guard(guard)]
             return self._parsed_guards
 
         if isinstance(config, (str, Path)):
@@ -121,7 +126,7 @@ class GuardConfig:
         except Exception as e:
             raise GuardConfigError(f"Failed to parse config: {e}") from e
 
-    def _validate_guard(self, guard: Dict) -> bool:
+    def _validate_guard(self, guard: Union[Dict, Guard]) -> bool:
         """
         Validate individual guard configuration.
 
@@ -132,16 +137,16 @@ class GuardConfig:
             True if guard is valid
 
         Raises:
-            ConfigValidationError: If guard configuration is invalid
+            GuardConfigValidationError: If guard configuration is invalid
         """
-        if not isinstance(guard, dict):
-            raise ConfigValidationError("Guard must be a dictionary")
+        if isinstance(guard, Guard) and not GuardName.valid(str(guard.name)):
+                raise GuardConfigValidationError("Guard must have a valid name")
+        elif isinstance(guard, Dict):
+            if 'name' not in guard:
+                raise GuardConfigValidationError("Guard must have a name")
 
-        if 'name' not in guard:
-            raise ConfigValidationError("Guard must have a name")
-
-        if not GuardName.valid(guard['name']):
-            raise ConfigValidationError(f"Guard name not present {guard['name']}")
+            if not GuardName.valid(guard['name']):
+                raise GuardConfigValidationError(f"Guard name not present {guard['name']}")
 
         return True
 
@@ -160,8 +165,8 @@ class GuardConfig:
         if match_data and 'threshold' in match_data:
             try:
                 threshold = Threshold(match_data['threshold'])
-            except ThresholdParsingError as e:
-                raise ThresholdParsingError(f"Invalid threshold for match {match_key}") from e
+            except GuardConfigValidationError as e:
+                raise GuardConfigValidationError(f"Invalid threshold for match {match_key}") from e
 
             return Match(
                 threshold=threshold,
@@ -252,16 +257,17 @@ class GuardConfig:
             Guard object
 
         Raises:
-            ConfigValidationError: If guard configuration is invalid
+            GuardConfigValidationError: If guard configuration is invalid
         """
         name = guard['name']
+
 
         # Parse top-level threshold
         threshold = self.DEFAULT_THRESHOLD
         if 'threshold' in guard:
             try:
                 threshold = Threshold(guard['threshold'])
-            except ThresholdParsingError as e:
+            except GuardConfigValidationError as e:
                 raise e
 
         # Parse matches
@@ -277,3 +283,47 @@ class GuardConfig:
                 threshold=threshold,
                 count_threshold=guard.get('count_threshold', 0)
             )
+
+    def _parse_guard_obj(self, guard: Guard) -> Guard:
+        """
+        Parse (or re-validate) an existing Guard object.
+
+        Args:
+            guard: An already-instantiated Guard object.
+
+        Returns:
+            A Guard object (either the same or a new one) that has been
+            re-validated, re-initialized, or finalized.
+
+        Raises:
+            ConfigValidationError: If guard configuration is invalid.
+        """
+        try:
+            # Convert guard.name to GuardName if it's not already
+            guard_name = guard.name
+            if not isinstance(guard_name, GuardName):
+                # If .get() can raise an error, it'll be caught by this try block
+                guard_name = GuardName.get(guard_name)
+
+            # Parse or confirm the threshold
+            threshold = guard.threshold if guard.threshold is not None else self.DEFAULT_THRESHOLD
+            # If threshold parsing can fail, wrap it similarly:
+            # threshold = Threshold(guard.threshold)
+
+            # Re-parse or validate each match
+            parsed_matches = {}
+            for match_key, match_data in guard.matches.items():
+                # _parse_match may raise various exceptions if the data is invalid
+                parsed_matches[match_key] = self._parse_match(match_key, match_data)
+
+            # Create and return a new Guard object or update the existing one
+            return Guard(
+                name=guard.name,
+                matches=parsed_matches,
+                threshold=threshold,
+                count_threshold=guard.count_threshold or 0
+            )
+
+        except (KeyError, GuardThresholdParsingError, ValueError) as e:
+            # Catch whatever errors might arise (KeyError for missing fields, etc.)
+            raise GuardConfigValidationError(f"Failed to parse Guard object: {e}") from e

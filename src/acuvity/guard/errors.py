@@ -4,8 +4,8 @@ class ValidationError(Exception):
 class GuardConfigError(Exception):
     """Base exception for guard parser errors"""
 
-class ConfigValidationError(GuardConfigError):
+class GuardConfigValidationError(GuardConfigError):
     """Raised when config validation fails"""
 
-class ThresholdParsingError(GuardConfigError):
+class GuardThresholdParsingError(GuardConfigError):
     """Raised when threshold parsing fails"""

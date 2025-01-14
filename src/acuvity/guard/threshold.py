@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from .constants import ComparisonOperator
-from .errors import ThresholdParsingError
+from .errors import GuardConfigValidationError
 
 
 @dataclass(frozen=False)
@@ -17,7 +17,7 @@ class Threshold:
             Threshold object or None if parsing fails
 
         Raises:
-            ThresholdParsingError: If threshold format is invalid
+            GuardConfigValidationError: If threshold format is invalid
         """
         try:
             operator_str, value_str = threshold_str.split()
@@ -26,10 +26,10 @@ class Threshold:
             try:
                 self.operator = ComparisonOperator(operator_str)
             except ValueError as e :
-                raise ThresholdParsingError(f"Invalid operator: {operator_str}") from e
+                raise GuardConfigValidationError(f"Invalid operator: {operator_str}") from e
 
         except ValueError as e:
-            raise ThresholdParsingError("Invalid threshold format") from e
+            raise GuardConfigValidationError("Invalid threshold format") from e
 
     def __str__(self) -> str:
         return f"{self.operator.value} {self.value}"

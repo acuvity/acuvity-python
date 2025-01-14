@@ -3,9 +3,9 @@ from typing import Optional, Tuple, Union
 
 from acuvity.guard.config import Guard
 from acuvity.guard.constants import GuardName
-from acuvity.guard.errors import ValidationError
 from acuvity.models.extraction import Extraction
-from acuvity.models.textualdetection import TextualdetectionType
+from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
+from acuvity.response.errors import ResponseValidationError
 
 
 class GuardType(Enum):
@@ -54,7 +54,8 @@ DETECTIONTYPE_MAP = {
 GUARDNAME_TO_DETECTIONTYPE = {
     GuardName.KEYWORD_DETECTOR : TextualdetectionType.KEYWORD,
     GuardName.SECRETS_DETECTOR: TextualdetectionType.SECRET,
-    GuardName.PII_DETECTOR: TextualdetectionType.PII
+    GuardName.PII_DETECTOR: TextualdetectionType.PII,
+    GuardName.LANGUAGE: "language",
 }
 
 class ResponseParser:
@@ -69,7 +70,7 @@ class ResponseParser:
         """Get value from extraction based on guard type."""
         guard_type = GUARD_TYPES.get(guard.name)
         if not guard_type:
-            raise ValidationError(f"Unknown guard type: {guard.name}")
+            raise ResponseValidationError(f"Unknown guard type: {guard.name}")
 
         value_getters = {
             GuardType.EXPLOIT: self._get_guard_value,
@@ -83,12 +84,12 @@ class ResponseParser:
 
         getter = value_getters.get(guard_type)
         if not getter:
-            raise ValidationError(f"No handler for guard type: {guard_type}")
+            raise ResponseValidationError(f"No handler for guard type: {guard_type}")
 
         try:
             return getter(extraction, guard, match_name)
         except Exception as e:
-            raise ValidationError(f"Error getting value for {guard.name}: {str(e)}") from e
+            raise ResponseValidationError(f"Error getting value for {guard.name}: {str(e)}") from e
 
     def _get_guard_value(
         self,
@@ -144,12 +145,12 @@ class ResponseParser:
 
         detection_type = GUARDNAME_TO_DETECTIONTYPE.get(guard.name)
         if not detection_type:
-            raise ValidationError(f"No matching detection type for guard: {guard.name}")
+            raise ResponseValidationError(f"No matching detection type for guard: {guard.name}")
 
         # Get the field name for this detection type
         field_name = DETECTIONTYPE_MAP.get(detection_type)
         if not field_name:
-            raise ValidationError(f"No matching field for detection type: {detection_type}")
+            raise ResponseValidationError(f"No matching field for detection type: {detection_type}")
 
         # Get the relevant match_keys dictionary using getattr
         match_keys = getattr(extraction, field_name, {}) or {}

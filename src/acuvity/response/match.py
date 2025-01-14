@@ -21,7 +21,7 @@ class ScanResponseMatch:
         except Exception as e:
             raise ValueError(f"Failed to process match: {str(e)}") from e
 
-    def matches(self) -> Matches:
+    def matches(self) -> list[Matches]:
         """
         Returns the overall match of the scan response.
         """
@@ -35,11 +35,15 @@ class ScanResponseMatch:
             guard: Name of the guard for querying a specific guard's match.
 
         Returns:
-            GuardMatch for a specific guard.
+            The 1st found GuardMatch for a specific guard.
         """
-        for check in self.match_details.matched_checks:
-            if check.guard_name == guard:
-                return check
+        for match in (
+                c
+                for check in self.match_details
+                for c in check.matched_checks
+                if c.guard_name == guard
+            ):
+            return match
 
         # If not failed, return PASS
         return GuardMatch(

@@ -21,6 +21,7 @@ class GuardMatch:
 @dataclass
 class Matches:
     """Result of processing multiple checks or a configuration."""
+    input_data: str
     response_match: ResponseMatch
     matched_checks: list[GuardMatch]
     all_checks: list[GuardMatch]

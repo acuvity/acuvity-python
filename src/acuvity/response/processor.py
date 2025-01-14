@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 from acuvity.guard.config import Guard, GuardConfig
-from acuvity.models.scanresponse import Scanresponse
+from acuvity.models.scanresponse import Extraction, Scanresponse
 from acuvity.response.evaluator import ResponseEvaluator
 from acuvity.response.result import GuardMatch, Matches, ResponseMatch
 from acuvity.utils.logger import get_default_logger
@@ -19,29 +19,29 @@ class ResponseProcessor:
     def process_guard_check(
         self,
         guard: Guard,
+        extraction: Extraction,
         match_name: Optional[str] = None
     ) -> GuardMatch:
         """Process a single guard check with action consideration."""
         try:
-            if self._response is None:
-                raise ValueError("Response cannot be nil to process the match")
             # Get raw evaluation
-            return self._evaluator.evaluate(self._response, guard, match_name)
+            return self._evaluator.evaluate(extraction, guard, match_name)
         except Exception as e:
             logger.debug("Error processing guard %s ", {guard.name})
             raise e
 
-    def _process_simple_guard(self, guard: Guard) -> GuardMatch:
+    def _process_simple_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
         """Process a simple guard (no matches)."""
-        return self.process_guard_check(guard)
+        return self.process_guard_check(guard, extraction)
 
-    def _process_match_guard(self, guard: Guard) -> GuardMatch:
+    def _process_match_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
         """Process a guard with matches."""
         result_match = ResponseMatch.NO
         match_counter = 0
         for match_name, match_name_guard in guard.matches.items():
             result = self.process_guard_check(
                 guard,
+                extraction,
                 match_name
             )
             # increment the match_counter only if eval is YES and it crosess the individual count_threshold .
@@ -60,28 +60,38 @@ class ResponseProcessor:
                     match_count=match_counter
                 )
 
-    def matches(self) -> Matches:
+    def matches(self) -> list[Matches]:
         """Process the complete guard configuration."""
+        all_matches : list[Matches] = []
         try:
-            matched_checks = []
-            all_checks = []
-            for guard in self.guard_config.simple_guards:
-                result = self._process_simple_guard(guard)
-                if result.response_match == ResponseMatch.YES:
-                    matched_checks.append(result)
-                all_checks.append(result)
+            if self._response.extractions is None:
+                raise ValueError("response doesn't contain extractions")
 
-            for guard in self.guard_config.match_guards:
-                results = self._process_match_guard(guard)
-                if results.response_match == ResponseMatch.YES:
-                    matched_checks.append(results)
-                all_checks.append(results)
+            for ext in self._response.extractions:
+                if ext.data is None:
+                    continue
+                matched_checks = []
+                all_checks = []
+                for guard in self.guard_config.simple_guards:
+                    result = self._process_simple_guard(guard, ext)
+                    if result.response_match == ResponseMatch.YES:
+                        matched_checks.append(result)
+                    all_checks.append(result)
 
-            return Matches(
-                response_match=ResponseMatch.YES if matched_checks else ResponseMatch.NO,
-                matched_checks=matched_checks,
-                all_checks=all_checks
-            )
+                for guard in self.guard_config.match_guards:
+                    results = self._process_match_guard(guard, ext)
+                    if results.response_match == ResponseMatch.YES:
+                        matched_checks.append(results)
+                    all_checks.append(results)
+
+                single_match =  Matches(
+                    input_data=ext.data,
+                    response_match=ResponseMatch.YES if matched_checks else ResponseMatch.NO,
+                    matched_checks=matched_checks,
+                    all_checks=all_checks
+                )
+                all_matches.append(single_match)
+            return all_matches
 
         except Exception as e:
             logger.debug("Error processing guard config: %s",{str(e)})
