@@ -13,7 +13,7 @@ from typing import Dict, List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class ScanresponseDecision(str, Enum):
+class Decision(str, Enum):
     r"""Tell what was the decision about the data."""
 
     DENY = "Deny"
@@ -45,7 +45,7 @@ class ScanresponseTypedDict(TypedDict):
     r"""The client used to send the request."""
     client_version: NotRequired[str]
     r"""The version of the client used to send the request."""
-    decision: NotRequired[ScanresponseDecision]
+    decision: NotRequired[Decision]
     r"""Tell what was the decision about the data."""
     extractions: NotRequired[List[ExtractionTypedDict]]
     r"""The extractions to log."""
@@ -90,7 +90,7 @@ class Scanresponse(BaseModel):
     )
     r"""The version of the client used to send the request."""
 
-    decision: Optional[ScanresponseDecision] = None
+    decision: Optional[Decision] = None
     r"""Tell what was the decision about the data."""
 
     extractions: Optional[List[Extraction]] = None

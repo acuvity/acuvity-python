@@ -9,14 +9,14 @@ from typing import Dict, List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class ScanrequestAnonymization(str, Enum):
+class Anonymization(str, Enum):
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
 
     FIXED_SIZE = "FixedSize"
     VARIABLE_SIZE = "VariableSize"
 
 
-class ScanrequestType(str, Enum):
+class Type(str, Enum):
     r"""The type of text."""
 
     INPUT = "Input"
@@ -42,7 +42,7 @@ class ScanrequestTypedDict(TypedDict):
     """
     annotations: NotRequired[Dict[str, str]]
     r"""Annotations attached to the extraction."""
-    anonymization: NotRequired[ScanrequestAnonymization]
+    anonymization: NotRequired[Anonymization]
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
     bypass_hash: NotRequired[str]
     r"""In the case of a contentPolicy that asks for a confirmation, this is the
@@ -71,7 +71,7 @@ class ScanrequestTypedDict(TypedDict):
     r"""If true, the system will not log the contents that were scanned."""
     redactions: NotRequired[List[str]]
     r"""The redactions to perform if they are detected."""
-    type: NotRequired[ScanrequestType]
+    type: NotRequired[Type]
     r"""The type of text."""
 
 
@@ -97,9 +97,7 @@ class Scanrequest(BaseModel):
     annotations: Optional[Dict[str, str]] = None
     r"""Annotations attached to the extraction."""
 
-    anonymization: Optional[ScanrequestAnonymization] = (
-        ScanrequestAnonymization.FIXED_SIZE
-    )
+    anonymization: Optional[Anonymization] = Anonymization.FIXED_SIZE
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
 
     bypass_hash: Annotated[Optional[str], pydantic.Field(alias="bypassHash")] = None
@@ -140,5 +138,5 @@ class Scanrequest(BaseModel):
     redactions: Optional[List[str]] = None
     r"""The redactions to perform if they are detected."""
 
-    type: Optional[ScanrequestType] = None
+    type: Optional[Type] = None
     r"""The type of text."""

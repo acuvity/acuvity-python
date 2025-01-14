@@ -5,17 +5,12 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
-from acuvity.guard.config import GuardConfig
+from acuvity.guard.config import GuardConfig, GuardName
 from acuvity.models import (
     Analyzer,
     Anonymization,
     Extractionrequest,
-    Policeexternaluser,
-    Policerequest,
-    Policeresponse,
     Scanrequest,
-    ScanrequestAnonymization,
-    ScanrequestType,
     Type,
 )
 from acuvity.response.constants import guardname_analyzer_id_map
@@ -61,45 +56,49 @@ class ApexExtended(Apex):
         # # Filter out None values and sort
         # return sorted([name for name in mapped_names if name is not None])
 
+    def list_available_guards(self) -> list[str]:
+        """
+        list_secrets: returns a list of all available secrets that can be detected.
+        """
+        return GuardName.values()
+
     def list_detectable_secrets(self) -> list[str]:
         """
         list_secrets: returns a list of all available secrets that can be detected.
         """
-        secrets_detector: list[str] = []
+        detectable_secrets: list[str] = []
         if self._available_analyzers is None:
             self._available_analyzers = self.list_analyzers()
         for analyzer in self._available_analyzers:
             if analyzer.detectors:
-                secrets_detector = [
+                detectable_secrets = [
                     str(detector.name)
                     for detector in analyzer.detectors
                     if detector.group == "Secrets"
                 ]
-                return secrets_detector
-        return secrets_detector
+        return sorted(detectable_secrets)
 
-    def list_detectable_pii(self) -> list[str]:
+    def list_detectable_piis(self) -> list[str]:
         """
         list_pii: returns a list of all available secrets that can be detected.
         """
-        secrets_detector: list[str] = []
+        detectable_piis: list[str] = []
         if self._available_analyzers is None:
             self._available_analyzers = self.list_analyzers()
         for analyzer in self._available_analyzers:
             if analyzer.detectors:
-                secrets_detector = [
+                detectable_piis = [
                     str(detector.name)
                     for detector in analyzer.detectors
                     if detector.group == "PIIs"
                 ]
-                return secrets_detector
-        return secrets_detector
+        return sorted(detectable_piis)
 
     def scan(
         self,
         *messages: str,
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-        request_type: Union[ScanrequestType,str] = ScanrequestType.INPUT,
+        request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
     ) -> ScanResponseMatch:
@@ -112,9 +111,9 @@ class ApexExtended(Apex):
 
         :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
         :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.
-        :param request_type: the type of the validation. This can be either ScanrequestType.INPUT or ScanrequestType.OUTPUT. Defaults to ScanrequestType.INPUT. Use ScanrequestType.OUTPUT if you want to run model output through the detection engines.
+        :param request_type: the type of the validation. This can be either Type.INPUT or Type.OUTPUT. Defaults to Type.INPUT. Use Type.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
-        :param guard_config: TODO.
+        :param guard_config: the guard config used to do the response eval for matches. If not provided, the default guard config will be used.
         """
         try:
             if guard_config:
@@ -138,7 +137,7 @@ class ApexExtended(Apex):
         self,
         *messages: str,
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-        request_type: Union[ScanrequestType,str] = ScanrequestType.INPUT,
+        request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
         guard_config: Optional[Union[str, Path, Dict]] = None,
     ) -> ScanResponseMatch:
@@ -150,10 +149,10 @@ class ApexExtended(Apex):
         You can also run access policies and content policies by passing them as parameters.
 
         :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
-        :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.        :param request_type: the type of the validation. This can be either ScanrequestType.INPUT or ScanrequestType.OUTPUT. Defaults to ScanrequestType.INPUT. Use ScanrequestType.OUTPUT if you want to run model output through the detection engines.
+        :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.        :param request_type: the type of the validation. This can be either Type.INPUT or Type.OUTPUT. Defaults to Type.INPUT. Use Type.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+image-classifier", "-modality-detector"] will include the image classifier and exclude the modality detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided. Call `list_analyzers()` and/or its variants to get a list of available analyzers.
-        :param guard_config: TODO.
+        :param guard_config: the guard config used to do the response eval for matches. If not provided, the default guard config will be used.
         """
         if guard_config:
             gconfig = GuardConfig(guard_config)
@@ -168,92 +167,20 @@ class ApexExtended(Apex):
         ))
         return ScanResponseMatch(raw_response, gconfig)
 
-    def police(
+    def __build_scan_request(
         self,
         *messages: str,
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
-        bypass_hash: Optional[str] = None,
         anonymization: Union[Anonymization, str, None] = None,
-        provider: Optional[str] = None,
-        user: Optional[Union[Policeexternaluser,Tuple[str, List[str]],Dict[str, Any]]] = None,
-    ) -> Policeresponse:
-        """
-        police() runs the provided messages (prompts) through the Acuvity detection engines, applies policies, and returns the results. Alternatively, you can run model output through the detection engines.
-        Returns a Policeresponse object on success, and raises different exceptions on failure.
+        guard_config: GuardConfig,
+    ) -> Scanrequest:
+        request = Scanrequest.model_construct()
 
-        This function does **NOT** allow to use different analyzers or redactions as policies are being **managed** by the Acuvity backend.
-        To configure different analyzers and redactions you must do so in the Acuvity backend.
-
-        :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
-        :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.        :param request_type: the type of the validation. This can be either Type.INPUT or Type.OUTPUT. Defaults to Type.INPUT. Use Type.OUTPUT if you want to run model output through the detection engines.
-        :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
-        :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
-        :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
-        :param provider: the provider to use. This is the provider name that you want to use for policy resolutions. If not provided, it will default to the principal name (the application itself).
-        :param user: the user to use. This is the user name and their claims that you want to use.
-        """
-        return self.police_request(request=self.__build_police_request(
-            *messages,
-            files=files,
-            request_type=request_type,
-            annotations=annotations,
-            bypass_hash=bypass_hash,
-            anonymization=anonymization,
-            provider=provider,
-            user=user,
-        ))
-
-    async def police_async(
-        self,
-        *messages: str,
-        files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-        request_type: Union[Type,str] = Type.INPUT,
-        annotations: Optional[Dict[str, str]] = None,
-        bypass_hash: Optional[str] = None,
-        anonymization: Union[Anonymization, str, None] = None,
-        provider: Optional[str] = None,
-        user: Optional[Union[Policeexternaluser,Tuple[str, List[str]],Dict[str, Any]]] = None,
-    ) -> Policeresponse:
-        """
-        police_async() runs the provided messages (prompts) through the Acuvity detection engines, applies policies, and returns the results. Alternatively, you can run model output through the detection engines.
-        Returns a Policeresponse object on success, and raises different exceptions on failure.
-
-        This function does **NOT** allow to use different analyzers or redactions as policies are being **managed** by the Acuvity backend.
-        To configure different analyzers and redactions you must do so in the Acuvity backend.
-
-        :param messages: the messages to scan. These are the prompts that you want to scan. Required if no files or a direct request object are provided.
-        :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.        :param request_type: the type of the validation. This can be either Type.INPUT or Type.OUTPUT. Defaults to Type.INPUT. Use Type.OUTPUT if you want to run model output through the detection engines.
-        :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
-        :param bypass_hash: the bypass hash to use. This is the hash that you want to use to bypass the detection engines. If not provided, no bypass hash will be used.
-        :param anonymization: the anonymization to use. This is the anonymization that you want to use. If not provided, but the returned detections contain redactions, then the system will use the internal defaults for anonymization which is subject to change.
-        :param provider: the provider to use. This is the provider name that you want to use for policy resolutions. If not provided, it will default to the principal name (the application itself).
-        :param user: the user to use. This is the user name and their claims that you want to use.
-        """
-        return await self.police_request_async(request=self.__build_police_request(
-            *messages,
-            files=files,
-            request_type=request_type,
-            annotations=annotations,
-            bypass_hash=bypass_hash,
-            anonymization=anonymization,
-            provider=provider,
-            user=user,
-        ))
-
-    def __build_police_request(
-        self, # pylint: disable=unused-argument
-        *messages: str,
-        files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-        request_type: Union[Type,str] = Type.INPUT,
-        annotations: Optional[Dict[str, str]] = None,
-        bypass_hash: Optional[str] = None,
-        anonymization: Union[Anonymization, str, None] = None,
-        provider: Optional[str] = None,
-        user: Optional[Union[Policeexternaluser,Tuple[str, List[str]],Dict[str, Any]]] = None,
-    ) -> Policerequest:
-        request = Policerequest.model_construct()
+        keywords = []
+        redactions = []
+        analyzers = []
 
         # messages must be strings
         for message in messages:
@@ -308,134 +235,6 @@ class ApexExtended(Apex):
                     raise ValueError("annotations must be strings")
             request.annotations = annotations
 
-        # bypass_hash must be a string
-        if bypass_hash is not None:
-            if not isinstance(bypass_hash, str):
-                raise ValueError("bypass_hash must be a string")
-            request.bypass_hash = bypass_hash
-
-        # anonymization must be "FixedSize" or "VariableSize"
-        if anonymization is not None:
-            if isinstance(anonymization, Anonymization):
-                request.anonymization = anonymization
-            elif isinstance(anonymization, str):
-                if anonymization not in ("FixedSize", "VariableSize"):
-                    raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
-                request.anonymization = Anonymization(anonymization)
-            else:
-                raise ValueError("anonymization must be a 'str' or 'Anonymization'")
-
-        # provider must be a string
-        if provider is not None:
-            if not isinstance(provider, str):
-                raise ValueError("provider must be a string")
-            request.provider = provider
-
-        if user is not None:
-            if isinstance(user, tuple):
-                if len(user) != 2:
-                    raise ValueError("user tuple must have exactly 2 elements to represent the name and claims")
-                if not isinstance(user[0], str):
-                    raise ValueError("user tuple first element must be a string to represent the name")
-                if not isinstance(user[1], list):
-                    raise ValueError("user tuple second element must be a list to represent the claims")
-                for claim in user[1]:
-                    if not isinstance(claim, str):
-                        raise ValueError("user tuple second element must be a list of strings to represent the claims")
-                request.user = Policeexternaluser(name=user[0], claims=user[1])
-            elif isinstance(user, dict):
-                name = user.get("name", None)
-                if name is None:
-                    raise ValueError("user dictionary must have a 'name' key to represent the name")
-                if not isinstance(name, str):
-                    raise ValueError("user dictionary 'name' key must be a string to represent the name")
-                claims = user.get("claims", None)
-                if claims is None:
-                    raise ValueError("user dictionary must have a 'claims' key to represent the claims")
-                if not isinstance(claims, list):
-                    raise ValueError("user dictionary 'claims' key must be a list to represent the claims")
-                for claim in claims:
-                    if not isinstance(claim, str):
-                        raise ValueError("user dictionary 'claims' key must be a list of strings to represent the claims")
-                request.user = Policeexternaluser(name=name, claims=claims)
-            elif isinstance(user, Policeexternaluser):
-                request.user = user
-            else:
-                raise ValueError("user must be a tuple, dictionary or Policeexternaluser object")
-
-        return request
-
-    def __build_scan_request(
-        self,
-        *messages: str,
-        files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
-        request_type: Union[ScanrequestType,str] = ScanrequestType.INPUT,
-        annotations: Optional[Dict[str, str]] = None,
-        analyzers: Optional[List[str]] = [],
-        anonymization: Union[ScanrequestAnonymization, str, None] = None,
-        redactions: Optional[List[str]] = [],
-        keywords: Optional[List[str]] = [],
-        guard_config: GuardConfig,
-    ) -> Scanrequest:
-        request = Scanrequest.model_construct()
-
-        keywords = keywords or []
-        redactions = redactions or []
-        analyzers = analyzers or []
-
-        # messages must be strings
-        for message in messages:
-            if not isinstance(message, str):
-                raise ValueError("messages must be strings")
-        if len(messages) == 0 and files is None:
-            raise ValueError("no messages and no files provided")
-        if len(messages) > 0:
-            request.messages = list(messages)
-
-        # files must be a list of strings (or paths) or a single string (or path)
-        extractions: List[Extractionrequest] = []
-        if files is not None:
-            process_files: List[Union[os.PathLike, str]] = []
-            if isinstance(files, str):
-                process_files.append(files)
-            elif isinstance(files, os.PathLike):
-                process_files.append(files)
-            elif isinstance(files, Iterable):
-                for file in files:
-                    if not isinstance(file, str) and not isinstance(file, os.PathLike):
-                        raise ValueError("files must be strings or paths")
-                    process_files.append(file)
-            else:
-                raise ValueError("files must be strings or paths")
-            for process_file in process_files:
-                with open(process_file, 'rb') as opened_file:
-                    file_content = opened_file.read()
-                    # base64 encode the file content and then append
-                    extractions.append(Extractionrequest(
-                        data=base64.b64encode(file_content).decode("utf-8"),
-                    ))
-        if len(extractions) > 0:
-            request.extractions = extractions
-
-        # request_type must be either "Input" or "Output"
-        if isinstance(request_type, ScanrequestType):
-            request.type = request_type
-        elif isinstance(request_type, str):
-            if request_type not in ("Input", "Output"):
-                raise ValueError("request_type must be either 'Input' or 'Output'")
-            request.type = ScanrequestType(request_type)
-        else:
-            raise ValueError("type must be a 'str' or 'Type'")
-
-        # annotations must be a dictionary of strings
-        if annotations is not None:
-            if not isinstance(annotations, dict):
-                raise ValueError("annotations must be a dictionary")
-            for key, value in annotations.items():
-                if not isinstance(key, str) or not isinstance(value, str):
-                    raise ValueError("annotations must be strings")
-            request.annotations = annotations
-
         # now here check the guard config and parse it for the analyzers, redaction and keywords.
         if guard_config:
             keywords.extend(guard_config.keywords or [])
@@ -461,12 +260,12 @@ class ApexExtended(Apex):
 
         # anonymization must be "FixedSize" or "VariableSize"
         if anonymization is not None:
-            if isinstance(anonymization, ScanrequestAnonymization):
+            if isinstance(anonymization, Anonymization):
                 request.anonymization = anonymization
             elif isinstance(anonymization, str):
                 if anonymization not in ("FixedSize", "VariableSize"):
                     raise ValueError("anonymization must be 'FixedSize' or 'VariableSize'")
-                request.anonymization = ScanrequestAnonymization(anonymization)
+                request.anonymization = Anonymization(anonymization)
             else:
                 raise ValueError("anonymization must be a 'str' or 'Anonymization'")
 
