@@ -140,7 +140,7 @@ class ApexExtended(Apex):
             logger.debug("Error while processing the guard config")
             raise ValueError("Cannot process the guard config") from e
 
-        return ScanResponseMatch(raw_scan_response, gconfig)
+        return ScanResponseMatch(raw_scan_response, gconfig, *messages, files=files)
 
     async def scan_async(
         self,
@@ -165,7 +165,7 @@ class ApexExtended(Apex):
         :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+image-classifier", "-modality-detector"] will include the image classifier and exclude the modality detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided. Call `list_analyzers()` and/or its variants to get a list of available analyzers.
         :param guard_config: the guard config used to do the response eval for matches. If not provided, the default guard config will be used.
         """
-        raw_response = await self.scan_request_async(request=self.__build_scan_request(
+        raw_scan_response = await self.scan_request_async(request=self.__build_scan_request(
             *messages,
             files=files,
             request_type=request_type,
@@ -184,7 +184,7 @@ class ApexExtended(Apex):
             logger.debug("Error while processing the guard config")
             raise ValueError("Cannot process the guard config") from e
 
-        return ScanResponseMatch(raw_response, gconfig)
+        return ScanResponseMatch(raw_scan_response, gconfig, *messages, files=files)
 
     def __build_scan_request(
         self,
@@ -202,7 +202,7 @@ class ApexExtended(Apex):
         # messages must be strings
         for message in messages:
             if not isinstance(message, str):
-                raise ValueError("messages must be strings")
+                raise ValueError(f"messages must be strings but was {type(message)}")
         if len(messages) == 0 and files is None:
             raise ValueError("no messages and no files provided")
         if len(messages) > 0:

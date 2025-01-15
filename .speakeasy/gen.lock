@@ -3,16 +3,16 @@ id: 463716ea-2172-44e6-ac63-a7a5b29ba606
 management:
   docChecksum: c228280ab24af59505327c759fe66d5f
   docVersion: "1.0"
-  speakeasyVersion: 1.468.7
-  generationVersion: 2.493.15
+  speakeasyVersion: 1.468.8
+  generationVersion: 2.493.19
   releaseVersion: 0.5.0
-  configChecksum: 3ba74beada2b2b0a58f59198cbf1e397
+  configChecksum: 12796a75abf3f49c8a59d1e1d426164f
   published: true
 features:
   python:
     additionalDependencies: 1.0.0
     constsAndDefaults: 1.0.5
-    core: 5.10.1
+    core: 5.10.2
     defaultEnabledRetries: 0.2.0
     devContainers: 3.0.0
     enumUnions: 0.1.0
@@ -122,6 +122,8 @@ examples:
           application/json: [{"triggers": ["Code/*"]}, {"triggers": ["Code/*"]}]
         "400":
           application/json: {}
+        "500":
+          application/json: {}
   create-PoliceRequest-as-PoliceResponse:
     speakeasy-default-create-police-request-as-police-response:
       requestBody:
@@ -139,5 +141,7 @@ examples:
         "200":
           application/json: {"alerts": [], "client": "curl", "clientVersion": "7.64.1", "extractions": [], "principal": {"app": {"labels": ["country=us", "another-label"], "name": "MyApp", "tier": "frontend"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}, "provider": "openai"}
         "400":
+          application/json: {}
+        "500":
           application/json: {}
 generatedTests: {}

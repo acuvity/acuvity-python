@@ -268,10 +268,11 @@ By default, an API error will raise a models.APIError exception, which has the f
 
 When custom error responses are specified for an operation, the SDK may also raise their associated exceptions. You can refer to respective *Errors* tables in SDK docs for more details on possible exception types for each operation. For example, the `list_analyzers_async` method may raise the following exceptions:
 
-| Error Type            | Status Code   | Content Type     |
-| --------------------- | ------------- | ---------------- |
-| models.Elementalerror | 400, 401, 500 | application/json |
-| models.APIError       | 4XX, 5XX      | \*/\*            |
+| Error Type            | Status Code | Content Type     |
+| --------------------- | ----------- | ---------------- |
+| models.Elementalerror | 400, 401    | application/json |
+| models.Elementalerror | 500         | application/json |
+| models.APIError       | 4XX, 5XX    | \*/\*            |
 
 ### Example
 
@@ -293,6 +294,9 @@ with Acuvity(
         # Handle response
         print(res)
 
+    except models.Elementalerror as e:
+        # handle e.data: models.ElementalerrorData
+        raise(e)
     except models.Elementalerror as e:
         # handle e.data: models.ElementalerrorData
         raise(e)

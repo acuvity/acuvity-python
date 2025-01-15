@@ -27,6 +27,7 @@ python:
   defaultErrorName: APIError
   description: Acvuvity Python SDK
   documentationUrl: https://github.com/acuvity/acuvity-python
+  enableCustomCodeRegions: false
   enumFormat: enum
   envVarPrefix: ACUVITY
   fixFlags:
