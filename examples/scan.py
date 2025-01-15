@@ -63,7 +63,7 @@ guard_config = {
         ]
     }
 
-text1 = "croporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com fuck you"
+text1 = "corporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com hate you"
 print("\n\n ****** SCAN with a given config ****** ")
 
 res2 = s.apex.scan(text1, files="./examples/test_data/pi-test.txt", guard_config=guard_config)

@@ -119,6 +119,18 @@ class ApexExtended(Apex):
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
         :param guard_config: the guard config used to do the response eval for matches. If not provided, the default guard config will be used.
         """
+
+        raw_scan_response = self.scan_request(request=self.__build_scan_request(
+            *messages,
+            files=files,
+            request_type=request_type,
+            annotations=annotations,
+            redactions=redactions,
+            keywords=keywords,
+            guard_config=guard_config if guard_config is None else GuardConfig(guard_config),
+        ))
+
+        # always send a guard config to the ScanResponseMatch
         try:
             if guard_config:
                 gconfig = GuardConfig(guard_config)
@@ -128,15 +140,6 @@ class ApexExtended(Apex):
             logger.debug("Error while processing the guard config")
             raise ValueError("Cannot process the guard config") from e
 
-        raw_scan_response = self.scan_request(request=self.__build_scan_request(
-            *messages,
-            files=files,
-            request_type=request_type,
-            annotations=annotations,
-            redactions=redactions,
-            keywords=keywords,
-            guard_config=gconfig,
-        ))
         return ScanResponseMatch(raw_scan_response, gconfig)
 
     async def scan_async(
@@ -162,10 +165,6 @@ class ApexExtended(Apex):
         :param analyzers: the analyzers to use. These are the analyzers that you want to use. If not provided, the internal default analyzers will be used. Use "+" to include an analyzer and "-" to exclude an analyzer. For example, ["+image-classifier", "-modality-detector"] will include the image classifier and exclude the modality detector. If any analyzer does not start with a '+' or '-', then the default analyzers will be replaced by whatever is provided. Call `list_analyzers()` and/or its variants to get a list of available analyzers.
         :param guard_config: the guard config used to do the response eval for matches. If not provided, the default guard config will be used.
         """
-        if guard_config:
-            gconfig = GuardConfig(guard_config)
-        else:
-            gconfig = GuardConfig()
         raw_response = await self.scan_request_async(request=self.__build_scan_request(
             *messages,
             files=files,
@@ -173,8 +172,18 @@ class ApexExtended(Apex):
             annotations=annotations,
             redactions=redactions,
             keywords=keywords,
-            guard_config=gconfig,
+            guard_config=guard_config if guard_config is None else GuardConfig(guard_config),
         ))
+        # always send a guard config to the ScanResponseMatch
+        try:
+            if guard_config:
+                gconfig = GuardConfig(guard_config)
+            else:
+                gconfig = GuardConfig()
+        except Exception as e:
+            logger.debug("Error while processing the guard config")
+            raise ValueError("Cannot process the guard config") from e
+
         return ScanResponseMatch(raw_response, gconfig)
 
     def __build_scan_request(
@@ -186,13 +195,9 @@ class ApexExtended(Apex):
         redactions: Optional[List[str]] = None,
         keywords: Optional[List[str]] = None,
         anonymization: Union[Anonymization, str, None] = None,
-        guard_config: GuardConfig,
+        guard_config: Optional[GuardConfig] = None,
     ) -> Scanrequest:
         request = Scanrequest.model_construct()
-
-        keywords = keywords or []
-        redactions = redactions or []
-        analyzers = []
 
         # messages must be strings
         for message in messages:
@@ -247,34 +252,15 @@ class ApexExtended(Apex):
                     raise ValueError("annotations must be strings")
             request.annotations = annotations
 
-        # now here check the guard config and parse it for the analyzers, redaction and keywords.
+        # now here check the guard config and parse it for the redaction and keywords.
         if guard_config:
-            if guard_config.keywords and keywords:
-                raise ValueError("Cannot specify keywords in both the guard config and in scan args. Please use only one.")
-            if guard_config.redaction_keys and redactions:
-                raise ValueError("Cannot specify redactions in both the guard config and in scan args. Please use only one.")
-            keywords = keywords or guard_config.keywords
-            redactions = redactions or guard_config.redaction_keys
-            # Always set to empty analyzers.
-            # TODO: change this logic to send analyzers as per the guard_config.guard_names
-            guard_names = []
-            for guard_name in guard_names:
-                analyzer_id = guardname_analyzer_id_map.get(guard_name)
-                if analyzer_id:
-                    analyzers.append(analyzer_id)
+            if keywords:
+                raise ValueError("Cannot specify keywords in scan args when using guard config. Please use only one.")
+            if redactions:
+                raise ValueError("Cannot specify redactions in scan args when using guard config. Please use only one.")
+            keywords = guard_config.keywords
+            redactions = guard_config.redaction_keys
 
-        # analyzers must be a list of strings
-        if not isinstance(analyzers, List):
-            raise ValueError("analyzers must be a list")
-        analyzers_list = self.list_analyzer_groups() + self.list_analyzer_names()
-        for analyzer in analyzers:
-            if not isinstance(analyzer, str):
-                raise ValueError("analyzers must be strings")
-            if analyzer.startswith(("+", "-")):
-                analyzer = analyzer[1:]
-            if analyzer not in analyzers_list:
-                raise ValueError(f"analyzer '{analyzer}' is not in list of analyzer groups or analyzers: {analyzers_list}")
-        request.analyzers = analyzers
         # anonymization must be "FixedSize" or "VariableSize"
         if anonymization is not None:
             if isinstance(anonymization, Anonymization):
@@ -287,19 +273,21 @@ class ApexExtended(Apex):
                 raise ValueError("anonymization must be a 'str' or 'Anonymization'")
 
         # redactions must be a list of strings
-        if not isinstance(redactions, list):
-            raise ValueError("redactions must be a list")
-        for redaction in redactions:
-            if not isinstance(redaction, str):
-                raise ValueError("redactions must be strings")
-        request.redactions = redactions
+        if redactions is not None:
+            if not isinstance(redactions, List):
+                raise ValueError("redactions must be a list")
+            for redaction in redactions:
+                if not isinstance(redaction, str):
+                    raise ValueError("redactions must be strings")
+            request.redactions = redactions
 
         # keywords must be a list of strings
-        if not isinstance(keywords, List):
-            raise ValueError("keywords must be a list")
-        for keyword in keywords:
-            if not isinstance(keyword, str):
-                raise ValueError("keywords must be strings")
-        request.keywords = keywords
+        if keywords is not None:
+            if not isinstance(keywords, List):
+                raise ValueError("keywords must be a list")
+            for keyword in keywords:
+                if not isinstance(keyword, str):
+                    raise ValueError("keywords must be strings")
+            request.keywords = keywords
 
         return request

@@ -744,6 +744,11 @@ paths:
   /_acuvity/police:
     post:
       x-speakeasy-ignore: true
+      x-speakeasy-name-override: policeRequest
+      x-speakeasy-usage-example:
+        description: You can submit a scan and police request using the Scan API.
+        position: 2
+        title: Process a scan and police request
       description: Processes the scan and police request.
       operationId: create-PoliceRequest-as-PoliceResponse
       requestBody:
@@ -797,11 +802,6 @@ paths:
           description: Processing the scan and police request failed because policies could not be assigned or running the analysis failed internally.
       tags:
         - apex
-      x-speakeasy-name-override: policeRequest
-      x-speakeasy-usage-example:
-        description: You can submit a scan and police request using the Scan API.
-        position: 2
-        title: Process a scan and police request
   /_acuvity/scan:
     post:
       description: Processes the scan request.
