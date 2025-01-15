@@ -56,3 +56,6 @@ class Threshold:
         if self.operator == ComparisonOperator.LESS_THAN:
             return value < self.value
         return False
+
+
+DEFAULT_THRESHOLD = Threshold(">= 0.0")

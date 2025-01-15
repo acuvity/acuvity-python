@@ -3,9 +3,9 @@
 import base64
 import os
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
 
-from acuvity.guard.config import GuardConfig, GuardName
+from acuvity.guard.config import Guard, GuardConfig, GuardName
 from acuvity.models import (
     Analyzer,
     Anonymization,
@@ -100,7 +100,7 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
-        guard_config: Optional[Union[str, Path, Dict]] = None,
+        guard_config: Optional[Union[str, Path, Dict, List[Guard]]] = None,
     ) -> ScanResponseMatch:
         """
         scan() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.
@@ -139,7 +139,7 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
-        guard_config: Optional[Union[str, Path, Dict]] = None,
+        guard_config: Optional[Union[str, Path, Dict, List[Guard]]] = None,
     ) -> ScanResponseMatch:
         """
         scan_async() runs the provided messages (prompts) through the Acuvity detection engines and returns the results. Alternatively, you can run model output through the detection engines.

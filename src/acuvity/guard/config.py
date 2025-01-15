@@ -12,7 +12,7 @@ from .errors import (
     GuardConfigValidationError,
     GuardThresholdParsingError,
 )
-from .threshold import Threshold
+from .threshold import DEFAULT_THRESHOLD, Threshold
 
 
 @dataclass(frozen=True)
@@ -22,6 +22,30 @@ class Match:
     redact: bool = False
     count_threshold: int = 0
 
+    @classmethod
+    def create(
+        cls,
+        threshold: str | Threshold = DEFAULT_THRESHOLD,
+        redact: bool = False,
+        count_threshold: int = 0
+    ) -> "Match":
+        """
+        Create a Match with type hints for better IDE support.
+
+        Args:
+            threshold: Threshold as string (e.g. '>= 0.8') or Threshold object
+            redact: Whether to redact matches
+            count_threshold: Minimum count threshold
+        """
+        if isinstance(threshold, str):
+            threshold = Threshold(threshold)
+
+        return cls(
+            threshold=threshold,
+            redact=redact,
+            count_threshold=count_threshold
+        )
+
 @dataclass(frozen=True)
 class Guard:
     """Immutable guard configuration"""
@@ -29,6 +53,47 @@ class Guard:
     matches: Dict[str, Match]
     threshold: Threshold
     count_threshold: int = 0
+
+    @classmethod
+    def create(
+        cls,
+        name: str | GuardName,
+        matches: Dict[str, Match] | None = None,
+        threshold: str | Threshold = DEFAULT_THRESHOLD,
+        count_threshold: int = 0
+    ) -> "Guard":
+        """
+        Create a Guard with type hints for better IDE support.
+
+        Args:
+            name: Guard name (string or GuardName enum)
+            matches: Dictionary of match configurations
+            threshold: Threshold as string (e.g. '>= 0.8') or Threshold object
+            count_threshold: Minimum count threshold
+
+        Raises:
+            GuardConfigValidationError: If guard name is invalid
+        """
+        # Convert string to GuardName if needed
+        if isinstance(name, str):
+            guard_name = GuardName.get(name)
+            if guard_name is None:
+                valid_names = ", ".join(GuardName.values())
+                raise GuardConfigValidationError(
+                    f"Invalid guard name: {name}. Must be one of: {valid_names}"
+                )
+        else:
+            guard_name = name
+
+        if isinstance(threshold, str):
+            threshold = Threshold(threshold)
+
+        return cls(
+            name=guard_name,
+            matches=matches or {},
+            threshold=threshold,
+            count_threshold=count_threshold
+        )
 
 class GuardConfig:
     """
@@ -42,7 +107,6 @@ class GuardConfig:
     2. Simple Guards: Guards without matches (e.g., prompt_injection, toxicity)
     """
 
-    DEFAULT_THRESHOLD = Threshold(">= 0.0")
     def __init__(self, config: Optional[Union[str, Path, Dict, List[Guard]]] = None):
         """
         Initialize parser with analyzer mapping.
@@ -60,7 +124,7 @@ class GuardConfig:
                     self._parsed_guards.append(Guard(
                         name=guard,
                         matches={},
-                        threshold=self.DEFAULT_THRESHOLD,
+                        threshold=DEFAULT_THRESHOLD,
                         count_threshold=0,
                     ))
             return
@@ -161,7 +225,7 @@ class GuardConfig:
         Returns:
             Match object
         """
-        threshold = self.DEFAULT_THRESHOLD
+        threshold = DEFAULT_THRESHOLD
         if match_data and 'threshold' in match_data:
             try:
                 threshold = Threshold(match_data['threshold'])
@@ -263,7 +327,7 @@ class GuardConfig:
 
 
         # Parse top-level threshold
-        threshold = self.DEFAULT_THRESHOLD
+        threshold = DEFAULT_THRESHOLD
         if 'threshold' in guard:
             try:
                 threshold = Threshold(guard['threshold'])
@@ -306,7 +370,7 @@ class GuardConfig:
                 guard_name = GuardName.get(guard_name)
 
             # Parse or confirm the threshold
-            threshold = guard.threshold if guard.threshold is not None else self.DEFAULT_THRESHOLD
+            threshold = guard.threshold if guard.threshold is not None else DEFAULT_THRESHOLD
             # If threshold parsing can fail, wrap it similarly:
             # threshold = Threshold(guard.threshold)
 
