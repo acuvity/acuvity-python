@@ -214,6 +214,39 @@ class GuardConfig:
 
         return True
 
+    def parse_match_obj(self, match_key: str, match_obj: Match | None) -> Match:
+        """
+        Parse an existing Match object, applying validation and defaults if needed.
+
+        Args:
+            match_key: Key identifying the match
+            match_obj: Match object to parse, or None to use defaults
+
+        Returns:
+            Match: Validated Match object with defaults applied if needed
+
+        Raises:
+            GuardConfigValidationError: If threshold validation fails
+        """
+        # Handle None case
+        if match_obj is None:
+            return Match.create()
+
+        try:
+            # Use existing values or defaults
+            threshold = match_obj.threshold or DEFAULT_THRESHOLD
+
+            return Match.create(
+                threshold=threshold,
+                redact=match_obj.redact,
+                count_threshold=match_obj.count_threshold
+            )
+
+        except ValueError as e:
+            raise GuardConfigValidationError(
+                f"Invalid match configuration for '{match_key}': {str(e)}"
+            ) from e
+
     def _parse_match(self, match_key: str, match_data: Dict) -> Match:
         """
         Parse match configuration.
@@ -377,8 +410,9 @@ class GuardConfig:
             # Re-parse or validate each match
             parsed_matches = {}
             for match_key, match_data in guard.matches.items():
+                print("\n\n match data -->", match_data)
                 # _parse_match may raise various exceptions if the data is invalid
-                parsed_matches[match_key] = self._parse_match(match_key, match_data)
+                parsed_matches[match_key] = self.parse_match_obj(match_key, match_data)
 
             # Create and return a new Guard object or update the existing one
             return Guard(
