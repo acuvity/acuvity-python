@@ -1,26 +1,27 @@
 lockVersion: 2.0.0
 id: 463716ea-2172-44e6-ac63-a7a5b29ba606
 management:
-  docChecksum: 23afa0eb52b8b4d89afaf090600ec479
+  docChecksum: c228280ab24af59505327c759fe66d5f
   docVersion: "1.0"
-  speakeasyVersion: 1.465.1
-  generationVersion: 2.488.4
-  releaseVersion: 0.4.0
-  configChecksum: 651996b069d91b8ada3e6638d9499935
+  speakeasyVersion: 1.468.7
+  generationVersion: 2.493.15
+  releaseVersion: 0.5.0
+  configChecksum: 3ba74beada2b2b0a58f59198cbf1e397
   published: true
 features:
   python:
     additionalDependencies: 1.0.0
     constsAndDefaults: 1.0.5
-    core: 5.7.6
+    core: 5.10.1
     defaultEnabledRetries: 0.2.0
     devContainers: 3.0.0
     enumUnions: 0.1.0
     envVarSecurityUsage: 0.3.2
-    examples: 3.0.0
+    examples: 3.0.1
     globalSecurity: 3.0.2
     globalSecurityCallbacks: 1.0.0
     globalServerURLs: 3.1.0
+    ignores: 3.0.1
     methodArguments: 1.0.2
     nameOverrides: 3.0.1
     operationTimeout: 0.3.0
@@ -48,19 +49,12 @@ generatedFiles:
   - docs/models/extractionrequest.md
   - docs/models/latency.md
   - docs/models/modality.md
-  - docs/models/policeexternaluser.md
-  - docs/models/policerequest.md
-  - docs/models/policeresponse.md
-  - docs/models/policeresponsetype.md
   - docs/models/principal.md
   - docs/models/principalapp.md
   - docs/models/principaltype.md
   - docs/models/principaluser.md
   - docs/models/scanrequest.md
-  - docs/models/scanrequestanonymization.md
-  - docs/models/scanrequesttype.md
   - docs/models/scanresponse.md
-  - docs/models/scanresponsedecision.md
   - docs/models/scanresponsetype.md
   - docs/models/security.md
   - docs/models/textualdetection.md
@@ -93,9 +87,6 @@ generatedFiles:
   - src/acuvity/models/extractionrequest.py
   - src/acuvity/models/latency.py
   - src/acuvity/models/modality.py
-  - src/acuvity/models/policeexternaluser.py
-  - src/acuvity/models/policerequest.py
-  - src/acuvity/models/policeresponse.py
   - src/acuvity/models/principal.py
   - src/acuvity/models/principalapp.py
   - src/acuvity/models/principaluser.py

@@ -1,9 +1,21 @@
-[tool.poetry]
+[project]
 name = "acuvity"
-version = "0.4.0"
+version = "0.5.0"
 description = "Acvuvity Python SDK"
-authors = ["Acuvity, Inc.",]
+authors = [{ name = "Acuvity, Inc." },]
 readme = "README-PYPI.md"
+requires-python = ">=3.9"
+dependencies = [
+    "eval-type-backport (>=0.2.0,<0.3.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "jsonpath-python (>=1.0.6,<2.0.0)",
+    "pydantic (>=2.10.3,<2.11.0)",
+    "pyjwt (>=2.9.0,<3.0.0)",
+    "python-dateutil (>=2.8.2,<3.0.0)",
+    "typing-inspect (>=0.9.0,<0.10.0)",
+]
+
+[tool.poetry]
 homepage = "https://acuvity.ai/"
 documentation = "https://github.com/acuvity/acuvity-python"
 packages = [
@@ -16,16 +28,6 @@ include = ["py.typed", "src/acuvity/py.typed"]
 
 [virtualenvs]
 in-project = true
-
-[tool.poetry.dependencies]
-python = "^3.8"
-eval-type-backport = "^0.2.0"
-httpx = "^0.28.1"
-jsonpath-python = "^1.0.6"
-pydantic = "~2.10.3"
-pyjwt = "^2.9.0"
-python-dateutil = "^2.8.2"
-typing-inspect = "^0.9.0"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "==1.14.1"
