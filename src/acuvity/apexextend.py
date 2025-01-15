@@ -102,7 +102,6 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
-        analyzers: Optional[List[str]] = None,
         redactions: Optional[List[str]] = None,
         keywords: Optional[List[str]] = None,
         guard_config: Optional[Union[str, Path, Dict, List[Guard]]] = None,
@@ -134,7 +133,6 @@ class ApexExtended(Apex):
             files=files,
             request_type=request_type,
             annotations=annotations,
-            analyzers=analyzers,
             redactions=redactions,
             keywords=keywords,
             guard_config=gconfig,
@@ -147,7 +145,6 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
-        analyzers: Optional[List[str]] = None,
         redactions: Optional[List[str]] = None,
         keywords: Optional[List[str]] = None,
         guard_config: Optional[Union[str, Path, Dict, List[Guard]]] = None,
@@ -174,7 +171,6 @@ class ApexExtended(Apex):
             files=files,
             request_type=request_type,
             annotations=annotations,
-            analyzers=analyzers,
             redactions=redactions,
             keywords=keywords,
             guard_config=gconfig,
@@ -187,7 +183,6 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
-        analyzers: Optional[List[str]] = None,
         redactions: Optional[List[str]] = None,
         keywords: Optional[List[str]] = None,
         anonymization: Union[Anonymization, str, None] = None,
@@ -197,7 +192,7 @@ class ApexExtended(Apex):
 
         keywords = keywords or []
         redactions = redactions or []
-        analyzers = analyzers or []
+        analyzers = []
 
         # messages must be strings
         for message in messages:
