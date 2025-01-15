@@ -71,11 +71,12 @@ class ApexExtended(Apex):
             self._available_analyzers = self.list_analyzers()
         for analyzer in self._available_analyzers:
             if analyzer.detectors:
-                detectable_secrets = [
+                detectable_secrets_local = [
                     str(detector.name)
                     for detector in analyzer.detectors
                     if detector.group == "Secrets"
                 ]
+                detectable_secrets.extend(detectable_secrets_local)
         return sorted(detectable_secrets)
 
     def list_detectable_piis(self) -> list[str]:
@@ -87,11 +88,12 @@ class ApexExtended(Apex):
             self._available_analyzers = self.list_analyzers()
         for analyzer in self._available_analyzers:
             if analyzer.detectors:
-                detectable_piis = [
+                detectable_piis_local = [
                     str(detector.name)
                     for detector in analyzer.detectors
                     if detector.group == "PIIs"
                 ]
+                detectable_piis.extend(detectable_piis_local)
         return sorted(detectable_piis)
 
     def scan(
@@ -100,6 +102,9 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
+        analyzers: Optional[List[str]] = None,
+        redactions: Optional[List[str]] = None,
+        keywords: Optional[List[str]] = None,
         guard_config: Optional[Union[str, Path, Dict, List[Guard]]] = None,
     ) -> ScanResponseMatch:
         """
@@ -129,6 +134,9 @@ class ApexExtended(Apex):
             files=files,
             request_type=request_type,
             annotations=annotations,
+            analyzers=analyzers,
+            redactions=redactions,
+            keywords=keywords,
             guard_config=gconfig,
         ))
         return ScanResponseMatch(raw_scan_response, gconfig)
@@ -139,6 +147,9 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
+        analyzers: Optional[List[str]] = None,
+        redactions: Optional[List[str]] = None,
+        keywords: Optional[List[str]] = None,
         guard_config: Optional[Union[str, Path, Dict, List[Guard]]] = None,
     ) -> ScanResponseMatch:
         """
@@ -163,6 +174,9 @@ class ApexExtended(Apex):
             files=files,
             request_type=request_type,
             annotations=annotations,
+            analyzers=analyzers,
+            redactions=redactions,
+            keywords=keywords,
             guard_config=gconfig,
         ))
         return ScanResponseMatch(raw_response, gconfig)
@@ -173,14 +187,17 @@ class ApexExtended(Apex):
         files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None,
         request_type: Union[Type,str] = Type.INPUT,
         annotations: Optional[Dict[str, str]] = None,
+        analyzers: Optional[List[str]] = None,
+        redactions: Optional[List[str]] = None,
+        keywords: Optional[List[str]] = None,
         anonymization: Union[Anonymization, str, None] = None,
         guard_config: GuardConfig,
     ) -> Scanrequest:
         request = Scanrequest.model_construct()
 
-        keywords = []
-        redactions = []
-        analyzers = []
+        keywords = keywords or []
+        redactions = redactions or []
+        analyzers = analyzers or []
 
         # messages must be strings
         for message in messages:
@@ -237,8 +254,12 @@ class ApexExtended(Apex):
 
         # now here check the guard config and parse it for the analyzers, redaction and keywords.
         if guard_config:
-            keywords.extend(guard_config.keywords or [])
-            redactions.extend(guard_config.redaction_keys or [])
+            if guard_config.keywords and keywords:
+                raise ValueError("Cannot specify keywords in both the guard config and in scan args. Please use only one.")
+            if guard_config.redaction_keys and redactions:
+                raise ValueError("Cannot specify redactions in both the guard config and in scan args. Please use only one.")
+            keywords = keywords or guard_config.keywords
+            redactions = redactions or guard_config.redaction_keys
             # Always set to empty analyzers.
             # TODO: change this logic to send analyzers as per the guard_config.guard_names
             guard_names = []
