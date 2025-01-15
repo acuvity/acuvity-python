@@ -239,7 +239,9 @@ class ApexExtended(Apex):
         if guard_config:
             keywords.extend(guard_config.keywords or [])
             redactions.extend(guard_config.redaction_keys or [])
-            guard_names = guard_config.guard_names or []
+            # Always set to empty analyzers.
+            # TODO: change this logic to send analyzers as per the guard_config.guard_names
+            guard_names = []
             for guard_name in guard_names:
                 analyzer_id = guardname_analyzer_id_map.get(guard_name)
                 if analyzer_id:
@@ -257,7 +259,6 @@ class ApexExtended(Apex):
             if analyzer not in analyzers_list:
                 raise ValueError(f"analyzer '{analyzer}' is not in list of analyzer groups or analyzers: {analyzers_list}")
         request.analyzers = analyzers
-
         # anonymization must be "FixedSize" or "VariableSize"
         if anonymization is not None:
             if isinstance(anonymization, Anonymization):
