@@ -66,7 +66,7 @@ guard_config = {
 text1 = "croporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com fuck you"
 print("\n\n ****** SCAN with a given config ****** ")
 
-res2 = s.apex.scan(text1, files="/Users/abhijit/work/sdk-examples/pi-test.txt", guard_config=guard_config)
+res2 = s.apex.scan(text1, files="./examples/test_data/pi-test.txt", guard_config=guard_config)
 print("\nInput: ", text1, "\n\nmatches: ", res2.matches(), res2)
 
 res2 = s.apex.scan(text1, files="./examples/test_data/pi-test.txt",guard_config=[Guard.create(GuardName.PROMPT_INJECTION)])
