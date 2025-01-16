@@ -1,7 +1,6 @@
 guardrails:
   - name: prompt_injection
   - name: toxicity
-  - name: gibberish
   - name: jail_break
   - name: bias
   - name: harmful
