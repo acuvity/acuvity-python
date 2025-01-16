@@ -1,0 +1,10 @@
+guardrails:
+  - name: prompt_injection
+    threshold: ">= 0.7"
+  - name: toxicity
+    threshold: "0.7"
+  - name: jail_break
+    threshold: ">= 1.0"
+  - name: bias
+    threshold: "0.8"
+  - name: harmful
