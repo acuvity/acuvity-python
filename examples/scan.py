@@ -89,3 +89,6 @@ readme_res2 = s.apex.scan(*readme_test, files="./examples/test_data/pi-test.txt"
                             guard_config="./examples/simple_guard_config.yaml")
 
 print("README test: ", readme_res2.matches())
+gibberish_text = "hjasdgfabfjkfabfkjabfajkbfkjbfjkbafhbajfjkuf"
+gib_scan = s.apex.scan(gibberish_text, guard_config=[Guard.create(GuardName.LANGUAGE)])
+print("\nGibberish Input: ", gibberish_text, "\n\nmatches: ", gib_scan.matches())

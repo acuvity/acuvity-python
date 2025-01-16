@@ -74,7 +74,7 @@ class ResponseParser:
     def _get_language_value(
         self,
         extraction: Extraction,
-        guard: Guard,
+        _: Guard,
         match_name: Optional[str]
     ) -> tuple[bool, float]:
         """Get value from languages section."""

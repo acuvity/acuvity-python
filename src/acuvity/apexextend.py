@@ -199,6 +199,10 @@ class ApexExtended(Apex):
     ) -> Scanrequest:
         request = Scanrequest.model_construct()
 
+        # if guard_config is given, the keywords and redactions args must not be given.
+        if guard_config and (keywords or redactions):
+            raise ValueError("Cannot specify keywords or redactions in scan args when using guard config. Please use only one.")
+
         # messages must be strings
         for message in messages:
             if not isinstance(message, str):
@@ -254,10 +258,6 @@ class ApexExtended(Apex):
 
         # now here check the guard config and parse it for the redaction and keywords.
         if guard_config:
-            if keywords:
-                raise ValueError("Cannot specify keywords in scan args when using guard config. Please use only one.")
-            if redactions:
-                raise ValueError("Cannot specify redactions in scan args when using guard config. Please use only one.")
             keywords = guard_config.keywords
             redactions = guard_config.redaction_keys
 
