@@ -20,12 +20,25 @@ class Threshold:
             GuardConfigValidationError: If threshold format is invalid
         """
         try:
-            operator_str, value_str = threshold_str.split()
+            # First try to convert the entire string to float (case when only number provided)
+            try:
+                self.value = float(threshold_str)
+                self.operator = ComparisonOperator.GREATER_EQUAL  # Default operator
+                return
+            except ValueError:
+                pass
+
+            # If that fails, try to split into operator and value
+            parts = threshold_str.split()
+            if len(parts) != 2:
+                raise GuardConfigValidationError("Invalid threshold format")
+
+            operator_str, value_str = parts
             self.value = float(value_str)
 
             try:
                 self.operator = ComparisonOperator(operator_str)
-            except ValueError as e :
+            except ValueError as e:
                 raise GuardConfigValidationError(f"Invalid operator: {operator_str}") from e
 
         except ValueError as e:

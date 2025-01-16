@@ -207,7 +207,7 @@ class GuardConfig:
                 raise GuardConfigValidationError("Guard must have a valid name")
         elif isinstance(guard, Dict):
             if 'name' not in guard:
-                raise GuardConfigValidationError("Guard must have a name")
+                raise GuardConfigValidationError(f"Guard must have a name, but give guard is:", guard)
 
             if not GuardName.valid(guard['name']):
                 raise GuardConfigValidationError(f"Guard name not present {guard['name']}")
@@ -363,7 +363,7 @@ class GuardConfig:
         threshold = DEFAULT_THRESHOLD
         if 'threshold' in guard:
             try:
-                threshold = Threshold(guard['threshold'])
+                threshold = Threshold(guard.get('threshold', '>= 0.0'))
             except GuardConfigValidationError as e:
                 raise e
 

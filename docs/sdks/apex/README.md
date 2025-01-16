@@ -48,7 +48,8 @@ with Acuvity(
 
 | Error Type            | Status Code           | Content Type          |
 | --------------------- | --------------------- | --------------------- |
-| models.Elementalerror | 400, 401, 500         | application/json      |
+| models.Elementalerror | 400, 401              | application/json      |
+| models.Elementalerror | 500                   | application/json      |
 | models.APIError       | 4XX, 5XX              | \*/\*                 |
 
 ## scan_request
@@ -115,5 +116,6 @@ with Acuvity(
 
 | Error Type            | Status Code           | Content Type          |
 | --------------------- | --------------------- | --------------------- |
-| models.Elementalerror | 400, 403, 422, 500    | application/json      |
+| models.Elementalerror | 400, 403, 422         | application/json      |
+| models.Elementalerror | 500                   | application/json      |
 | models.APIError       | 4XX, 5XX              | \*/\*                 |

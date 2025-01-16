@@ -80,10 +80,18 @@ class Apex(BaseSDK):
         data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, List[models.Analyzer])
-        if utils.match_response(http_res, ["400", "401", "500"], "application/json"):
+        if utils.match_response(http_res, ["400", "401"], "application/json"):
             data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
             raise models.Elementalerror(data=data)
-        if utils.match_response(http_res, ["4XX", "5XX"], "*"):
+        if utils.match_response(http_res, "500", "application/json"):
+            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
+            raise models.Elementalerror(data=data)
+        if utils.match_response(http_res, "4XX", "*"):
+            http_res_text = utils.stream_to_text(http_res)
+            raise models.APIError(
+                "API error occurred", http_res.status_code, http_res_text, http_res
+            )
+        if utils.match_response(http_res, "5XX", "*"):
             http_res_text = utils.stream_to_text(http_res)
             raise models.APIError(
                 "API error occurred", http_res.status_code, http_res_text, http_res
@@ -167,10 +175,18 @@ class Apex(BaseSDK):
         data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, List[models.Analyzer])
-        if utils.match_response(http_res, ["400", "401", "500"], "application/json"):
+        if utils.match_response(http_res, ["400", "401"], "application/json"):
             data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
             raise models.Elementalerror(data=data)
-        if utils.match_response(http_res, ["4XX", "5XX"], "*"):
+        if utils.match_response(http_res, "500", "application/json"):
+            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
+            raise models.Elementalerror(data=data)
+        if utils.match_response(http_res, "4XX", "*"):
+            http_res_text = await utils.stream_to_text_async(http_res)
+            raise models.APIError(
+                "API error occurred", http_res.status_code, http_res_text, http_res
+            )
+        if utils.match_response(http_res, "5XX", "*"):
             http_res_text = await utils.stream_to_text_async(http_res)
             raise models.APIError(
                 "API error occurred", http_res.status_code, http_res_text, http_res
@@ -266,12 +282,18 @@ class Apex(BaseSDK):
         data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, models.Scanresponse)
-        if utils.match_response(
-            http_res, ["400", "403", "422", "500"], "application/json"
-        ):
+        if utils.match_response(http_res, ["400", "403", "422"], "application/json"):
             data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
             raise models.Elementalerror(data=data)
-        if utils.match_response(http_res, ["401", "429", "4XX", "5XX"], "*"):
+        if utils.match_response(http_res, ["401", "429", "4XX"], "*"):
+            http_res_text = utils.stream_to_text(http_res)
+            raise models.APIError(
+                "API error occurred", http_res.status_code, http_res_text, http_res
+            )
+        if utils.match_response(http_res, "500", "application/json"):
+            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
+            raise models.Elementalerror(data=data)
+        if utils.match_response(http_res, "5XX", "*"):
             http_res_text = utils.stream_to_text(http_res)
             raise models.APIError(
                 "API error occurred", http_res.status_code, http_res_text, http_res
@@ -367,12 +389,18 @@ class Apex(BaseSDK):
         data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, models.Scanresponse)
-        if utils.match_response(
-            http_res, ["400", "403", "422", "500"], "application/json"
-        ):
+        if utils.match_response(http_res, ["400", "403", "422"], "application/json"):
             data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
             raise models.Elementalerror(data=data)
-        if utils.match_response(http_res, ["401", "429", "4XX", "5XX"], "*"):
+        if utils.match_response(http_res, ["401", "429", "4XX"], "*"):
+            http_res_text = await utils.stream_to_text_async(http_res)
+            raise models.APIError(
+                "API error occurred", http_res.status_code, http_res_text, http_res
+            )
+        if utils.match_response(http_res, "500", "application/json"):
+            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
+            raise models.Elementalerror(data=data)
+        if utils.match_response(http_res, "5XX", "*"):
             http_res_text = await utils.stream_to_text_async(http_res)
             raise models.APIError(
                 "API error occurred", http_res.status_code, http_res_text, http_res
