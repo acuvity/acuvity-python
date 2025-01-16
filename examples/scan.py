@@ -17,21 +17,8 @@ s = Acuvity(
 print("\n\n ****** AVAILABLE GUARDS ******\n\n")
 print(s.apex.list_available_guards())
 
-
 guard_config = {
         "guardrails": [
-            {
-                "name": "prompt_injection",
-                "threshold": ">= 0.2"
-            },
-            {
-                "name": "jail_break",
-                "threshold": ">= 0.7"
-            },
-            {
-                "name": "malicious_url",
-                "threshold": ">= 0.7"
-            },
             {
             "name": "pii_detector",
             "count_threshold": 2,
@@ -50,24 +37,30 @@ guard_config = {
             },
             {
                 "name": "secrets_detector"
-            },
-            {
-                "name": "bias"
-            },
-            {
-                "name": "toxicity"
-            },
-            {
-                "name": "language"
             }
         ]
     }
 
 text1 = "corporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com hate you"
+print("\n\n *** single prompt with default config *** \n\n")
+single_prompt_def_conf_response = s.apex.scan(text1)
+print("\nInput: ", text1, "\n\nmatches: ", single_prompt_def_conf_response.matches())
+
+print("\n\n *** multi prompt with default config *** \n\n")
+multi_prompt_def_conf_response = s.apex.scan(text1, files="./examples/test_data/pi-test.txt")
+print("\nInput: ", text1, "\n\nmatches: ", multi_prompt_def_conf_response.matches())
+
+
+readme_res2 = s.apex.scan(*text1, files="./examples/test_data/pi-test.txt",
+                            guard_config="./examples/simple_default_guard_config.yaml")
+
+print("README test: ", readme_res2.matches())
+
 print("\n\n ****** SCAN with a given config ****** ")
 
 res2 = s.apex.scan(text1, files="./examples/test_data/pi-test.txt", guard_config=guard_config)
 print("\nInput: ", text1, "\n\nmatches: ", res2.matches(), res2)
+
 
 res2 = s.apex.scan(text1, files="./examples/test_data/pi-test.txt",guard_config=[Guard.create(GuardName.PROMPT_INJECTION)])
 print("\n\n ****** SCAN with a single guard config ****** ")
