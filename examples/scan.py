@@ -34,19 +34,7 @@ guard_config = {
             },
             {
             "name": "pii_detector",
-            "count_threshold": 2,
-            "matches": {
-                "email_address": {
-                    "threshold": "> 0.2",
-                    "count_threshold": 1
-                    },
-                "person": {
-                    "threshold": ">= 1.0"
-                    },
-                "money_amount": {
-                    "threshold": ">= 0.5"
-                    }
-                }
+            "count_threshold": 4,
             },
             {
                 "name": "secrets_detector"
@@ -63,7 +51,7 @@ guard_config = {
         ]
     }
 
-text1 = ["corporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com hate you", "hello how are you"]
+text1 = ["corporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com hate you, 792-77-3459, 792-77-3453, 792-77-3454", "hello how are you"]
 print("\n\n ****** SCAN with a given config ****** ")
 
 res2 = s.apex.scan(*text1, files="./examples/test_data/pi-test.txt", guard_config=guard_config)
