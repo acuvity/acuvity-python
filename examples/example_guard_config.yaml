@@ -16,7 +16,7 @@ guardrails:
 
   # This guard denies access if the jail break threshold is crossed in the scan response.
   # Similar to prompt injection, found in the 'exploits' field of the response.
-  - name: jail_break
+  - name: jailbreak
     threshold: ">= 1.0"
 
   # This guard denies access if the bias threshold is crossed in the scan response.

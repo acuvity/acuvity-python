@@ -10,12 +10,12 @@ DEFAULT_ACTION = "deny"
 guardname_analyzer_id_map: Dict[GuardName, str] = {
     # Exploit guards
     GuardName.PROMPT_INJECTION: 'en-text-prompt_injection-detector',
-    GuardName.JAIL_BREAK: 'en-text-jailbreak-detector',
+    GuardName.JAILBREAK: 'en-text-jailbreak-detector',
     GuardName.MALICIOUS_URL: 'url-malicious-detector',
 
     # Topic guards with prefixes
     GuardName.TOXICITY: 'en-text-toxicity-detector',
-    GuardName.BIAS: 'en-text-bias-detector',
+    GuardName.BIASED: 'en-text-bias-detector',
     GuardName.HARMFUL_CONTENT: 'en-text-harmful-content-detector',
 
     # Other guards
@@ -40,12 +40,12 @@ class GuardType(Enum):
 GUARD_TYPES = {
     # Exploit guards
     GuardName.PROMPT_INJECTION: GuardType.EXPLOIT,
-    GuardName.JAIL_BREAK: GuardType.EXPLOIT,
+    GuardName.JAILBREAK: GuardType.EXPLOIT,
     GuardName.MALICIOUS_URL: GuardType.EXPLOIT,
 
     # Topic guards with prefixes
     GuardName.TOXICITY: GuardType.TOPIC,
-    GuardName.BIAS: GuardType.TOPIC,
+    GuardName.BIASED: GuardType.TOPIC,
     GuardName.HARMFUL_CONTENT: GuardType.TOPIC,
 
     # Other guards
@@ -59,7 +59,7 @@ GUARD_TYPES = {
 # Topic prefixes mapping
 TOPIC_PREFIXES = {
     GuardName.TOXICITY: 'content/toxic',
-    GuardName.BIAS: 'content/bias',
+    GuardName.BIASED: 'content/bias',
     GuardName.HARMFUL_CONTENT: 'content/harmful',
 }
 
