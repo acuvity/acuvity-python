@@ -71,7 +71,6 @@ class ScanResponseMatch:
 
         # We did not find as many categories so mark it as not a match.
         if guard.count_threshold and categories_count < guard.count_threshold:
-            print(f"Count threshold for categories not met: {categories_count} < {guard.count_threshold} ({guard})")
             response_match = False
 
         detections_count = 0
@@ -81,10 +80,6 @@ class ScanResponseMatch:
         for m in guard.matches.keys():
             count_thresholds[m] = 0
 
-        print(f"Checking {len(detections)} detections for {type}")
-        print(f"count_thresholds: {count_thresholds}")
-        print(f"matches: {guard.matches}")
-
         for detection in detections:
             if detection.type != type:
                 continue
@@ -93,7 +88,6 @@ class ScanResponseMatch:
                     if detection.name not in guard.matches:
                         continue
                     if detection.score and not guard.matches[detection.name].threshold.compare(detection.score):
-                        print(f"Score threshold not met: {detection.score} < {guard.matches[detection.name].threshold}")
                         response_match = False
                         continue
 
@@ -103,10 +97,7 @@ class ScanResponseMatch:
 
         # Compare the count thresholds for specific categories.
         for mname, mmatch in guard.matches.items():
-            print(f"Checking {mname} with {mmatch}")
-
             if mmatch.count_threshold and count_thresholds[mname] < mmatch.count_threshold:
-                print(f"Count threshold for {mname} not met: {count_thresholds[mname]} < {mmatch.count_threshold}")
                 response_match = False
 
         return ResultMatch(

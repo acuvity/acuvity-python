@@ -11,8 +11,6 @@ from acuvity.models.scanresponse import Principal, Scanresponse
 from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
 from acuvity.response.match import ScanResponseMatch
 
-from rich import print
-
 class TestResponseProcessingE2E:
     @pytest.fixture
     def create_pii_extraction(self) -> Extraction:
@@ -113,8 +111,6 @@ class TestResponseProcessingE2E:
         srm = ScanResponseMatch(response, guard_config, 1)
         result = srm.findall()
 
-        print(result)
-
         # Verify
         assert result[0].response_match
         assert len(result[0].matched_checks) == 1
@@ -208,7 +204,6 @@ class TestResponseProcessingE2E:
 
         # Verify
         assert len(result) == 1
-        print(result)
         assert not result[0].response_match
         assert len(result[0].matched_checks) == 0
 
@@ -396,8 +391,6 @@ class TestResponseProcessingE2E:
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[combined_extraction])
         srm = ScanResponseMatch(response, guard_config, 1)
         result = srm.findall()
-
-        print(result)
 
         # Verify
         assert not result[0].response_match
