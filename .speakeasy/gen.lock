@@ -6,7 +6,7 @@ management:
   speakeasyVersion: 1.469.1
   generationVersion: 2.493.21
   releaseVersion: 0.5.2
-  configChecksum: c4472838f7ca1e787650d9c2f147812a
+  configChecksum: e6da50e8a45372235ea3a951f8a2f14b
   published: true
 features:
   python:
