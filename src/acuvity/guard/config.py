@@ -104,7 +104,7 @@ class GuardConfig:
 
     The parser handles two types of guards:
     1. Match Guards: Guards with a 'matches' section (e.g., pii_detector)
-    2. Simple Guards: Guards without matches (e.g., prompt_injection, toxicity)
+    2. Simple Guards: Guards without matches (e.g., prompt_injection, toxic)
     """
 
     def __init__(self, config: Optional[Union[str, Path, Dict, List[Guard]]] = None):
@@ -410,7 +410,6 @@ class GuardConfig:
             # Re-parse or validate each match
             parsed_matches = {}
             for match_key, match_data in guard.matches.items():
-                print("\n\n match data -->", match_data)
                 # _parse_match may raise various exceptions if the data is invalid
                 parsed_matches[match_key] = self.parse_match_obj(match_key, match_data)
 

@@ -1,18 +1,17 @@
-from typing import Dict, List
+from typing import List
 
 import pytest
 
 from acuvity.guard.config import Guard, GuardConfig, Match
 from acuvity.guard.constants import GuardName
 from acuvity.guard.threshold import Threshold
-from acuvity.models.extraction import Extraction, Textualdetection
+from acuvity.models.extraction import Extraction
 from acuvity.models.principal import PrincipalType
 from acuvity.models.scanresponse import Principal, Scanresponse
 from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
-from acuvity.response.parser import ResponseParser
-from acuvity.response.processor import ResponseProcessor
-from acuvity.response.result import GuardMatch, Matches, ResponseMatch
+from acuvity.response.match import ScanResponseMatch
 
+from rich import print
 
 class TestResponseProcessingE2E:
     @pytest.fixture
@@ -111,11 +110,13 @@ class TestResponseProcessingE2E:
 
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[extraction])
-        processor = ResponseProcessor(response, guard_config)
-        result = processor.matches()
+        srm = ScanResponseMatch(response, guard_config, 1)
+        result = srm.findall()
+
+        print(result)
 
         # Verify
-        assert result[0].response_match == ResponseMatch.YES
+        assert result[0].response_match
         assert len(result[0].matched_checks) == 1
         assert result[0].matched_checks[0].guard_name == GuardName.PII_DETECTOR
 
@@ -151,11 +152,11 @@ class TestResponseProcessingE2E:
 
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[extraction])
-        processor = ResponseProcessor(response, guard_config)
-        result = processor.matches()
+        srm = ScanResponseMatch(response, guard_config, 1)
+        result = srm.findall()
 
         # Verify
-        assert result[0].response_match == ResponseMatch.NO
+        assert not result[0].response_match
         assert len(result[0].matched_checks) == 0
 
     def test_prompt_injection_positive(self, create_exploit_extraction):
@@ -176,11 +177,11 @@ class TestResponseProcessingE2E:
 
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[extraction])
-        processor = ResponseProcessor(response, guard_config)
-        result = processor.matches()
+        srm = ScanResponseMatch(response, guard_config, 1)
+        result = srm.findall()
 
         # Verify
-        assert result[0].response_match == ResponseMatch.YES
+        assert result[0].response_match
         assert len(result[0].matched_checks) == 1
         assert result[0].matched_checks[0].guard_name == GuardName.PROMPT_INJECTION
 
@@ -202,11 +203,13 @@ class TestResponseProcessingE2E:
 
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[extraction])
-        processor = ResponseProcessor(response, guard_config)
-        result = processor.matches()
+        srm = ScanResponseMatch(response, guard_config, 1)
+        result = srm.findall()
 
         # Verify
-        assert result[0].response_match == ResponseMatch.NO
+        assert len(result) == 1
+        print(result)
+        assert not result[0].response_match
         assert len(result[0].matched_checks) == 0
 
     def test_combined_pii_and_prompt_injection(self, create_pii_extraction, create_exploit_extraction):
@@ -252,11 +255,11 @@ class TestResponseProcessingE2E:
 
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[combined_extraction])
-        processor = ResponseProcessor(response, guard_config)
-        result = processor.matches()
+        srm = ScanResponseMatch(response, guard_config, 1)
+        result = srm.findall()
 
         # Verify both were detected
-        assert result[0].response_match == ResponseMatch.YES
+        assert result[0].response_match
         assert len(result[0].matched_checks) == 2
         guard_names = {check.guard_name for check in result[0].matched_checks}
         assert guard_names == {GuardName.PII_DETECTOR, GuardName.PROMPT_INJECTION}
@@ -317,18 +320,18 @@ class TestResponseProcessingE2E:
 
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP),extractions=[combined_extraction])
-        processor = ResponseProcessor(response, guard_config)
-        result = processor.matches()
+        srm = ScanResponseMatch(response, guard_config, 1)
+        result = srm.findall()
 
         # Verify
-        assert result[0].response_match == ResponseMatch.YES  # Overall yes because of prompt injection
+        assert not result[0].response_match  # Overall no because only prompt injection met the match
         assert len(result[0].matched_checks) == 1
         assert result[0].matched_checks[0].guard_name == GuardName.PROMPT_INJECTION
 
         # Verify all checks contains both results
         assert len(result[0].all_checks) == 2
         pii_check = next(check for check in result[0].all_checks if check.guard_name == GuardName.PII_DETECTOR)
-        assert pii_check.response_match == ResponseMatch.NO
+        assert not pii_check.response_match
 
     def test_multiple_guards_edge_cases(
         self,
@@ -339,8 +342,8 @@ class TestResponseProcessingE2E:
         Complex scenario 2: Multiple guards with edge cases
         - PII: Exactly meets minimum thresholds
         - Prompt injection: Just below threshold
-        - Add toxicity check: Just above threshold
-        Expected: PII and toxicity should match, prompt injection should fail
+        - Add toxic check: Just above threshold
+        Expected: PII and toxic should match, prompt injection should fail
         """
         # Create PII extraction with exactly meeting thresholds
         pii_extraction = create_pii_extraction(
@@ -352,7 +355,7 @@ class TestResponseProcessingE2E:
         # Create exploit extraction with borderline cases
         exploit_extraction = create_exploit_extraction(prompt_injection_score=0.79)  # Just below threshold
 
-        # Combine extractions and add toxicity
+        # Combine extractions and add toxic
         combined_extraction = Extraction(
             detections=pii_extraction.detections,
             pi_is=pii_extraction.pi_is,
@@ -372,7 +375,7 @@ class TestResponseProcessingE2E:
                     matches={}
                 ),
                 Guard(
-                    name=GuardName.TOXICITY,
+                    name=GuardName.TOXIC,
                     threshold=Threshold(">= 0.8"),
                     matches={}
                 ),
@@ -391,16 +394,18 @@ class TestResponseProcessingE2E:
 
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[combined_extraction])
-        processor = ResponseProcessor(response, guard_config)
-        result = processor.matches()
+        srm = ScanResponseMatch(response, guard_config, 1)
+        result = srm.findall()
+
+        print(result)
 
         # Verify
-        assert result[0].response_match == ResponseMatch.YES
+        assert not result[0].response_match
         assert len(result[0].matched_checks) == 2
 
         # Verify specific guards
         guard_names = {check.guard_name for check in result[0].matched_checks}
-        assert guard_names == {GuardName.PII_DETECTOR, GuardName.TOXICITY}
+        assert guard_names == {GuardName.PII_DETECTOR, GuardName.TOXIC}
 
         # Verify all checks contains all three results
         assert len(result[0].all_checks) == 3
@@ -408,10 +413,10 @@ class TestResponseProcessingE2E:
         # Verify individual check results
         for check in result[0].all_checks:
             if check.guard_name == GuardName.PROMPT_INJECTION:
-                assert check.response_match == ResponseMatch.NO
+                assert not check.response_match
                 assert check.actual_value == 0.79
-            elif check.guard_name == GuardName.TOXICITY:
-                assert check.response_match == ResponseMatch.YES
+            elif check.guard_name == GuardName.TOXIC:
+                assert check.response_match
                 assert check.actual_value == 0.81
             elif check.guard_name == GuardName.PII_DETECTOR:
-                assert check.response_match == ResponseMatch.YES
+                assert check.response_match

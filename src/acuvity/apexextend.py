@@ -13,7 +13,6 @@ from acuvity.models import (
     Scanrequest,
     Type,
 )
-from acuvity.response.constants import guardname_analyzer_id_map
 from acuvity.response.match import ScanResponseMatch
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.utils.logger import get_default_logger
@@ -140,7 +139,7 @@ class ApexExtended(Apex):
             logger.debug("Error while processing the guard config")
             raise ValueError("Cannot process the guard config") from e
 
-        return ScanResponseMatch(raw_scan_response, gconfig, *messages, files=files)
+        return ScanResponseMatch(raw_scan_response, gconfig, len(messages))
 
     async def scan_async(
         self,

@@ -1,9 +1,7 @@
-from acuvity.response.match import ResponseMatch
-
-from .result import GuardMatch, Matches
+from acuvity.response.match import ResultMatch, ResultMatches, ScanResponseMatch
 
 __all__ = [
-    'ResponseMatch',
-    'GuardMatch',
-    'Matches',
+    'ResultMatch',
+    'ResultMatches',
+    'ScanResponseMatch',
 ]
