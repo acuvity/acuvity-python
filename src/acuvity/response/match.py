@@ -43,7 +43,7 @@ class ScanResponseMatch:
         if self._guard_config is None:
             raise ValueError("No guard configuration was passed or available in the instance.")
 
-    def no_match_result(self, guard_name: GuardName, actual_value: float = 1.0, categories_count: int = 0) -> ResultMatch:
+    def _no_match_result(self, guard_name: GuardName, actual_value: float = 1.0, categories_count: int = 0) -> ResultMatch:
         return ResultMatch(
             response_match=False,
             guard_name=guard_name,
@@ -52,7 +52,7 @@ class ScanResponseMatch:
             categories_count=categories_count,
         )
 
-    def extract_textual_detection(
+    def _extract_textual_detection(
             self,
             type: TextualdetectionType,
             detections: list[Textualdetection] | None,
@@ -65,7 +65,7 @@ class ScanResponseMatch:
         TODO: This should be enumerated in ScanResponse API sepc.
         """
         if not detections:
-            return self.no_match_result(guard.name, categories_count=categories_count)
+            return self._no_match_result(guard.name, categories_count=categories_count)
 
         response_match = True
 
@@ -123,16 +123,16 @@ class ScanResponseMatch:
         TODO: This should be enumerated in ScanResponse API sepc.
         """
         if not lookup or len(lookup) == 0:
-            return self.no_match_result(guard.name)
+            return self._no_match_result(guard.name)
 
-        return self.extract_textual_detection(type, extraction.detections, len(lookup), guard)
+        return self._extract_textual_detection(type, extraction.detections, len(lookup), guard)
 
     def _find_detection_match(self, lookup: Dict[str, float] | None, key: str, guard: Guard) -> ResultMatch:
         """
         Find the detections match for a specific type of guard type.
         """
         if not lookup:
-            return self.no_match_result(guard.name)
+            return self._no_match_result(guard.name)
 
         actual_value = lookup.get(key)
         if actual_value:
@@ -145,9 +145,9 @@ class ScanResponseMatch:
                     )
         else:
             actual_value = 0.0
-        return self.no_match_result(guard.name, actual_value=actual_value)
+        return self._no_match_result(guard.name, actual_value=actual_value)
 
-    def find(
+    def _find(
             self,
             extraction: Extraction,
             name: GuardName,
@@ -180,7 +180,7 @@ class ScanResponseMatch:
         # Actually find ..
         if name == GuardName.LANGUAGE:
             if not extraction.languages:
-                return self.no_match_result(guard.name)
+                return self._no_match_result(guard.name)
             count = 0
             for language in extraction.languages:
                 if guard.matches and not guard.matches.get(language):
@@ -194,10 +194,10 @@ class ScanResponseMatch:
                     actual_value=1.0,
                     detections_count=count
                 )
-            return self.no_match_result(guard.name)
+            return self._no_match_result(guard.name)
         elif name == GuardName.MODALITY:
             if not extraction.modalities:
-                return self.no_match_result(guard.name)
+                return self._no_match_result(guard.name)
             count = 0
             for modality in extraction.modalities:
                 if guard.matches and not guard.matches.get(modality):
@@ -211,7 +211,7 @@ class ScanResponseMatch:
                     actual_value=1.0,
                     detections_count=count
                 )
-            return self.no_match_result(guard.name)
+            return self._no_match_result(guard.name)
         elif name == GuardName.PROMPT_INJECTION or name == GuardName.JAILBREAK or name == GuardName.MALICIOUS_URL:
             return self._find_detection_match(extraction.exploits, str(name), guard)
         elif name == GuardName.TOXIC or name == GuardName.BIASED or name == GuardName.HARMFUL_CONTENT:  # single mattch, we need to trigger analyzer for biased "+biased"
@@ -234,7 +234,7 @@ class ScanResponseMatch:
         Find any match across any response matching a guard name.
         """
         if not self.scan_response.extractions:
-            return self.no_match_result(name)
+            return self._no_match_result(name)
 
         if file_index or text_index:
             lookup_index = 0
@@ -248,7 +248,7 @@ class ScanResponseMatch:
                 for guard in self._guard_config.parsed_guards:
                     if guard.name != name:
                         continue
-                    m = self.find(extraction, guard.name, guard, submatch)
+                    m = self._find(extraction, guard.name, guard, submatch)
                     if m.response_match:
                         return m
         else:
@@ -256,11 +256,11 @@ class ScanResponseMatch:
                 for guard in self._guard_config.parsed_guards:
                     if guard.name != name:
                         continue
-                    m = self.find(extraction, guard.name, guard, submatch)
+                    m = self._find(extraction, guard.name, guard, submatch)
                     if m.response_match:
                         return m
 
-        return self.no_match_result(name)
+        return self._no_match_result(name)
 
     def findall(self) -> List[ResultMatches]:
         """
@@ -274,7 +274,7 @@ class ScanResponseMatch:
             match = []
             all_match = []
             for guard in self._guard_config.parsed_guards:
-                m = self.find(extraction, guard.name, guard)
+                m = self._find(extraction, guard.name, guard)
                 if m.response_match:
                     match.append(m)
                 all_match.append(m)
