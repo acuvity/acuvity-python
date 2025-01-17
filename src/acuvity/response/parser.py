@@ -4,9 +4,7 @@ from acuvity.guard.config import Guard
 from acuvity.guard.constants import GuardName
 from acuvity.models.extraction import Extraction
 from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
-from acuvity.response.constants import (
-    TOPIC_PREFIXES,
-)
+
 from acuvity.response.errors import ResponseValidationError
 
 
@@ -56,15 +54,8 @@ class ResponseParser:
     ) -> tuple[bool, float]:
         """Get value from topics section with prefix handling."""
 
-        prefix = TOPIC_PREFIXES.get(guard.name)
-        if not prefix:
-            if not extraction.exploits:
-                return False , 0.0
-            value = extraction.exploits.get(str(guard.name))
-            if value is None:
-                return False, 0
-            return True, float(value)
-        else:
+        if guard.name == GuardName.TOXIC or guard.name == GuardName.HARMFUL or guard.name == GuardName.BIASED:
+            prefix = "content/" + str(guard.name)
             if not extraction.topics:
                 return False, 0
             value = extraction.topics.get(prefix)
@@ -72,6 +63,12 @@ class ResponseParser:
                 return True, float(value)
             return False, 0.0
 
+        if not extraction.exploits:
+            return False , 0.0
+        value = extraction.exploits.get(str(guard.name))
+        if value is None:
+            return False, 0
+        return True, float(value)
 
     def _get_language_value(
         self,
