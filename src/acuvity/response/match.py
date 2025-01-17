@@ -12,20 +12,20 @@ from acuvity.models.textualdetection import Textualdetection, TextualdetectionTy
 @dataclass(frozen=False)
 class ResultMatch:
     """Result of a single check operation."""
-    response_match: bool
-    guard_name: GuardName
-    actual_value: float
-    threshold: Threshold = Threshold("> 0.0")
-    categories_count: int = 0
-    detections_count: int = 0
-    textual_detections: list[Textualdetection] | None = None
+    response_match: bool                                      # If the response matches the guard.
+    guard_name: GuardName                                     # Name of the guard.
+    score: float                                              # Score of the match if applicable.
+    threshold: Threshold = Threshold("> 0.0")                 # Threshold for the guard.
+    categories_count: int = 0                                 # Count of categories detected.
+    detections_count: int = 0                                 # Count the matches for textual detections.
+    textual_detections: list[Textualdetection] | None = None  # Matching textual detections.
 
 @dataclass(frozen=False)
 class ResultMatches:
     """Result of processing multiple checks or a configuration."""
-    response_match: bool
-    matched_checks: list[ResultMatch]
-    all_checks: list[ResultMatch]
+    response_match: bool                                      # If the response matches all the checks in the guard configuration.
+    matched_checks: list[ResultMatch]                         # List of matched checks.
+    all_checks: list[ResultMatch]                             # List of all checks.
 
 class ScanResponseMatch:
     """
@@ -33,22 +33,22 @@ class ScanResponseMatch:
     """
     def __init__(
             self,
-            scan_response: Scanresponse,
+            scan_response: Scanresponse,  # TODO: This should be base class
             guard_config: GuardConfig,
-            num_messages: int,
+            num_file_requests: int,
         ):
-        self._guard_config = guard_config
         self.scan_response = scan_response
-        self._num_messages = num_messages
+        self._guard_config = guard_config
+        self._num_file_requests = num_file_requests
         if self._guard_config is None:
             raise ValueError("No guard configuration was passed or available in the instance.")
 
-    def _no_match_result(self, guard_name: GuardName, actual_value: float = 1.0, categories_count: int = 0) -> ResultMatch:
+    def _no_match_result(self, guard_name: GuardName, score: float = 1.0, categories_count: int = 0) -> ResultMatch:
         return ResultMatch(
             response_match=False,
             guard_name=guard_name,
             threshold=Threshold("> 0.0"),
-            actual_value=actual_value,
+            score=score,
             categories_count=categories_count,
         )
 
@@ -107,7 +107,7 @@ class ScanResponseMatch:
                 response_match=response_match,
                 guard_name=guard.name,
                 threshold=guard.threshold,
-                actual_value=1.0,
+                score=1.0,
                 categories_count=categories_count,
                 detections_count=detections_count,
                 textual_detections=detections_subset
@@ -137,18 +137,18 @@ class ScanResponseMatch:
         if not lookup:
             return self._no_match_result(guard.name)
 
-        actual_value = lookup.get(key)
-        if actual_value:
-            if guard.threshold.compare(actual_value):
+        score = lookup.get(key)
+        if score:
+            if guard.threshold.compare(score):
                 return ResultMatch(
                     response_match=True,
                     guard_name=guard.name,
                     threshold=guard.threshold,
-                    actual_value=actual_value
+                    score=score
                     )
         else:
-            actual_value = 0.0
-        return self._no_match_result(guard.name, actual_value=actual_value)
+            score = 0.0
+        return self._no_match_result(guard.name, score=score)
 
     def _find(
             self,
@@ -194,7 +194,7 @@ class ScanResponseMatch:
                     response_match=True,
                     guard_name=name,
                     threshold=guard.threshold,
-                    actual_value=1.0,
+                    score=1.0,
                     detections_count=count
                 )
             return self._no_match_result(guard.name)
@@ -211,7 +211,7 @@ class ScanResponseMatch:
                     response_match=True,
                     guard_name=name,
                     threshold=guard.threshold,
-                    actual_value=1.0,
+                    score=1.0,
                     detections_count=count
                 )
             return self._no_match_result(guard.name)
@@ -242,9 +242,9 @@ class ScanResponseMatch:
         if file_index or text_index:
             lookup_index = 0
             if text_index:
-                lookup_index = text_index
+                lookup_index = self._num_file_requests + text_index
             elif file_index:
-                lookup_index = self._num_messages + file_index
+                lookup_index = file_index
 
             if lookup_index < len(self.scan_response.extractions):
                 extraction = self.scan_response.extractions[lookup_index]

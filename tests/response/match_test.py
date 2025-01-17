@@ -407,9 +407,9 @@ class TestResponseProcessingE2E:
         for check in result[0].all_checks:
             if check.guard_name == GuardName.PROMPT_INJECTION:
                 assert not check.response_match
-                assert check.actual_value == 0.79
+                assert check.score == 0.79
             elif check.guard_name == GuardName.TOXIC:
                 assert check.response_match
-                assert check.actual_value == 0.81
+                assert check.score == 0.81
             elif check.guard_name == GuardName.PII_DETECTOR:
                 assert check.response_match
