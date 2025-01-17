@@ -5,10 +5,8 @@ from acuvity.guard.constants import GuardName
 from acuvity.models.extraction import Extraction
 from acuvity.response.constants import (
     DETECTIONTYPE_MAP,
-    GUARD_TYPES,
     GUARDNAME_TO_DETECTIONTYPE,
     TOPIC_PREFIXES,
-    GuardType,
 )
 from acuvity.response.errors import ResponseValidationError
 
@@ -23,23 +21,28 @@ class ResponseParser:
         match_name: Optional[str] = None
     ) -> Union[bool, Tuple[bool, float], Tuple[bool, float, int]]:
         """Get value from extraction based on guard type."""
-        guard_type = GUARD_TYPES.get(guard.name)
-        if not guard_type:
-            raise ResponseValidationError(f"Unknown guard type: {guard.name}")
 
         value_getters = {
-            GuardType.EXPLOIT: self._get_guard_value,
-            GuardType.TOPIC: self._get_guard_value,
-            GuardType.LANGUAGE: self._get_language_value,
-            GuardType.MODALITY: self._get_modality_value,
-            GuardType.PII: self.get_text_detections,
-            GuardType.SECRETS: self.get_text_detections,
-            GuardType.KEYWORD: self.get_text_detections,
+            GuardName.PROMPT_INJECTION: self._get_guard_value,
+            GuardName.JAIL_BREAK: self._get_guard_value,
+            GuardName.MALICIOUS_URL: self._get_guard_value,
+
+            # Topic guards with prefixes
+            GuardName.TOXICITY: self._get_guard_value,
+            GuardName.BIAS: self._get_guard_value,
+            GuardName.HARMFUL_CONTENT: self._get_guard_value,
+
+            # Other guards
+            GuardName.LANGUAGE: self._get_language_value,
+            GuardName.PII_DETECTOR: self.get_text_detections,
+            GuardName.SECRETS_DETECTOR: self.get_text_detections,
+            GuardName.KEYWORD_DETECTOR: self.get_text_detections,
+            GuardName.MODALITY: self._get_modality_value,
         }
 
-        getter = value_getters.get(guard_type)
+        getter = value_getters.get(guard.name)
         if not getter:
-            raise ResponseValidationError(f"No handler for guard type: {guard_type}")
+            raise ResponseValidationError(f"No handler for guard name: {guard.name}")
 
         try:
             return getter(extraction, guard, match_name)
