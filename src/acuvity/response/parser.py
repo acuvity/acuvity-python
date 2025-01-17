@@ -1,11 +1,10 @@
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Dict, List
 
 from acuvity.guard.config import Guard
 from acuvity.guard.constants import GuardName
 from acuvity.models.extraction import Extraction
+from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
 from acuvity.response.constants import (
-    DETECTIONTYPE_MAP,
-    GUARDNAME_TO_DETECTIONTYPE,
     TOPIC_PREFIXES,
 )
 from acuvity.response.errors import ResponseValidationError
@@ -34,9 +33,9 @@ class ResponseParser:
 
             # Other guards
             GuardName.LANGUAGE: self._get_language_value,
-            GuardName.PII_DETECTOR: self.get_text_detections,
-            GuardName.SECRETS_DETECTOR: self.get_text_detections,
-            GuardName.KEYWORD_DETECTOR: self.get_text_detections,
+            GuardName.PII_DETECTOR: self._get_text_detections,
+            GuardName.SECRETS_DETECTOR: self._get_text_detections,
+            GuardName.KEYWORD_DETECTOR: self._get_text_detections,
             GuardName.MODALITY: self._get_modality_value,
         }
 
@@ -93,29 +92,29 @@ class ResponseParser:
             return False, 0
         return True, float(value)
 
-
-    def get_text_detections(
-            self,
-            extraction: Extraction,
-            guard: Guard,
-            match_name: Optional[str]
+    def _get_text_detections(
+        self,
+        extraction: Extraction,
+        guard: Guard,
+        match_name: Optional[str]
     )-> tuple[bool, float, int]:
 
-        detection_type = GUARDNAME_TO_DETECTIONTYPE.get(guard.name)
-        if not detection_type:
-            raise ResponseValidationError(f"No matching detection type for guard: {guard.name}")
+        if guard.name == GuardName.KEYWORD_DETECTOR:
+            return self._get_text_detections_type(extraction.keywords, guard, TextualdetectionType.KEYWORD, extraction.detections, match_name)
+        elif guard.name == GuardName.SECRETS_DETECTOR:
+            return self._get_text_detections_type(extraction.secrets, guard, TextualdetectionType.SECRET, extraction.detections, match_name)
+        elif guard.name == GuardName.PII_DETECTOR:
+            return self._get_text_detections_type(extraction.pi_is, guard, TextualdetectionType.PII, extraction.detections, match_name)
+        return False, 0, 0
 
-        # Get the field name for this detection type
-        field_name = DETECTIONTYPE_MAP.get(detection_type)
-        if not field_name:
-            raise ResponseValidationError(f"No matching field for detection type: {detection_type}")
-
-        # Get the relevant match_keys dictionary using getattr
-        match_keys = getattr(extraction, field_name, {}) or {}
-        detections = extraction.detections or []
-
-        if not match_keys and not detections:
-            return False, 0, 0
+    def _get_text_detections_type(
+        self,
+        lookup: Dict[str, float] | None,
+        guard: Guard,
+        detection_type: TextualdetectionType,
+        detections: List[Textualdetection] | None,
+        match_name: Optional[str]
+    )-> tuple[bool, float, int]:
 
         if match_name:
             # Count occurrences in textual detections
@@ -128,9 +127,9 @@ class ResponseParser:
             ]
 
             count = len(text_matches)
-            # If no textual detections, check `match_keys` for the match
-            if count == 0 and match_keys and match_name in match_keys:
-                return True, match_keys[match_name], 1
+            # If no textual detections, check `lookup` for the match
+            if count == 0 and lookup and match_name in lookup:
+                return True, lookup[match_name], 1
 
             if count == 0:
                 return False, 0, 0
@@ -139,8 +138,8 @@ class ResponseParser:
             return True, score, count
 
         # Return all text match values if no match_name is provided
-        exists = bool(match_keys)
-        count = len(match_keys) if match_keys else 0
+        exists = bool(lookup)
+        count = len(lookup) if lookup else 0
         return exists, 1.0 if exists else 0.0, count
 
     def _get_modality_value(
