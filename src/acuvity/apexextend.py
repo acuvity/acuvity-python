@@ -139,7 +139,7 @@ class ApexExtended(Apex):
             logger.debug("Error while processing the guard config")
             raise ValueError("Cannot process the guard config") from e
 
-        return ScanResponseMatch(raw_scan_response, gconfig, *messages, files=files)
+        return ScanResponseMatch(raw_scan_response, gconfig, files=files)
 
     async def scan_async(
         self,
@@ -183,7 +183,7 @@ class ApexExtended(Apex):
             logger.debug("Error while processing the guard config")
             raise ValueError("Cannot process the guard config") from e
 
-        return ScanResponseMatch(raw_scan_response, gconfig, *messages, files=files)
+        return ScanResponseMatch(raw_scan_response, gconfig, files=files)
 
     def __build_scan_request(
         self,

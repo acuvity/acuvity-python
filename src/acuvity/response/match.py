@@ -1,5 +1,4 @@
 import os
-
 from typing import Iterable, Sequence, Union
 
 from acuvity.guard.config import GuardConfig
@@ -8,17 +7,16 @@ from acuvity.models.scanresponse import Scanresponse
 from acuvity.response.processor import ResponseProcessor
 from acuvity.response.result import GuardMatch, Matches, ResponseMatch
 
+
 class ScanResponseMatch:
     """
     Wrapper for Scanresponse to add functionality for checking guards.
     """
     def __init__(self, scan_response: Scanresponse, guard_config: GuardConfig,
-                *messages: str,
                 files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None):
         self._guard_config = guard_config
         self.scan_response = scan_response
-        self._files = len(self.processed_files(files))
-        self._msgs = messages
+        self._number_of_files = self._count_files(files)
         if self._guard_config is None:
             raise ValueError("No guard configuration was passed or available in the instance.")
 
@@ -28,33 +26,33 @@ class ScanResponseMatch:
         except Exception as e:
             raise ValueError(f"Failed to process match: {str(e)}") from e
 
-    def processed_files(self, files: Union[Sequence[Union[str,os.PathLike]], os.PathLike, str, None] = None)-> list[Union[str, os.PathLike]]:
-        process_files: list[Union[str, os.PathLike]] = []
-
+    def _count_files(self, files: Union[Sequence[Union[str, os.PathLike]], os.PathLike, str, None] = None) -> int:
         if files is None:
-            # No files to process; return an empty list
-            pass
-        elif isinstance(files, (str, os.PathLike)):
-            # Single file (string or PathLike)
-            process_files.append(files)
-        elif isinstance(files, Iterable):
-            # Multiple files
-            for file in files:
-                if not isinstance(file, (str, os.PathLike)):
-                    raise ValueError("All items in 'files' must be str or os.PathLike")
-                process_files.append(file)
-        else:
-            # If it's not None, not a single str/PathLike, and not Iterable, that's invalid
-            raise ValueError(
-                "Argument 'files' must be None, a str, a PathLike, or an Iterable of these."
-            )
-        return process_files
+            return 0
+        return len([files] if isinstance(files, (str, os.PathLike)) else files)
 
-    def matches(self) -> list[Matches]:
+    def matches(self, file_index: int = -1, msg_index: int = -1) -> list[Matches]:
         """
         Returns the overall match of the scan response.
         """
-        return self.match_details
+        matches: list[Matches] = []
+        # Helper to search one index
+        def search_at_index(idx: int):
+            if 0 <= idx < len(self.match_details):
+                return self.match_details[idx]
+            else:
+                raise ValueError(f"Index {idx} is out of range.")
+
+        # 1) If either index is given (not -1), search them
+        if file_index != -1 or msg_index != -1:
+            if file_index != -1:
+                matches.append(search_at_index(file_index))
+            if msg_index != -1:
+                idx_msg = msg_index + self._number_of_files
+                matches.append(search_at_index(idx_msg))
+        else:
+            # 2) If both are -1, return all
+            return self.match_details
 
     def guard_match(self, guard: GuardName, file_index: int = -1, msg_index: int = -1) -> list[GuardMatch]:
         """
@@ -84,7 +82,7 @@ class ScanResponseMatch:
             if file_index != -1:
                 search_at_index(file_index)
             if msg_index != -1:
-                idx_msg = msg_index + self._files
+                idx_msg = msg_index + self._number_of_files
                 search_at_index(idx_msg)
         else:
             # 2) If both are -1, search all
