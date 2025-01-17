@@ -27,9 +27,9 @@ class ResponseParser:
             GuardName.MALICIOUS_URL: self._get_guard_value,
 
             # Topic guards with prefixes
-            GuardName.TOXICITY: self._get_guard_value,
-            GuardName.BIAS: self._get_guard_value,
-            GuardName.HARMFUL_CONTENT: self._get_guard_value,
+            GuardName.TOXIC: self._get_guard_value,
+            GuardName.BIASED: self._get_guard_value,
+            GuardName.HARMFUL: self._get_guard_value,
 
             # Other guards
             GuardName.LANGUAGE: self._get_language_value,

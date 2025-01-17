@@ -104,7 +104,7 @@ class GuardConfig:
 
     The parser handles two types of guards:
     1. Match Guards: Guards with a 'matches' section (e.g., pii_detector)
-    2. Simple Guards: Guards without matches (e.g., prompt_injection, toxicity)
+    2. Simple Guards: Guards without matches (e.g., prompt_injection, toxic)
     """
 
     def __init__(self, config: Optional[Union[str, Path, Dict, List[Guard]]] = None):

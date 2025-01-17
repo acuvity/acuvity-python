@@ -198,13 +198,13 @@ example:
 guardrails:
   - name: prompt_injection
     threshold: ">= 0.7"
-  - name: toxicity
+  - name: toxic
     threshold: "0.7"
   - name: gibberish
     threshold: ">= 0.8"
   - name: jail_break
     threshold: ">= 1.0"
-  - name: bias
+  - name: biased
     threshold: "0.8"
   - name: harmful
 ```
@@ -248,10 +248,10 @@ The output of the above would be a list of guard matches with a match as YES or 
         matched_checks=[GuardMatch(response_match=<ResponseMatch.YES: 'YES'>, guard_name=<GuardName.PROMPT_INJECTION: 'prompt_injection'>, actual_value=1.0, threshold='>= 0.7', match_count=0)],
         all_checks=[
             GuardMatch(response_match=<ResponseMatch.YES: 'YES'>, guard_name=<GuardName.PROMPT_INJECTION: 'prompt_injection'>, actual_value=1.0, threshold='>= 0.7', match_count=0),
-            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.TOXICITY: 'toxicity'>, actual_value=0.0, threshold='>= 0.7', match_count=0),
+            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.TOXIC: 'toxic'>, actual_value=0.0, threshold='>= 0.7', match_count=0),
             GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.JAIL_BREAK: 'jail_break'>, actual_value=0, threshold='>= 1.0', match_count=0),
-            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.BIAS: 'bias'>, actual_value=0.0, threshold='>= 0.8', match_count=0),
-            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.HARMFUL_CONTENT: 'harmful'>, actual_value=0.0, threshold='>= 0.0', match_count=0)
+            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.BIASED: 'biased'>, actual_value=0.0, threshold='>= 0.8', match_count=0),
+            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.HARMFUL: 'harmful'>, actual_value=0.0, threshold='>= 0.0', match_count=0)
         ]
     ),
     Matches(
@@ -260,10 +260,10 @@ The output of the above would be a list of guard matches with a match as YES or 
         matched_checks=[],
         all_checks=[
             GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.PROMPT_INJECTION: 'prompt_injection'>, actual_value=0.0, threshold='>= 0.7', match_count=0),
-            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.TOXICITY: 'toxicity'>, actual_value=0.64, threshold='>= 0.7', match_count=0),
+            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.TOXIC: 'toxic'>, actual_value=0.64, threshold='>= 0.7', match_count=0),
             GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.JAIL_BREAK: 'jail_break'>, actual_value=0.0, threshold='>= 1.0', match_count=0),
-            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.BIAS: 'bias'>, actual_value=0.0, threshold='>= 0.8', match_count=0),
-            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.HARMFUL_CONTENT: 'harmful'>, actual_value=0.0, threshold='>= 0.0', match_count=0)
+            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.BIASED: 'biased'>, actual_value=0.0, threshold='>= 0.8', match_count=0),
+            GuardMatch(response_match=<ResponseMatch.NO: 'NO'>, guard_name=<GuardName.HARMFUL: 'harmful'>, actual_value=0.0, threshold='>= 0.0', match_count=0)
         ]
     )
 ]
