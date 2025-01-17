@@ -3,7 +3,6 @@ from enum import Enum
 
 from acuvity.guard.constants import GuardName
 
-
 class ResponseMatch(str, Enum):
     """Enumeration for check matches."""
     YES = "YES"

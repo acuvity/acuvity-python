@@ -13,7 +13,6 @@ from acuvity.models import (
     Scanrequest,
     Type,
 )
-from acuvity.response.constants import guardname_analyzer_id_map
 from acuvity.response.match import ScanResponseMatch
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.utils.logger import get_default_logger

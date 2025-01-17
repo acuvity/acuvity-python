@@ -5,14 +5,12 @@ import pytest
 from acuvity.guard.config import Guard, GuardConfig, Match
 from acuvity.guard.constants import GuardName
 from acuvity.guard.threshold import Threshold
-from acuvity.models.extraction import Extraction, Textualdetection
+from acuvity.models.extraction import Extraction
 from acuvity.models.principal import PrincipalType
 from acuvity.models.scanresponse import Principal, Scanresponse
 from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
-from acuvity.response.parser import ResponseParser
 from acuvity.response.processor import ResponseProcessor
-from acuvity.response.result import GuardMatch, Matches, ResponseMatch
-
+from acuvity.response.result import ResponseMatch
 
 class TestResponseProcessingE2E:
     @pytest.fixture
@@ -339,8 +337,8 @@ class TestResponseProcessingE2E:
         Complex scenario 2: Multiple guards with edge cases
         - PII: Exactly meets minimum thresholds
         - Prompt injection: Just below threshold
-        - Add toxicity check: Just above threshold
-        Expected: PII and toxicity should match, prompt injection should fail
+        - Add toxic check: Just above threshold
+        Expected: PII and toxic should match, prompt injection should fail
         """
         # Create PII extraction with exactly meeting thresholds
         pii_extraction = create_pii_extraction(
@@ -352,7 +350,7 @@ class TestResponseProcessingE2E:
         # Create exploit extraction with borderline cases
         exploit_extraction = create_exploit_extraction(prompt_injection_score=0.79)  # Just below threshold
 
-        # Combine extractions and add toxicity
+        # Combine extractions and add toxic
         combined_extraction = Extraction(
             detections=pii_extraction.detections,
             pi_is=pii_extraction.pi_is,
@@ -372,7 +370,7 @@ class TestResponseProcessingE2E:
                     matches={}
                 ),
                 Guard(
-                    name=GuardName.TOXICITY,
+                    name=GuardName.TOXIC,
                     threshold=Threshold(">= 0.8"),
                     matches={}
                 ),
@@ -400,7 +398,7 @@ class TestResponseProcessingE2E:
 
         # Verify specific guards
         guard_names = {check.guard_name for check in result[0].matched_checks}
-        assert guard_names == {GuardName.PII_DETECTOR, GuardName.TOXICITY}
+        assert guard_names == {GuardName.PII_DETECTOR, GuardName.TOXIC}
 
         # Verify all checks contains all three results
         assert len(result[0].all_checks) == 3
@@ -410,7 +408,7 @@ class TestResponseProcessingE2E:
             if check.guard_name == GuardName.PROMPT_INJECTION:
                 assert check.response_match == ResponseMatch.NO
                 assert check.actual_value == 0.79
-            elif check.guard_name == GuardName.TOXICITY:
+            elif check.guard_name == GuardName.TOXIC:
                 assert check.response_match == ResponseMatch.YES
                 assert check.actual_value == 0.81
             elif check.guard_name == GuardName.PII_DETECTOR:

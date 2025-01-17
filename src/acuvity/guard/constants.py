@@ -12,11 +12,11 @@ class ComparisonOperator(Enum):
 
 class GuardName(Enum):
     PROMPT_INJECTION = "prompt_injection"
-    JAIL_BREAK = "jail_break"
+    JAILBREAK = "jailbreak"
     MALICIOUS_URL = "malicious_url"
-    TOXICITY = "toxicity"
-    BIAS = "bias"
-    HARMFUL_CONTENT = "harmful"
+    TOXIC = "toxic"
+    BIASED = "biased"
+    HARMFUL = "harmful"
     LANGUAGE = "language"
     MODALITY = "modality"
     PII_DETECTOR = "pii_detector"

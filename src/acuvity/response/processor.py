@@ -1,8 +1,8 @@
-from typing import List, Optional
+from typing import Optional
 
 from acuvity.guard.config import Guard, GuardConfig
 from acuvity.models.scanresponse import Extraction, Scanresponse
-from acuvity.response.evaluator import ResponseEvaluator
+from acuvity.response.helper import ResponseHelper
 from acuvity.response.result import GuardMatch, Matches, ResponseMatch
 from acuvity.utils.logger import get_default_logger
 
@@ -12,7 +12,6 @@ class ResponseProcessor:
     """Handles processing of guard configurations."""
 
     def __init__(self, response: Scanresponse, guard_config: GuardConfig):
-        self._evaluator = ResponseEvaluator()
         self.guard_config = guard_config
         self._response = response
 
@@ -25,9 +24,9 @@ class ResponseProcessor:
         """Process a single guard check with action consideration."""
         try:
             # Get raw evaluation
-            return self._evaluator.evaluate(extraction, guard, match_name)
+            helper = ResponseHelper()
+            return helper.evaluate(extraction, guard, match_name)
         except Exception as e:
-            logger.debug("Error processing guard %s ", {guard.name})
             raise e
 
     def _process_simple_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
@@ -94,5 +93,4 @@ class ResponseProcessor:
             return all_matches
 
         except Exception as e:
-            logger.debug("Error processing guard config: %s",{str(e)})
             raise ValueError(f"Failed to process guard configuration: {str(e)}") from e

@@ -25,7 +25,7 @@ guard_config = {
                 "threshold": ">= 0.2"
             },
             {
-                "name": "jail_break",
+                "name": "jailbreak",
                 "threshold": ">= 0.7"
             },
             {
@@ -40,10 +40,10 @@ guard_config = {
                 "name": "secrets_detector"
             },
             {
-                "name": "bias"
+                "name": "biased"
             },
             {
-                "name": "toxicity"
+                "name": "toxic"
             },
             {
                 "name": "language"
