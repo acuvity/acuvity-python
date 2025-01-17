@@ -5,14 +5,12 @@ import pytest
 from acuvity.guard.config import Guard, GuardConfig, Match
 from acuvity.guard.constants import GuardName
 from acuvity.guard.threshold import Threshold
-from acuvity.models.extraction import Extraction, Textualdetection
+from acuvity.models.extraction import Extraction
 from acuvity.models.principal import PrincipalType
 from acuvity.models.scanresponse import Principal, Scanresponse
 from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
-from acuvity.response.parser import ResponseParser
 from acuvity.response.processor import ResponseProcessor
-from acuvity.response.result import GuardMatch, Matches, ResponseMatch
-
+from acuvity.response.result import ResponseMatch
 
 class TestResponseProcessingE2E:
     @pytest.fixture

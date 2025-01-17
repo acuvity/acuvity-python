@@ -4,14 +4,70 @@ from acuvity.guard.config import Guard
 from acuvity.guard.constants import GuardName
 from acuvity.models.extraction import Extraction
 from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
-
 from acuvity.response.errors import ResponseValidationError
+from acuvity.response.result import GuardMatch, ResponseMatch
+from acuvity.utils.logger import get_default_logger
 
+logger = get_default_logger()
 
-class ResponseParser:
+class ResponseHelper:
     """Parser for accessing values in Extraction response based on guard types."""
 
-    def get_value(
+    def evaluate(
+        self,
+        response_extraction: Extraction,
+        guard: Guard,
+        match_name: Optional[str] = None
+    ) -> GuardMatch:
+        """
+        Evaluates a check condition using a Guard object.
+
+        Args:
+            response_extraction: The scan response extraction
+            guard: The guard to eval with the response
+            match_name: The match match for the guard
+
+        Returns:
+            GuardMatch with MATCH.YES if condition met, MATCH>NO if not met
+        """
+        try:
+            result = self._get_value(response_extraction, guard, match_name)
+            # Handle different return types
+            # PII and keyword
+            match_count = None
+            if isinstance(result, tuple) and len(result) == 3:  # (bool, float, int)
+                exists, value, match_count = result
+            # exploit, topic, classification, language
+            elif isinstance(result, tuple) and len(result) == 2:  # (bool, float)
+                exists, value = result
+            # secrets and modality
+            elif isinstance(result, bool):  # bool only
+                exists, value = result, 1.0
+            else:
+                raise ValueError("Unexpected return type from _get_value")
+
+            if not exists:
+                return GuardMatch(
+                    response_match=ResponseMatch.NO,
+                    guard_name=guard.name,
+                    threshold=str(guard.threshold),
+                    actual_value=value
+                )
+            # Use ThresholdHelper for comparison
+            comparison_result = guard.threshold.compare(value)
+
+            return GuardMatch(
+                response_match=ResponseMatch.YES if comparison_result else ResponseMatch.NO,
+                guard_name=guard.name,
+                threshold=str(guard.threshold),
+                actual_value=value,
+                match_count=match_count if match_count else 0
+            )
+        except Exception as e:
+            logger.debug("Error in check evaluation: %s", str(e))
+            raise
+
+    def _get_value(
         self,
         extraction: Extraction,
         guard: Guard,

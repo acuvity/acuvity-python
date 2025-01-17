@@ -1,4 +1,5 @@
 import os
+
 from typing import Iterable, Sequence, Union
 
 from acuvity.guard.config import GuardConfig
@@ -6,7 +7,6 @@ from acuvity.guard.constants import GuardName
 from acuvity.models.scanresponse import Scanresponse
 from acuvity.response.processor import ResponseProcessor
 from acuvity.response.result import GuardMatch, Matches, ResponseMatch
-
 
 class ScanResponseMatch:
     """
