@@ -21,7 +21,7 @@ class ResponseParser:
 
         value_getters = {
             GuardName.PROMPT_INJECTION: self._get_guard_value,
-            GuardName.JAIL_BREAK: self._get_guard_value,
+            GuardName.JAILBREAK: self._get_guard_value,
             GuardName.MALICIOUS_URL: self._get_guard_value,
 
             # Topic guards with prefixes

@@ -3,7 +3,7 @@ guardrails:
     threshold: ">= 0.7"
   - name: toxic
     threshold: "0.7"
-  - name: jail_break
+  - name: jailbreak
     threshold: ">= 1.0"
   - name: biased
     threshold: "0.8"

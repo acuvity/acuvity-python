@@ -5,7 +5,7 @@ guardrails:
     threshold: "0.7"
   - name: gibberish
     threshold: ">= 0.8"
-  - name: jail_break
+  - name: jailbreak
     threshold: ">= 1.0"
   - name: biased
     threshold: "0.8"

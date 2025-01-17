@@ -25,7 +25,7 @@ guard_config = {
                 "threshold": ">= 0.2"
             },
             {
-                "name": "jail_break",
+                "name": "jailbreak",
                 "threshold": ">= 0.7"
             },
             {
