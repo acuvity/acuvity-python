@@ -74,7 +74,6 @@ def discover_apex(
                 raise ValueError(f"JWT Apex URL has no domain: {token_apex_url}")
             if port is None or port == "":
                 raise ValueError(f"JWT Apex URL has no port or wrong scheme: {token_apex_url}")
-            print(f"Using Apex URL from token: {domain}:{port}")
             return domain, port
 
         # we're assuming this must be a domain without a scheme
