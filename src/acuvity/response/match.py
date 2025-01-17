@@ -91,6 +91,9 @@ class ScanResponseMatch:
                         response_match = False
                         continue
 
+            if detection.name not in count_thresholds:
+                count_thresholds[detection.name] = 0
+
             count_thresholds[detection.name] += 1
             detections_count += 1
             detections_subset.append(detection)

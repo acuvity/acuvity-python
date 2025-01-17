@@ -4,9 +4,9 @@ guardrails:
   - name: prompt_injection
     threshold: ">= 0.7"
 
-  # This guard denies access if the toxicity threshold is crossed in the scan response.
+  # This guard denies access if the toxic threshold is crossed in the scan response.
   # Similar to prompt injection, found in the 'topics' field of the response.
-  - name: toxicity
+  - name: toxic
     threshold: "0.7"
 
   # This guard denies access if the gibberish threshold is crossed in the scan response.
