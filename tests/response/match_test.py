@@ -109,7 +109,7 @@ class TestResponseProcessingE2E:
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[extraction])
         srm = ScanResponseMatch(response, guard_config, 1)
-        result = srm.findall()
+        result = srm.matches()
 
         # Verify
         assert result[0].response_match
@@ -149,7 +149,7 @@ class TestResponseProcessingE2E:
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[extraction])
         srm = ScanResponseMatch(response, guard_config, 1)
-        result = srm.findall()
+        result = srm.matches()
 
         # Verify
         assert not result[0].response_match
@@ -174,7 +174,7 @@ class TestResponseProcessingE2E:
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[extraction])
         srm = ScanResponseMatch(response, guard_config, 1)
-        result = srm.findall()
+        result = srm.matches()
 
         # Verify
         assert result[0].response_match
@@ -200,7 +200,7 @@ class TestResponseProcessingE2E:
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[extraction])
         srm = ScanResponseMatch(response, guard_config, 1)
-        result = srm.findall()
+        result = srm.matches()
 
         # Verify
         assert len(result) == 1
@@ -251,7 +251,7 @@ class TestResponseProcessingE2E:
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[combined_extraction])
         srm = ScanResponseMatch(response, guard_config, 1)
-        result = srm.findall()
+        result = srm.matches()
 
         # Verify both were detected
         assert result[0].response_match
@@ -316,7 +316,7 @@ class TestResponseProcessingE2E:
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP),extractions=[combined_extraction])
         srm = ScanResponseMatch(response, guard_config, 1)
-        result = srm.findall()
+        result = srm.matches()
 
         # Verify
         assert not result[0].response_match  # Overall no because only prompt injection met the match
@@ -390,7 +390,7 @@ class TestResponseProcessingE2E:
         # Process
         response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[combined_extraction])
         srm = ScanResponseMatch(response, guard_config, 1)
-        result = srm.findall()
+        result = srm.matches()
 
         # Verify
         assert not result[0].response_match

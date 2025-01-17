@@ -223,7 +223,7 @@ class ScanResponseMatch:
         elif name == GuardName.KEYWORD_DETECTOR: # multiple
             return self._find_textual_detection_match(extraction, extraction.keywords, guard, TextualdetectionType.KEYWORD)
 
-    def findany(
+    def _findany(
             self,
             name: GuardName,
             submatch: Optional[str] = None,
@@ -262,7 +262,28 @@ class ScanResponseMatch:
 
         return self._no_match_result(name)
 
-    def findall(self) -> List[ResultMatches]:
+    #
+    # Public routines to help parse the scan response.
+    #
+    def match_any(self, name: GuardName, submatch: Optional[str] = None) -> ResultMatch:
+        """
+        Find any match across any response matching a guard name.
+        """
+        return self._findany(name, submatch)
+
+    def match_text_request(self, name: GuardName, submatch: Optional[str] = None, text_index: Optional[int] = 0) -> ResultMatch:
+        """
+        Find any match at text index response matching a guard name.
+        """
+        return self._findany(name, submatch, text_index=text_index)
+
+    def match_file_request(self, name: GuardName, submatch: Optional[str] = None, file_index: Optional[int] = 0) -> ResultMatch:
+        """
+        Find any match at file index response matching a guard name.
+        """
+        return self._findany(name, submatch, file_index=file_index)
+
+    def matches(self) -> List[ResultMatches]:
         """
         Find all matches in scan reponse based on a config.
         """
