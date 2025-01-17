@@ -286,7 +286,7 @@ class ScanResponseMatch:
         """
         return self._findany(name, submatch, file_index=file_index)
 
-    def matches(self) -> List[ResultMatches]:
+    def matches(self, text_index: Optional[int] = None, file_index: Optional[int] = None) -> List[ResultMatches]:
         """
         Find all matches in scan reponse based on a config.
         """
@@ -294,9 +294,18 @@ class ScanResponseMatch:
         if not self.scan_response.extractions:
             return matches
 
-        for extraction in self.scan_response.extractions:
+        for i, extraction in enumerate(self.scan_response.extractions):
             match = []
             all_match = []
+
+            if file_index:
+                if i != file_index:
+                    continue
+
+            if text_index:
+                if i != self._num_file_requests + text_index:
+                    continue
+
             for guard in self._guard_config.parsed_guards:
                 m = self._find(extraction, guard.name, guard)
                 if m.response_match:
