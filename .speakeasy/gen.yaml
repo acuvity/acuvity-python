@@ -22,7 +22,6 @@ python:
     main:
       PyYAML: ^6.0.2
       pyjwt: ^2.9.0
-      rich: ^13.9.4
   authors:
     - Acuvity, Inc.
   clientServerStatusCodesAsErrors: true

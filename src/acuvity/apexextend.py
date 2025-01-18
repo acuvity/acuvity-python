@@ -3,7 +3,7 @@
 import base64
 import os
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Dict, Iterable, List, Optional, Sequence, Union
 
 from acuvity.guard.config import Guard, GuardConfig, GuardName
 from acuvity.models import (
@@ -17,9 +17,11 @@ from acuvity.response.match import ScanResponseMatch
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.utils.logger import get_default_logger
 
+from .apex import Apex
+
 logger = get_default_logger()
 
-from .apex import Apex
+
 
 
 class ApexExtended(Apex):

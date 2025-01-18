@@ -1,4 +1,4 @@
-from typing import Optional, Tuple, Union, Dict, List
+from typing import Callable, Dict, List, Optional, Tuple, TypeAlias, Union
 
 from acuvity.guard.config import Guard
 from acuvity.guard.constants import GuardName
@@ -9,6 +9,12 @@ from acuvity.response.result import GuardMatch, ResponseMatch
 from acuvity.utils.logger import get_default_logger
 
 logger = get_default_logger()
+
+# Define the type alias at the class or module level
+value_getter_type: TypeAlias = Callable[
+    [Extraction, Guard, Optional[str]],
+    Union[bool, Tuple[bool, float], Tuple[bool, float, int]]
+]
 
 class ResponseHelper:
     """Parser for accessing values in Extraction response based on guard types."""
@@ -75,7 +81,7 @@ class ResponseHelper:
     ) -> Union[bool, Tuple[bool, float], Tuple[bool, float, int]]:
         """Get value from extraction based on guard type."""
 
-        value_getters = {
+        value_getters : Dict[GuardName, value_getter_type] =  {
             GuardName.PROMPT_INJECTION: self._get_guard_value,
             GuardName.JAILBREAK: self._get_guard_value,
             GuardName.MALICIOUS_URL: self._get_guard_value,
@@ -110,7 +116,7 @@ class ResponseHelper:
     ) -> tuple[bool, float]:
         """Get value from topics section with prefix handling."""
 
-        if guard.name == GuardName.TOXIC or guard.name == GuardName.HARMFUL or guard.name == GuardName.BIASED:
+        if guard.name in (GuardName.TOXIC, GuardName.HARMFUL, GuardName.BIASED):
             prefix = "content/" + str(guard.name)
             if not extraction.topics:
                 return False, 0
@@ -154,18 +160,18 @@ class ResponseHelper:
 
         if guard.name == GuardName.KEYWORD_DETECTOR:
             return self._get_text_detections_type(extraction.keywords, guard, TextualdetectionType.KEYWORD, extraction.detections, match_name)
-        elif guard.name == GuardName.SECRETS_DETECTOR:
+        if guard.name == GuardName.SECRETS_DETECTOR:
             return self._get_text_detections_type(extraction.secrets, guard, TextualdetectionType.SECRET, extraction.detections, match_name)
-        elif guard.name == GuardName.PII_DETECTOR:
+        if guard.name == GuardName.PII_DETECTOR:
             return self._get_text_detections_type(extraction.pi_is, guard, TextualdetectionType.PII, extraction.detections, match_name)
         return False, 0, 0
 
     def _get_text_detections_type(
         self,
-        lookup: Dict[str, float] | None,
+        lookup: Union[Dict[str, float] , None],
         guard: Guard,
         detection_type: TextualdetectionType,
-        detections: List[Textualdetection] | None,
+        detections: Union[List[Textualdetection], None],
         match_name: Optional[str]
     )-> tuple[bool, float, int]:
 
@@ -198,7 +204,7 @@ class ResponseHelper:
     def _get_modality_value(
         self,
         extraction: Extraction,
-        _: GuardName,
+        _: Guard,
         match_name: Optional[str] = None
     ) -> bool:
         if not extraction.modalities:

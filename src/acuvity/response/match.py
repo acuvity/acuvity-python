@@ -1,5 +1,5 @@
 import os
-from typing import Iterable, Sequence, Union
+from typing import Sequence, Union
 
 from acuvity.guard.config import GuardConfig
 from acuvity.guard.constants import GuardName
@@ -37,11 +37,10 @@ class ScanResponseMatch:
         """
         matches: list[Matches] = []
         # Helper to search one index
-        def search_at_index(idx: int):
+        def search_at_index(idx: int) -> Matches:
             if 0 <= idx < len(self.match_details):
                 return self.match_details[idx]
-            else:
-                raise ValueError(f"Index {idx} is out of range.")
+            raise ValueError(f"Invalid index {idx}")
 
         # 1) If either index is given (not -1), search them
         if file_index != -1 or msg_index != -1:
@@ -50,9 +49,10 @@ class ScanResponseMatch:
             if msg_index != -1:
                 idx_msg = msg_index + self._number_of_files
                 matches.append(search_at_index(idx_msg))
-        else:
-            # 2) If both are -1, return all
-            return self.match_details
+            return matches
+
+        # 2) If both are -1, return all
+        return self.match_details
 
     def guard_match(self, guard: GuardName, file_index: int = -1, msg_index: int = -1) -> list[GuardMatch]:
         """
