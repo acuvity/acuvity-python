@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Optional, Tuple, TypeAlias, Union
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 from acuvity.guard.config import Guard
 from acuvity.guard.constants import GuardName
@@ -11,7 +11,7 @@ from acuvity.utils.logger import get_default_logger
 logger = get_default_logger()
 
 # Define the type alias at the class or module level
-value_getter_type: TypeAlias = Callable[
+ValueGetterType = Callable[
     [Extraction, Guard, Optional[str]],
     Union[bool, Tuple[bool, float], Tuple[bool, float, int]]
 ]
@@ -81,7 +81,7 @@ class ResponseHelper:
     ) -> Union[bool, Tuple[bool, float], Tuple[bool, float, int]]:
         """Get value from extraction based on guard type."""
 
-        value_getters : Dict[GuardName, value_getter_type] =  {
+        value_getters : Dict[GuardName, ValueGetterType] =  {
             GuardName.PROMPT_INJECTION: self._get_guard_value,
             GuardName.JAILBREAK: self._get_guard_value,
             GuardName.MALICIOUS_URL: self._get_guard_value,
