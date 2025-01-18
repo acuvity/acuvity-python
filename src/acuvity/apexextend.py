@@ -57,17 +57,17 @@ class ApexExtended(Apex):
         # # Filter out None values and sort
         # return sorted([name for name in mapped_names if name is not None])
 
-    def list_available_guards(self) -> list[str]:
+    def list_available_guards(self) -> List[str]:
         """
         list_secrets: returns a list of all available secrets that can be detected.
         """
         return GuardName.values()
 
-    def list_detectable_secrets(self) -> list[str]:
+    def list_detectable_secrets(self) -> List[str]:
         """
         list_secrets: returns a list of all available secrets that can be detected.
         """
-        detectable_secrets: list[str] = []
+        detectable_secrets: List[str] = []
         if self._available_analyzers is None:
             self._available_analyzers = self.list_analyzers()
         for analyzer in self._available_analyzers:
@@ -80,11 +80,11 @@ class ApexExtended(Apex):
                 detectable_secrets.extend(detectable_secrets_local)
         return sorted(detectable_secrets)
 
-    def list_detectable_piis(self) -> list[str]:
+    def list_detectable_piis(self) -> List[str]:
         """
         list_pii: returns a list of all available secrets that can be detected.
         """
-        detectable_piis: list[str] = []
+        detectable_piis: List[str] = []
         if self._available_analyzers is None:
             self._available_analyzers = self.list_analyzers()
         for analyzer in self._available_analyzers:

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 
 class ComparisonOperator(Enum):
@@ -30,7 +30,7 @@ class GuardName(Enum):
         return self.value
 
     @classmethod
-    def values(cls) -> list[str]:
+    def values(cls) -> List[str]:
         return [member.value for member in cls]
 
     @classmethod

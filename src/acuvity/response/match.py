@@ -1,5 +1,5 @@
 import os
-from typing import Sequence, Union
+from typing import List, Sequence, Union
 
 from acuvity.guard.config import GuardConfig
 from acuvity.guard.constants import GuardName
@@ -31,11 +31,11 @@ class ScanResponseMatch:
             return 0
         return len([files] if isinstance(files, (str, os.PathLike)) else files)
 
-    def matches(self, file_index: int = -1, msg_index: int = -1) -> list[Matches]:
+    def matches(self, file_index: int = -1, msg_index: int = -1) -> List[Matches]:
         """
         Returns the overall match of the scan response.
         """
-        matches: list[Matches] = []
+        matches: List[Matches] = []
         # Helper to search one index
         def search_at_index(idx: int) -> Matches:
             if 0 <= idx < len(self.match_details):
@@ -54,7 +54,7 @@ class ScanResponseMatch:
         # 2) If both are -1, return all
         return self.match_details
 
-    def guard_match(self, guard: GuardName, file_index: int = -1, msg_index: int = -1) -> list[GuardMatch]:
+    def guard_match(self, guard: GuardName, file_index: int = -1, msg_index: int = -1) -> List[GuardMatch]:
         """
         Retrieves a single guard's match.
 
@@ -66,7 +66,7 @@ class ScanResponseMatch:
         Returns:
             The 1st found GuardMatch for a specific guard.
         """
-        matches: list[GuardMatch] = []
+        matches: List[GuardMatch] = []
 
         # Helper to search one index
         def search_at_index(idx: int):

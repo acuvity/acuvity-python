@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import List
 
 from acuvity.guard.constants import GuardName
+
 
 class ResponseMatch(str, Enum):
     """Enumeration for check matches."""
@@ -22,5 +24,5 @@ class Matches:
     """Result of processing multiple checks or a configuration."""
     input_data: str
     response_match: ResponseMatch
-    matched_checks: list[GuardMatch]
-    all_checks: list[GuardMatch]
+    matched_checks: List[GuardMatch]
+    all_checks: List[GuardMatch]

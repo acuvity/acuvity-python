@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 from acuvity.guard.config import Guard, GuardConfig
 from acuvity.models.scanresponse import Extraction, Scanresponse
@@ -59,9 +59,9 @@ class ResponseProcessor:
                     match_count=match_counter
                 )
 
-    def matches(self) -> list[Matches]:
+    def matches(self) -> List[Matches]:
         """Process the complete guard configuration."""
-        all_matches : list[Matches] = []
+        all_matches : List[Matches] = []
         try:
             if self._response.extractions is None:
                 raise ValueError("response doesn't contain extractions")
