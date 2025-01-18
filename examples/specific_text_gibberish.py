@@ -12,7 +12,7 @@ s = Acuvity(
     )
 )
 
-print("---------------------------------------------------------------------------------------------------------------")
+print("--------------------------------------------------------------------------------")
 print("Scenario: single prompt with gibberish detection")
 gibberish_text = "hjasdgfabfjkfabfkjabfajkbfkjbfjkbafhbajfjkuf"
 gc = [Guard.create(GuardName.LANGUAGE)]

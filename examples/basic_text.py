@@ -17,7 +17,7 @@ input_messages = [
     "hello how are you",
 ]
 
-print("---------------------------------------------------------------------------------------------------------------")
+print("--------------------------------------------------------------------------------")
 print("Scenario: multiple prompts")
 matches = s.apex.scan(*input_messages).matches()
 print("Input:\n", input_messages)
@@ -25,7 +25,7 @@ print("Config:\n", "default")
 print("Matches:\n", matches)
 
 
-print("---------------------------------------------------------------------------------------------------------------")
+print("--------------------------------------------------------------------------------")
 print("Scenario: multiple prompts with guard config as a dictionary variable")
 guard_config = {
     "guardrails": [
@@ -45,7 +45,7 @@ print("Config:\n", guard_config)
 print("Matches:\n", matches)
 
 
-print("---------------------------------------------------------------------------------------------------------------")
+print("--------------------------------------------------------------------------------")
 print("Scenario: multiple prompts with guard config as a variable")
 gc = [
     Guard.create(GuardName.PROMPT_INJECTION)
@@ -56,9 +56,9 @@ print("Config:\n", gc)
 print("Matches:\n", matches)
 
 
-print("---------------------------------------------------------------------------------------------------------------")
+print("--------------------------------------------------------------------------------")
 print("Scenario: multiple prompts with guard config")
-config="./examples/configs/simple_default_guard_config.yaml"
+config="./configs/simple_default_guard_config.yaml"
 matches = s.apex.scan(*input_messages, guard_config=config).matches()
 print("Input:\n", input_messages)
 print("Config:\n", config)

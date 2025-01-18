@@ -215,8 +215,7 @@ Use the above guard_config to be passed in the scan request as below:
 ```python
 text1 = ["corporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com hate you"]
 
-response = s.apex.scan(*text1, files="./examples/test_data/pi-test.txt",
-                            guard_config="./examples/simple_guard_config.yaml")
+response = s.apex.scan(*text1, files="./test_data/pi-test.txt", guard_config="./config/simple_guard_config.yaml")
 
 # to find all the guards that match the config.
 print(response.matches())
@@ -229,13 +228,17 @@ of the request prompt with respect to the guard config.
 It will show all the guards that we matched on the corresponding input.
 
 ```python
-text1 = ["corporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com hate you",
-            "hello how are you"]
+text1 = [
+    "corporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com hate you",
+    "hello how are you",
+]
 
-resp = s.apex.scan(*text1, files="./examples/test_data/pi-test.txt",
-                            guard_config="./examples/example_guard_config.yaml")
+response = s.apex.scan(
+    *text1,
+    files="./test_data/pi-test.txt",
+    guard_config="./example_guard_config.yaml")
 
-resp.matches()
+response.matches()
 ```
 
 The output of the above would be a list of guard matches with a match as YES or NO.
