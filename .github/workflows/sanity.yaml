@@ -1,0 +1,44 @@
+# This runs on
+# - Push to main
+# - PRs
+name: test
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  ACUVITY_TOKEN: ${{ secrets.ACUVITY_TOKEN }}
+
+jobs:
+  sanity:
+    name: Sanity
+    runs-on: ubuntu-latest
+    concurrency:
+      group: matrix-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install
+        run: |
+            touch README-PYPI.md
+            pip install -e .
+
+      - name: Run examples
+        run: |
+            pip install rich
+            echo "Running all examples ..."
+            cd examples && ./run.sh
+
+      - name: Pytest
+        run: |
+            echo "Running all tests ..."
+            pip install pytest
+            pytest
