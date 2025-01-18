@@ -14,7 +14,7 @@ s = Acuvity(
 
 print("--------------------------------------------------------------------------------")
 print("Scenario: single file with prompt injection detection")
-file="./test_data/pi-test.txt"
+file="./examples/test_data/pi-test.txt"
 matches = s.apex.scan(files=file).matches()
 print("Input:\n", file)
 print("Config:\n", "default")
@@ -62,8 +62,8 @@ print("Matches:\n", matches)
 
 print("--------------------------------------------------------------------------------")
 print("Scenario: single file with prompt injection detection and guard config")
-file="./test_data/pi-test.txt"
-config="./configs/simple_default_guard_config.yaml"
+file="./examples/test_data/pi-test.txt"
+config="./examples/configs/simple_default_guard_config.yaml"
 matches = s.apex.scan(files=file, guard_config=config).matches()
 print("Input:\n", file)
 print("Config:\n", config)

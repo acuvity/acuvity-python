@@ -50,7 +50,7 @@ input_messages = [
     "corporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com hate you, 792-77-3459, 792-77-3453, 792-77-3454",
     "hello how are you",
 ]
-file="./test_data/pi-test.txt"
+file="./examples/test_data/pi-test.txt"
 
 print("--------------------------------------------------------------------------------")
 print("Scenario: multimodal with multiple text prompts and file with guard config in a variable to understand matches on specific guards")

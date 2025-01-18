@@ -58,7 +58,7 @@ print("Matches:\n", matches)
 
 print("--------------------------------------------------------------------------------")
 print("Scenario: multiple prompts with guard config")
-config="./configs/simple_default_guard_config.yaml"
+config="./examples/configs/simple_default_guard_config.yaml"
 matches = s.apex.scan(*input_messages, guard_config=config).matches()
 print("Input:\n", input_messages)
 print("Config:\n", config)
