@@ -12,11 +12,17 @@ s = Acuvity(
     )
 )
 
+
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+file_path = os.path.join(SCRIPT_DIR, "test_data", "pi-test.txt")
+config_path = os.path.join(SCRIPT_DIR, "configs", "simple_default_guard_config.yaml")
+
 print("--------------------------------------------------------------------------------")
 print("Scenario: single file with prompt injection detection")
-file="./examples/test_data/pi-test.txt"
-matches = s.apex.scan(files=file).matches()
-print("Input:\n", file)
+matches = s.apex.scan(files=file_path).matches()
+print("Input:\n", file_path)
 print("Config:\n", "default")
 print("Matches:\n", matches)
 
@@ -43,8 +49,8 @@ guard_config = {
         }
     ]
 }
-matches = s.apex.scan(files=file, guard_config=guard_config).matches()
-print("Input:\n", file)
+matches = s.apex.scan(files=file_path, guard_config=guard_config).matches()
+print("Input:\n", file_path)
 print("Config:\n", guard_config)
 print("Matches:\n", matches)
 
@@ -54,17 +60,15 @@ print("Scenario: single file with prompt injection detection and guard config in
 gc = [
     Guard.create(GuardName.PROMPT_INJECTION)
 ]
-matches = s.apex.scan(files=file, guard_config=gc).matches()
-print("Input:\n", file)
+matches = s.apex.scan(files=file_path, guard_config=gc).matches()
+print("Input:\n", file_path)
 print("Config:\n", gc)
 print("Matches:\n", matches)
 
 
 print("--------------------------------------------------------------------------------")
 print("Scenario: single file with prompt injection detection and guard config")
-file="./examples/test_data/pi-test.txt"
-config="./examples/configs/simple_default_guard_config.yaml"
-matches = s.apex.scan(files=file, guard_config=config).matches()
-print("Input:\n", file)
-print("Config:\n", config)
+matches = s.apex.scan(files=file_path, guard_config=config_path).matches()
+print("Input:\n", file_path)
+print("Config:\n", config_path)
 print("Matches:\n", matches)

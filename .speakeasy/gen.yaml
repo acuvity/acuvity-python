@@ -18,11 +18,11 @@ generation:
 python:
   version: 0.5.3
   additionalDependencies:
-    dev: {}
+    dev:
+      types-PyYAML: ^6.0.12
     main:
       PyYAML: ^6.0.2
       pyjwt: ^2.9.0
-      types-PyYAML: ^6.0.12
   authors:
     - Acuvity, Inc.
   clientServerStatusCodesAsErrors: true

@@ -11,6 +11,10 @@ s = Acuvity(
        token=os.getenv("ACUVITY_TOKEN", ""),
     )
 )
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+file_path = os.path.join(SCRIPT_DIR, "test_data", "pi-test.txt")
+config_path = os.path.join(SCRIPT_DIR, "configs", "simple_default_guard_config.yaml")
 
 input_messages = [
     "corporate sales number are 10k filling, in.abcd@gmail.com, 123abcd@yahoo.com hate you, 792-77-3459, 792-77-3453, 792-77-3454",
@@ -58,8 +62,7 @@ print("Matches:\n", matches)
 
 print("--------------------------------------------------------------------------------")
 print("Scenario: multiple prompts with guard config")
-config="./examples/configs/simple_default_guard_config.yaml"
-matches = s.apex.scan(*input_messages, guard_config=config).matches()
+matches = s.apex.scan(*input_messages, guard_config=config_path).matches()
 print("Input:\n", input_messages)
-print("Config:\n", config)
+print("Config:\n", config_path)
 print("Matches:\n", matches)
