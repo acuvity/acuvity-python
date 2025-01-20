@@ -35,7 +35,7 @@ jobs:
         run: |
             pip install rich
             echo "Running all examples ..."
-            cd examples && ./run.sh
+            ./examples/run.sh
 
       - name: Pytest
         run: |

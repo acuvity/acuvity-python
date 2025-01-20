@@ -16,13 +16,13 @@ generation:
     oAuth2ClientCredentialsEnabled: true
     oAuth2PasswordEnabled: true
 python:
-  version: 0.5.2
+  version: 0.5.3
   additionalDependencies:
-    dev: {}
+    dev:
+      types-PyYAML: ^6.0.12
     main:
       PyYAML: ^6.0.2
       pyjwt: ^2.9.0
-      rich: ^13.9.4
   authors:
     - Acuvity, Inc.
   clientServerStatusCodesAsErrors: true

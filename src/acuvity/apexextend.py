@@ -3,7 +3,7 @@
 import base64
 import os
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Union
+from typing import Dict, Iterable, List, Optional, Sequence, Union
 
 from acuvity.guard.config import Guard, GuardConfig, GuardName
 from acuvity.models import (
@@ -17,9 +17,11 @@ from acuvity.response.match import ScanResponseMatch
 from acuvity.sdkconfiguration import SDKConfiguration
 from acuvity.utils.logger import get_default_logger
 
+from .apex import Apex
+
 logger = get_default_logger()
 
-from .apex import Apex
+
 
 
 class ApexExtended(Apex):
@@ -55,17 +57,17 @@ class ApexExtended(Apex):
         # # Filter out None values and sort
         # return sorted([name for name in mapped_names if name is not None])
 
-    def list_available_guards(self) -> list[str]:
+    def list_available_guards(self) -> List[str]:
         """
         list_secrets: returns a list of all available secrets that can be detected.
         """
         return GuardName.values()
 
-    def list_detectable_secrets(self) -> list[str]:
+    def list_detectable_secrets(self) -> List[str]:
         """
         list_secrets: returns a list of all available secrets that can be detected.
         """
-        detectable_secrets: list[str] = []
+        detectable_secrets: List[str] = []
         if self._available_analyzers is None:
             self._available_analyzers = self.list_analyzers()
         for analyzer in self._available_analyzers:
@@ -78,11 +80,11 @@ class ApexExtended(Apex):
                 detectable_secrets.extend(detectable_secrets_local)
         return sorted(detectable_secrets)
 
-    def list_detectable_piis(self) -> list[str]:
+    def list_detectable_piis(self) -> List[str]:
         """
         list_pii: returns a list of all available secrets that can be detected.
         """
-        detectable_piis: list[str] = []
+        detectable_piis: List[str] = []
         if self._available_analyzers is None:
             self._available_analyzers = self.list_analyzers()
         for analyzer in self._available_analyzers:
@@ -139,7 +141,7 @@ class ApexExtended(Apex):
             logger.debug("Error while processing the guard config")
             raise ValueError("Cannot process the guard config") from e
 
-        return ScanResponseMatch(raw_scan_response, gconfig, *messages, files=files)
+        return ScanResponseMatch(raw_scan_response, gconfig, files=files)
 
     async def scan_async(
         self,
@@ -183,7 +185,7 @@ class ApexExtended(Apex):
             logger.debug("Error while processing the guard config")
             raise ValueError("Cannot process the guard config") from e
 
-        return ScanResponseMatch(raw_scan_response, gconfig, *messages, files=files)
+        return ScanResponseMatch(raw_scan_response, gconfig, files=files)
 
     def __build_scan_request(
         self,

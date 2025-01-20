@@ -171,11 +171,13 @@ class GuardConfig:
                               if self._validate_guard(guard)]
             return self._parsed_guards
 
+        config_data: Dict[str, Any]
         if isinstance(config, (str, Path)):
             config_data = self.load_yaml(config)
-        else:
+        elif isinstance(config, dict):
             config_data = config
-
+        else:
+            raise ValueError(f"Unexpected config type: {type(config)}")
 
         try:
             # Handle both single guard and multiple guardrails format
@@ -204,10 +206,10 @@ class GuardConfig:
             GuardConfigValidationError: If guard configuration is invalid
         """
         if isinstance(guard, Guard) and not GuardName.valid(str(guard.name)):
-                raise GuardConfigValidationError("Guard must have a valid name")
+            raise GuardConfigValidationError("Guard must have a valid name")
         elif isinstance(guard, Dict):
             if 'name' not in guard:
-                raise GuardConfigValidationError(f"Guard must have a name, but give guard is:", guard)
+                raise GuardConfigValidationError(f"Guard must have a name, but give guard is: {guard}")
 
             if not GuardName.valid(guard['name']):
                 raise GuardConfigValidationError(f"Guard name not present {guard['name']}")
@@ -335,7 +337,7 @@ class GuardConfig:
         """
         Returns the list of the keys that have redaction set.
         """
-        keywords = []
+        keywords: List[str] = []
         for g in self.match_guards:
             if g.name == 'keyword_detector':
                 for key, matches in g.matches.items():
@@ -373,8 +375,10 @@ class GuardConfig:
             matches[match_key] = self._parse_match(match_key, match_data)
 
         guard_name = GuardName.get(name)
-        if guard_name:
-            return Guard(
+        if not guard_name:
+            raise ValueError(f"Invalid guard name, must be one of the {GuardName.values()}")
+
+        return Guard(
                 name=guard_name,
                 matches=matches,
                 threshold=threshold,
