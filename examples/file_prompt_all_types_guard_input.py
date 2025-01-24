@@ -3,7 +3,7 @@ import os
 from rich import print
 
 import acuvity
-from acuvity import Acuvity, Guard, GuardName
+from acuvity import Acuvity, Guard, GuardName, Threshold
 
 s = Acuvity(
     # not required at all if set in environment variables
@@ -58,8 +58,12 @@ print("Matches:\n", matches)
 print("--------------------------------------------------------------------------------")
 print("Scenario: single file with prompt injection detection and guard config in a variable")
 gc = [
-    Guard.create(GuardName.PROMPT_INJECTION)
+    Guard.create(GuardName.PROMPT_INJECTION),
+    Guard(GuardName.HARMFUL, matches={},
+          threshold=Threshold(">= 0.8"),
+            count_threshold=0)
 ]
+
 matches = s.apex.scan(files=file_path, guard_config=gc).matches()
 print("Input:\n", file_path)
 print("Config:\n", gc)

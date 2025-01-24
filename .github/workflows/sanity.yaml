@@ -28,17 +28,18 @@ jobs:
 
       - name: Install
         run: |
-            touch README-PYPI.md
-            pip install -e .
+          touch README-PYPI.md
+          pip install -e .
+          pip install pytest
 
       - name: Run examples
         run: |
-            pip install rich
-            echo "Running all examples ..."
-            ./examples/run.sh
+          pip install rich
+          echo "Running all examples ..."
+          ./examples/run.sh
 
       - name: Pytest
         run: |
-            echo "Running all tests ..."
-            pip install pytest
-            pytest
+          echo "Running all tests ..."
+          pip install pytest
+          pytest

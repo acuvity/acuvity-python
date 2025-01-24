@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import List
 
@@ -18,6 +18,7 @@ class GuardMatch:
     actual_value: float
     threshold: str
     match_count: int = 0
+    match_values: List[str]= field(default_factory=list)
 
 @dataclass
 class Matches:

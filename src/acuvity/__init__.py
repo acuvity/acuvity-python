@@ -6,6 +6,7 @@ import acuvity.apexextend
 # pylint: disable=unused-import
 import acuvity.sdkextend
 from acuvity.guard import *
+from acuvity.guard import Threshold
 from acuvity.response import *
 
 from ._version import __title__, __version__

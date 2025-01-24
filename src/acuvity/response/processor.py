@@ -37,6 +37,7 @@ class ResponseProcessor:
         """Process a guard with matches."""
         result_match = ResponseMatch.NO
         match_counter = 0
+        match_list : List[str] = []
         for match_name, match_name_guard in guard.matches.items():
             result = self.process_guard_check(
                 guard,
@@ -46,17 +47,24 @@ class ResponseProcessor:
             # increment the match_counter only if eval is YES and it crosess the individual count_threshold .
             if result.response_match == ResponseMatch.YES and result.match_count >= match_name_guard.count_threshold:
                 match_counter += result.match_count
+                match_list.append(match_name)
             # if any one match, then flagged or if threshold given then check if greater.
             if match_counter >= guard.count_threshold:
                 result_match = ResponseMatch.YES
 
-        logger.debug("match guard {%s} , check {%s}, total match {%s}, guard threshold {%s}", guard.name, result_match, match_counter, guard.count_threshold)
+        logger.debug("match guard {%s} , check {%s}, total match {%s}, guard threshold {%s}, match_list {%s}",
+                    guard.name, result_match, match_counter, guard.count_threshold, match_list)
+
+        # reset the match_list
+        if result_match == ResponseMatch.NO:
+            match_list = []
         return GuardMatch(
                     response_match=result_match,
                     guard_name=guard.name,
                     threshold=str(guard.threshold),
                     actual_value=1.0,
-                    match_count=match_counter
+                    match_count=match_counter,
+                    match_values=match_list
                 )
 
     def matches(self) -> List[Matches]:

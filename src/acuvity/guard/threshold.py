@@ -35,6 +35,8 @@ class Threshold:
 
             operator_str, value_str = parts
             self.value = float(value_str)
+            if not 0 <= self.value <= 1:
+                raise GuardConfigValidationError("Invalid threshold value")
 
             try:
                 self.operator = ComparisonOperator(operator_str)

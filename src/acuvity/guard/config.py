@@ -54,6 +54,27 @@ class Guard:
     threshold: Threshold
     count_threshold: int = 0
 
+    def __post_init__(self):
+        if not isinstance(self.name, GuardName):
+            if not isinstance(self.name, str):
+                # if the guardname is not a guardname enum and not a str.
+                raise GuardConfigValidationError(
+                f"Guard name must be string or GuardName enum, got {type(self.name)}")
+
+            # here its a str but if its not part of the enum then raise a error.
+            if GuardName.get(self.name) is None:
+                valid_names = ", ".join(GuardName.values())
+                raise GuardConfigValidationError(
+                    f"Invalid guard name: {self.name}. Must be one of: {valid_names}"
+                )
+
+        # Validate threshold
+        if isinstance(self.threshold, str):
+            try:
+                _ = Threshold(self.threshold)
+            except GuardConfigValidationError as e:
+                raise GuardConfigValidationError("Invalid threshold") from e
+
     @classmethod
     def create(
         cls,
@@ -411,10 +432,12 @@ class GuardConfig:
             # If threshold parsing can fail, wrap it similarly:
             # threshold = Threshold(guard.threshold)
 
+            if guard.count_threshold > 0 and len(guard.matches) == 0:
+                raise GuardConfigValidationError("Failed to parse Guard object, cannot have count_threshold without matches.")
+
             # Re-parse or validate each match
             parsed_matches = {}
             for match_key, match_data in guard.matches.items():
-                print("\n\n match data -->", match_data)
                 # _parse_match may raise various exceptions if the data is invalid
                 parsed_matches[match_key] = self.parse_match_obj(match_key, match_data)
 
