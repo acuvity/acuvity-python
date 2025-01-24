@@ -18,6 +18,7 @@ class GuardMatch:
     actual_value: float
     threshold: str
     match_count: int = 0
+    match_values: List[str]= []
 
 @dataclass
 class Matches:

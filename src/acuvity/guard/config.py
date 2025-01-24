@@ -411,10 +411,12 @@ class GuardConfig:
             # If threshold parsing can fail, wrap it similarly:
             # threshold = Threshold(guard.threshold)
 
+            if guard.count_threshold > 0 and len(guard.matches) == 0:
+                raise GuardConfigValidationError("Failed to parse Guard object, cannot have count_threshold without matches.")
+
             # Re-parse or validate each match
             parsed_matches = {}
             for match_key, match_data in guard.matches.items():
-                print("\n\n match data -->", match_data)
                 # _parse_match may raise various exceptions if the data is invalid
                 parsed_matches[match_key] = self.parse_match_obj(match_key, match_data)
 
