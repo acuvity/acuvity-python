@@ -54,6 +54,27 @@ class Guard:
     threshold: Threshold
     count_threshold: int = 0
 
+    def __post_init__(self):
+        if not isinstance(self.name, GuardName):
+            if not isinstance(self.name, str):
+                # if the guardname is not a guardname enum and not a str.
+                raise GuardConfigValidationError(
+                f"Guard name must be string or GuardName enum, got {type(self.name)}")
+
+            # here its a str but if its not part of the enum then raise a error.
+            if GuardName.get(self.name) is None:
+                valid_names = ", ".join(GuardName.values())
+                raise GuardConfigValidationError(
+                    f"Invalid guard name: {self.name}. Must be one of: {valid_names}"
+                )
+
+        # Validate threshold
+        if isinstance(self.threshold, str):
+            try:
+                _ = Threshold(self.threshold)
+            except GuardConfigValidationError as e:
+                raise GuardConfigValidationError("Invalid threshold") from e
+
     @classmethod
     def create(
         cls,

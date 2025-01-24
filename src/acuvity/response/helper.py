@@ -13,7 +13,7 @@ logger = get_default_logger()
 # Define the type alias at the class or module level
 ValueGetterType = Callable[
     [Extraction, Guard, Optional[str]],
-    Union[bool, Tuple[bool, float], Tuple[bool, float, int]]
+    Union[bool, Tuple[bool, float], Tuple[bool, float, int, List[str]]]
 ]
 
 class ResponseHelper:
@@ -41,8 +41,9 @@ class ResponseHelper:
             # Handle different return types
             # PII and keyword
             match_count = None
-            if isinstance(result, tuple) and len(result) == 3:  # (bool, float, int)
-                exists, value, match_count = result
+            match_list: List[str] = []
+            if isinstance(result, tuple) and len(result) == 4:  # (bool, float, int)
+                exists, value, match_count, match_list = result
             # exploit, topic, classification, language
             elif isinstance(result, tuple) and len(result) == 2:  # (bool, float)
                 exists, value = result
@@ -57,7 +58,8 @@ class ResponseHelper:
                     response_match=ResponseMatch.NO,
                     guard_name=guard.name,
                     threshold=str(guard.threshold),
-                    actual_value=value
+                    actual_value=value,
+                    match_values=match_list
                 )
             # Use ThresholdHelper for comparison
             comparison_result = guard.threshold.compare(value)
@@ -67,7 +69,8 @@ class ResponseHelper:
                 guard_name=guard.name,
                 threshold=str(guard.threshold),
                 actual_value=value,
-                match_count=match_count if match_count else 0
+                match_count=match_count if match_count else 0,
+                match_values=match_list if match_list else []
             )
         except Exception as e:
             logger.debug("Error in check evaluation: %s", str(e))
@@ -78,7 +81,7 @@ class ResponseHelper:
         extraction: Extraction,
         guard: Guard,
         match_name: Optional[str] = None
-    ) -> Union[bool, Tuple[bool, float], Tuple[bool, float, int]]:
+    ) -> Union[bool, Tuple[bool, float], Tuple[bool, float, int, List[str]]]:
         """Get value from extraction based on guard type."""
 
         value_getters : Dict[GuardName, ValueGetterType] =  {
@@ -156,7 +159,7 @@ class ResponseHelper:
         extraction: Extraction,
         guard: Guard,
         match_name: Optional[str]
-    )-> tuple[bool, float, int]:
+    )-> tuple[bool, float, int, List[str]]:
 
         if guard.name == GuardName.KEYWORD_DETECTOR:
             return self._get_text_detections_type(extraction.keywords, guard, TextualdetectionType.KEYWORD, extraction.detections, match_name)
@@ -164,7 +167,7 @@ class ResponseHelper:
             return self._get_text_detections_type(extraction.secrets, guard, TextualdetectionType.SECRET, extraction.detections, match_name)
         if guard.name == GuardName.PII_DETECTOR:
             return self._get_text_detections_type(extraction.pi_is, guard, TextualdetectionType.PII, extraction.detections, match_name)
-        return False, 0, 0
+        return False, 0, 0, []
 
     def _get_text_detections_type(
         self,
@@ -173,12 +176,12 @@ class ResponseHelper:
         detection_type: TextualdetectionType,
         detections: Union[List[Textualdetection], None],
         match_name: Optional[str]
-    )-> tuple[bool, float, int]:
+    )-> tuple[bool, float, int, List[str]]:
 
         if match_name:
             # Count occurrences in textual detections
             if not detections:
-                return False, 0, 0
+                return False, 0, 0, []
             text_matches = []
             text_matches = [
                 d.score for d in detections
@@ -188,18 +191,18 @@ class ResponseHelper:
             count = len(text_matches)
             # If no textual detections, check `lookup` for the match
             if count == 0 and lookup and match_name in lookup:
-                return True, lookup[match_name], 1
+                return True, lookup[match_name], 1, [match_name]
 
             if count == 0:
-                return False, 0, 0
+                return False, 0, 0, []
 
             score = max(text_matches)
-            return True, score, count
+            return True, score, count, [match_name]
 
         # Return all text match values if no match_name is provided
         exists = bool(lookup)
         count = len(lookup) if lookup else 0
-        return exists, 1.0 if exists else 0.0, count
+        return exists, 1.0 if exists else 0.0, count, list(lookup.keys()) if lookup else []
 
     def _get_modality_value(
         self,

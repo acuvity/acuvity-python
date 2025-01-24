@@ -12,6 +12,7 @@ from acuvity.models.textualdetection import Textualdetection, TextualdetectionTy
 from acuvity.response.processor import ResponseProcessor
 from acuvity.response.result import ResponseMatch
 
+
 class TestResponseProcessingE2E:
     @pytest.fixture
     def create_pii_extraction(self) -> Extraction:
@@ -258,6 +259,13 @@ class TestResponseProcessingE2E:
         assert len(result[0].matched_checks) == 2
         guard_names = {check.guard_name for check in result[0].matched_checks}
         assert guard_names == {GuardName.PII_DETECTOR, GuardName.PROMPT_INJECTION}
+        match_guard = result[0].matched_checks
+        for g in match_guard:
+            if g.guard_name == GuardName.PII_DETECTOR:
+                assert len(g.match_values) == 3
+                assert "person" in g.match_values
+                assert "ssn" in g.match_values
+                assert "email" in g.match_values
 
     def test_mixed_thresholds_with_partial_matches(
     self,

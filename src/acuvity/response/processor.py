@@ -52,7 +52,9 @@ class ResponseProcessor:
             if match_counter >= guard.count_threshold:
                 result_match = ResponseMatch.YES
 
-        logger.debug("match guard {%s} , check {%s}, total match {%s}, guard threshold {%s}", guard.name, result_match, match_counter, guard.count_threshold)
+        logger.debug("match guard {%s} , check {%s}, total match {%s}, guard threshold {%s}, match_list {%s}",
+                    guard.name, result_match, match_counter, guard.count_threshold, match_list)
+
         # reset the match_list
         if result_match == ResponseMatch.NO:
             match_list = []
