@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from acuvity.guard.config import Guard, GuardConfig
 from acuvity.models.scanresponse import Extraction, Scanresponse
@@ -15,23 +15,9 @@ class ResponseProcessor:
         self.guard_config = guard_config
         self._response = response
 
-    def process_guard_check(
-        self,
-        guard: Guard,
-        extraction: Extraction,
-        match_name: Optional[str] = None
-    ) -> GuardMatch:
-        """Process a single guard check with action consideration."""
-        try:
-            # Get raw evaluation
-            helper = ResponseHelper()
-            return helper.evaluate(extraction, guard, match_name)
-        except Exception as e:
-            raise e
-
     def _process_simple_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
         """Process a simple guard (no matches)."""
-        return self.process_guard_check(guard, extraction)
+        return ResponseHelper.evaluate(extraction, guard)
 
     def _process_match_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
         """Process a guard with matches."""
@@ -39,11 +25,7 @@ class ResponseProcessor:
         match_counter = 0
         match_list : List[str] = []
         for match_name, match_name_guard in guard.matches.items():
-            result = self.process_guard_check(
-                guard,
-                extraction,
-                match_name
-            )
+            result = ResponseHelper.evaluate(extraction, guard, match_name)
             # increment the match_counter only if eval is YES and it crosess the individual count_threshold .
             if result.response_match == ResponseMatch.YES and result.match_count >= match_name_guard.count_threshold:
                 match_counter += result.match_count

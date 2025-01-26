@@ -1,27 +1,20 @@
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Union
 
 from acuvity.guard.config import Guard
 from acuvity.guard.constants import GuardName
 from acuvity.models.extraction import Extraction
 from acuvity.models.textualdetection import Textualdetection, TextualdetectionType
-from acuvity.response.errors import ResponseValidationError
 from acuvity.response.result import GuardMatch, ResponseMatch
 from acuvity.utils.logger import get_default_logger
 
 logger = get_default_logger()
 
-# Define the type alias at the class or module level
-ValueGetterType = Callable[
-    [Extraction, Guard, Optional[str]],
-    Union[bool, Tuple[bool, float], Tuple[bool, float, int, List[str]]]
-]
-
 class ResponseHelper:
     """Parser for accessing values in Extraction response based on guard types."""
 
+    @staticmethod
     def evaluate(
-        self,
-        response_extraction: Extraction,
+        extraction: Extraction,
         guard: Guard,
         match_name: Optional[str] = None
     ) -> GuardMatch:
@@ -29,148 +22,65 @@ class ResponseHelper:
         Evaluates a check condition using a Guard object.
 
         Args:
-            response_extraction: The scan response extraction
-            guard: The guard to eval with the response
+            extraction: A type which provides all the extractions based on the detection engine.
+            guard: A guard configuration
             match_name: The match match for the guard
 
         Returns:
             GuardMatch with MATCH.YES if condition met, MATCH>NO if not met
         """
-        try:
-            result = self._get_value(response_extraction, guard, match_name)
-            # Handle different return types
-            # PII and keyword
-            match_count = None
-            match_list: List[str] = []
-            if isinstance(result, tuple) and len(result) == 4:  # (bool, float, int)
-                exists, value, match_count, match_list = result
-            # exploit, topic, classification, language
-            elif isinstance(result, tuple) and len(result) == 2:  # (bool, float)
-                exists, value = result
-            # secrets and modality
-            elif isinstance(result, bool):  # bool only
-                exists, value = result, 1.0
-            else:
-                raise ValueError("Unexpected return type from _get_value")
-
-            if not exists:
-                return GuardMatch(
-                    response_match=ResponseMatch.NO,
-                    guard_name=guard.name,
-                    threshold=str(guard.threshold),
-                    actual_value=value,
-                    match_values=match_list
-                )
-            # Use ThresholdHelper for comparison
-            comparison_result = guard.threshold.compare(value)
-
-            return GuardMatch(
-                response_match=ResponseMatch.YES if comparison_result else ResponseMatch.NO,
-                guard_name=guard.name,
-                threshold=str(guard.threshold),
-                actual_value=value,
-                match_count=match_count if match_count else 0,
-                match_values=match_list if match_list else []
-            )
-        except Exception as e:
-            logger.debug("Error in check evaluation: %s", str(e))
-            raise
-
-    def _get_value(
-        self,
-        extraction: Extraction,
-        guard: Guard,
-        match_name: Optional[str] = None
-    ) -> Union[bool, Tuple[bool, float], Tuple[bool, float, int, List[str]]]:
-        """Get value from extraction based on guard type."""
-
-        value_getters : Dict[GuardName, ValueGetterType] =  {
-            GuardName.PROMPT_INJECTION: self._get_guard_value,
-            GuardName.JAILBREAK: self._get_guard_value,
-            GuardName.MALICIOUS_URL: self._get_guard_value,
-
-            # Topic guards with prefixes
-            GuardName.TOXIC: self._get_guard_value,
-            GuardName.BIASED: self._get_guard_value,
-            GuardName.HARMFUL: self._get_guard_value,
-
-            # Other guards
-            GuardName.LANGUAGE: self._get_language_value,
-            GuardName.PII_DETECTOR: self._get_text_detections,
-            GuardName.SECRETS_DETECTOR: self._get_text_detections,
-            GuardName.KEYWORD_DETECTOR: self._get_text_detections,
-            GuardName.MODALITY: self._get_modality_value,
-        }
-
-        getter = value_getters.get(guard.name)
-        if not getter:
-            raise ResponseValidationError(f"No handler for guard name: {guard.name}")
-
-        try:
-            return getter(extraction, guard, match_name)
-        except Exception as e:
-            raise ResponseValidationError(f"Error getting value for {guard.name}: {str(e)}") from e
-
-    def _get_guard_value(
-        self,
-        extraction: Extraction,
-        guard: Guard,
-        _: Optional[str]
-    ) -> tuple[bool, float]:
-        """Get value from topics section with prefix handling."""
-
-        if guard.name in (GuardName.TOXIC, GuardName.HARMFUL, GuardName.BIASED):
+        exists = False
+        value = 0.0
+        match_count = 0
+        match_list: List[str] = []
+        if guard.name in (GuardName.PROMPT_INJECTION, GuardName.JAILBREAK, GuardName.MALICIOUS_URL):
+            exists, value = ResponseHelper._get_guard_value(extraction.exploits, str(guard.name))
+        elif guard.name in (GuardName.TOXIC, GuardName.BIASED, GuardName.HARMFUL):
             prefix = "content/" + str(guard.name)
-            if not extraction.topics:
-                return False, 0
-            value = extraction.topics.get(prefix)
-            if value is not None:
-                return True, float(value)
-            return False, 0.0
+            exists, value = ResponseHelper._get_guard_value(extraction.topics, prefix)
+        elif guard.name == GuardName.LANGUAGE:
+            # Language guard
+            if match_name:
+                exists, value = ResponseHelper._get_guard_value(extraction.languages, match_name)
+            elif extraction.languages:
+                exists, value = len(extraction.languages) > 0 , 1.0
+        elif guard.name == GuardName.MODALITY:
+            exists = ResponseHelper._get_modality_value(extraction, guard, match_name)
+        elif guard.name == GuardName.PII_DETECTOR:
+            exists, value, match_count, match_list = ResponseHelper._get_text_detections(extraction.pi_is, guard, TextualdetectionType.PII, extraction.detections, match_name)
+        elif guard.name == GuardName.SECRETS_DETECTOR:
+            exists, value, match_count, match_list = ResponseHelper._get_text_detections(extraction.secrets, guard, TextualdetectionType.SECRET, extraction.detections, match_name)
+        elif guard.name == GuardName.KEYWORD_DETECTOR:
+            exists, value, match_count, match_list = ResponseHelper._get_text_detections(extraction.keywords, guard, TextualdetectionType.KEYWORD, extraction.detections, match_name)
 
-        if not extraction.exploits:
-            return False , 0.0
-        value = extraction.exploits.get(str(guard.name))
-        if value is None:
-            return False, 0
-        return True, float(value)
+        # A match is found if the the detection exists value is greater than the threshold
+        response_match=ResponseMatch.NO
+        if exists and guard.threshold.compare(value):
+            response_match=ResponseMatch.YES
 
-    def _get_language_value(
-        self,
-        extraction: Extraction,
-        _: Guard,
-        match_name: Optional[str]
+        return GuardMatch(
+            response_match=response_match,
+            guard_name=guard.name,
+            threshold=str(guard.threshold),
+            actual_value=value,
+            match_count=match_count,
+            match_values=match_list
+        )
+
+    @staticmethod
+    def _get_guard_value(
+        lookup: Dict[str, float] | None,
+        prefix: str,
     ) -> tuple[bool, float]:
-        """Get value from languages section."""
-        if not extraction.languages:
+        if not lookup:
             return False, 0
+        value = lookup.get(prefix)
+        if value is not None:
+            return True, float(value)
+        return False, 0.0
 
-        if match_name:
-            value = extraction.languages.get(match_name)
-        else:
-            return len(extraction.languages) > 0 , 1.0
-
-        if value is None:
-            return False, 0
-        return True, float(value)
-
+    @staticmethod
     def _get_text_detections(
-        self,
-        extraction: Extraction,
-        guard: Guard,
-        match_name: Optional[str]
-    )-> tuple[bool, float, int, List[str]]:
-
-        if guard.name == GuardName.KEYWORD_DETECTOR:
-            return self._get_text_detections_type(extraction.keywords, guard, TextualdetectionType.KEYWORD, extraction.detections, match_name)
-        if guard.name == GuardName.SECRETS_DETECTOR:
-            return self._get_text_detections_type(extraction.secrets, guard, TextualdetectionType.SECRET, extraction.detections, match_name)
-        if guard.name == GuardName.PII_DETECTOR:
-            return self._get_text_detections_type(extraction.pi_is, guard, TextualdetectionType.PII, extraction.detections, match_name)
-        return False, 0, 0, []
-
-    def _get_text_detections_type(
-        self,
         lookup: Union[Dict[str, float] , None],
         guard: Guard,
         detection_type: TextualdetectionType,
@@ -204,8 +114,8 @@ class ResponseHelper:
         count = len(lookup) if lookup else 0
         return exists, 1.0 if exists else 0.0, count, list(lookup.keys()) if lookup else []
 
+    @staticmethod
     def _get_modality_value(
-        self,
         extraction: Extraction,
         _: Guard,
         match_name: Optional[str] = None
