@@ -168,8 +168,8 @@ class GuardConfig:
             GuardConfigError: If file cannot be read or parsed
         """
         try:
-            with open(path, encoding='utf-8') as f:
-                return yaml.safe_load(f)
+            with open(path, encoding='utf-8') as yaml_file:
+                return yaml.safe_load(yaml_file)
         except (yaml.YAMLError, OSError) as e:
             raise GuardConfigError(f"Failed to load config file: {e}") from e
 
@@ -337,8 +337,8 @@ class GuardConfig:
         Returns the list of all guards configured
         """
         names = []
-        for g in self._parsed_guards:
-            names.append(g.name)
+        for guard in self._parsed_guards:
+            names.append(guard.name)
         return names
 
     @property
@@ -347,8 +347,8 @@ class GuardConfig:
         Returns the list of the keys that have redaction set.
         """
         redact_keys = []
-        for g in self.match_guards:
-            for key, matches in g.matches.items():
+        for guard in self.match_guards:
+            for key, matches in guard.matches.items():
                 if matches.redact:
                     redact_keys.append(key)
         return redact_keys
@@ -359,9 +359,9 @@ class GuardConfig:
         Returns the list of the keys that have redaction set.
         """
         keywords: List[str] = []
-        for g in self.match_guards:
-            if g.name == 'keyword_detector':
-                for key, matches in g.matches.items():
+        for guard in self.match_guards:
+            if guard.name == 'keyword_detector':
+                for key, matches in guard.matches.items():
                     if matches.redact:
                         keywords.append(key)
         return keywords
