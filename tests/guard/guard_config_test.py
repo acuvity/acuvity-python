@@ -40,14 +40,14 @@ def test_init_with_none():
     # Verify default configuration excludes keyword detector
     assert len(config.guard_names) > 0
     assert GuardName.KEYWORD_DETECTOR not in config.guard_names
-    assert all(isinstance(guard, Guard) for guard in config.parsed_guards)
+    assert all(isinstance(guard, Guard) for guard in config.guards)
 
 def test_init_with_dict():
     """Test initialization with dictionary configuration"""
     config = GuardConfig(SAMPLE_CONFIG)
 
-    assert len(config.parsed_guards) == 1
-    guard = config.parsed_guards[0]
+    assert len(config.guards) == 1
+    guard = config.guards[0]
     assert guard.name == GuardName.PROMPT_INJECTION
     assert guard.threshold == Threshold("> 0.5")
     assert guard.matches == {}
@@ -61,8 +61,8 @@ def test_init_with_yaml_str(tmp_path):
 
     config = GuardConfig(str(config_path))
 
-    assert len(config.parsed_guards) == 1
-    guard = config.parsed_guards[0]
+    assert len(config.guards) == 1
+    guard = config.guards[0]
     assert guard.name == GuardName.PROMPT_INJECTION
     assert guard.threshold == Threshold("> 0.5")
 
@@ -75,8 +75,8 @@ def test_init_with_yaml_path(tmp_path):
 
     config = GuardConfig(Path(config_path))
 
-    assert len(config.parsed_guards) == 1
-    guard = config.parsed_guards[0]
+    assert len(config.guards) == 1
+    guard = config.guards[0]
     assert guard.name == GuardName.PROMPT_INJECTION
     assert guard.threshold == Threshold("> 0.5")
 
@@ -85,8 +85,8 @@ def test_init_with_guard_list(sample_guard):
     guards = [sample_guard]
     config = GuardConfig(guards)
 
-    assert len(config.parsed_guards) == 1
-    guard = config.parsed_guards[0]
+    assert len(config.guards) == 1
+    guard = config.guards[0]
     assert guard.name == GuardName.PROMPT_INJECTION
     assert guard.threshold == Threshold("> 0.5")
     assert guard.matches == {}

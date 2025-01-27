@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List
 
 from acuvity.guard.config import Guard, GuardConfig
 from acuvity.models.scanresponse import Extraction, Scanresponse
@@ -15,35 +15,17 @@ class ResponseProcessor:
         self.guard_config = guard_config
         self._response = response
 
-    def process_guard_check(
-        self,
-        guard: Guard,
-        extraction: Extraction,
-        match_name: Optional[str] = None
-    ) -> GuardMatch:
-        """Process a single guard check with action consideration."""
-        try:
-            # Get raw evaluation
-            helper = ResponseHelper()
-            return helper.evaluate(extraction, guard, match_name)
-        except Exception as e:
-            raise e
-
-    def _process_simple_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
-        """Process a simple guard (no matches)."""
-        return self.process_guard_check(guard, extraction)
-
-    def _process_match_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
+    def _process_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
         """Process a guard with matches."""
+        if guard.matches is None or len(guard.matches) == 0:
+            return ResponseHelper.evaluate(extraction, guard)
+
+        # Process guards with matchedqq
         result_match = ResponseMatch.NO
         match_counter = 0
         match_list : List[str] = []
         for match_name, match_name_guard in guard.matches.items():
-            result = self.process_guard_check(
-                guard,
-                extraction,
-                match_name
-            )
+            result = ResponseHelper.evaluate(extraction, guard, match_name)
             # increment the match_counter only if eval is YES and it crosess the individual count_threshold .
             if result.response_match == ResponseMatch.YES and result.match_count >= match_name_guard.count_threshold:
                 match_counter += result.match_count
@@ -79,17 +61,11 @@ class ResponseProcessor:
                     continue
                 matched_checks = []
                 all_checks = []
-                for guard in self.guard_config.simple_guards:
-                    result = self._process_simple_guard(guard, ext)
+                for guard in self.guard_config.guards:
+                    result = self._process_guard(guard, ext)
                     if result.response_match == ResponseMatch.YES:
                         matched_checks.append(result)
                     all_checks.append(result)
-
-                for guard in self.guard_config.match_guards:
-                    results = self._process_match_guard(guard, ext)
-                    if results.response_match == ResponseMatch.YES:
-                        matched_checks.append(results)
-                    all_checks.append(results)
 
                 single_match =  Matches(
                     input_data=ext.data,
