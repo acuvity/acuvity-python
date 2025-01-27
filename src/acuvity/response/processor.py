@@ -15,12 +15,12 @@ class ResponseProcessor:
         self.guard_config = guard_config
         self._response = response
 
-    def _process_simple_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
-        """Process a simple guard (no matches)."""
-        return ResponseHelper.evaluate(extraction, guard)
-
-    def _process_match_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
+    def _process_guard(self, guard: Guard, extraction: Extraction) -> GuardMatch:
         """Process a guard with matches."""
+        if guard.matches is None or len(guard.matches) == 0:
+            return ResponseHelper.evaluate(extraction, guard)
+
+        # Process guards with matchedqq
         result_match = ResponseMatch.NO
         match_counter = 0
         match_list : List[str] = []
@@ -61,17 +61,11 @@ class ResponseProcessor:
                     continue
                 matched_checks = []
                 all_checks = []
-                for guard in self.guard_config.simple_guards:
-                    result = self._process_simple_guard(guard, ext)
+                for guard in self.guard_config.guards:
+                    result = self._process_guard(guard, ext)
                     if result.response_match == ResponseMatch.YES:
                         matched_checks.append(result)
                     all_checks.append(result)
-
-                for guard in self.guard_config.match_guards:
-                    results = self._process_match_guard(guard, ext)
-                    if results.response_match == ResponseMatch.YES:
-                        matched_checks.append(results)
-                    all_checks.append(results)
 
                 single_match =  Matches(
                     input_data=ext.data,

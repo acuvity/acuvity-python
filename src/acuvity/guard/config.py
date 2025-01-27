@@ -135,14 +135,14 @@ class GuardConfig:
         Args:
             config: Configuration as a string, filepath or dictionary
         """
-        self._parsed_guards: List[Guard] = []
+        self.guards: List[Guard] = []
 
         # Handle default configuration
         if config is None:
             for guard in GuardName:
                 # skip keyword detector in default
                 if guard != GuardName.KEYWORD_DETECTOR:
-                    self._parsed_guards.append(Guard(
+                    self.guards.append(Guard(
                         name=guard,
                         matches={},
                         threshold=DEFAULT_THRESHOLD,
@@ -188,9 +188,8 @@ class GuardConfig:
         """
         # Handle list of guard dictionaries
         if isinstance(config, list) and all(isinstance(guard, Guard) for guard in config):
-            self._parsed_guards = [self._parse_guard_obj(guard) for guard in config
-                              if self._validate_guard(guard)]
-            return self._parsed_guards
+            self.guards = [self._parse_guard_obj(guard) for guard in config if self._validate_guard(guard)]
+            return self.guards
 
         config_data: Dict[str, Any]
         if isinstance(config, (str, Path)):
@@ -206,9 +205,9 @@ class GuardConfig:
             if not isinstance(guards, list):
                 guards = [guards]
 
-            self._parsed_guards = [self._parse_guard(guard) for guard in guards
+            self.guards = [self._parse_guard(guard) for guard in guards
                               if self._validate_guard(guard)]
-            return self._parsed_guards
+            return self.guards
 
         except Exception as e:
             raise GuardConfigError(f"Failed to parse config: {e}") from e
@@ -300,44 +299,12 @@ class GuardConfig:
         )
 
     @property
-    def match_guards(self) -> List[Guard]:
-        """
-        Returns list of guard configurations that have match patterns.
-
-        Returns:
-            List of Guard objects that have 'matches' section
-        """
-        return [guard for guard in self._parsed_guards
-                if guard.matches]
-
-    @property
-    def parsed_guards(self) -> List[Guard]:
-        """
-        Returns list of guard configurations that have match patterns.
-
-        Returns:
-            List of Guard objects that have 'matches' section
-        """
-        return self._parsed_guards
-
-    @property
-    def simple_guards(self) -> List[Guard]:
-        """
-        Returns list of guard configurations without match patterns.
-
-        Returns:
-            List of Guard objects that don't have 'matches' section
-        """
-        return [guard for guard in self._parsed_guards
-                if not guard.matches]
-
-    @property
     def guard_names(self) -> List[GuardName]:
         """
         Returns the list of all guards configured
         """
         names = []
-        for guard in self._parsed_guards:
+        for guard in self.guards:
             names.append(guard.name)
         return names
 
@@ -347,7 +314,9 @@ class GuardConfig:
         Returns the list of the keys that have redaction set.
         """
         redact_keys = []
-        for guard in self.match_guards:
+        for guard in self.guards:
+            if guard.matches is None:
+                continue
             for key, matches in guard.matches.items():
                 if matches.redact:
                     redact_keys.append(key)
@@ -359,7 +328,7 @@ class GuardConfig:
         Returns the list of the keys that have redaction set.
         """
         keywords: List[str] = []
-        for guard in self.match_guards:
+        for guard in self.guards:
             if guard.name == 'keyword_detector':
                 for key, matches in guard.matches.items():
                     if matches.redact:
