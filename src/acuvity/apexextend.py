@@ -78,7 +78,7 @@ class ApexExtended(Apex):
                     if detector.group == "Secrets"
                 ]
                 detectable_secrets.extend(detectable_secrets_local)
-        return sorted(detectable_secrets)
+        return sorted(list(set(detectable_secrets)))
 
     def list_detectable_piis(self) -> List[str]:
         """
@@ -95,7 +95,7 @@ class ApexExtended(Apex):
                     if detector.group == "PIIs"
                 ]
                 detectable_piis.extend(detectable_piis_local)
-        return sorted(detectable_piis)
+        return sorted(list(set(detectable_piis)))
 
     def scan(
         self,
