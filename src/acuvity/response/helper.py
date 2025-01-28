@@ -69,7 +69,7 @@ class ResponseHelper:
 
     @staticmethod
     def _get_guard_value(
-        lookup: Dict[str, float] | None,
+        lookup: Union[Dict[str, float] , None],
         prefix: str,
     ) -> tuple[bool, float]:
         if not lookup:
