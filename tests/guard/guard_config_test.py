@@ -8,6 +8,7 @@ import yaml
 
 from acuvity.guard import Guard, GuardConfig
 from acuvity.guard.constants import GuardName
+from acuvity.guard.errors import GuardConfigValidationError
 from acuvity.guard.threshold import Threshold
 
 
@@ -30,6 +31,16 @@ def sample_guard() -> Guard:
         name=GuardName.PROMPT_INJECTION,
         matches={},
         threshold=Threshold("> 0.5"),
+        count_threshold=0
+    )
+
+@pytest.fixture
+def invalid_threshold_guard() -> Guard:
+    """Create a sample Guard object for testing"""
+    return Guard(
+        name=GuardName.PROMPT_INJECTION,
+        matches={},
+        threshold=Threshold("> 4444"),
         count_threshold=0
     )
 
@@ -90,3 +101,15 @@ def test_init_with_guard_list(sample_guard):
     assert guard.name == GuardName.PROMPT_INJECTION
     assert guard.threshold == Threshold("> 0.5")
     assert guard.matches == {}
+
+def test_guard_with_invalid_threshold():
+    """Test that Guard creation fails with invalid threshold"""
+    with pytest.raises(GuardConfigValidationError) as exc_info:
+        Guard(
+            name=GuardName.PROMPT_INJECTION,
+            matches={},
+            threshold=Threshold("> 4444"),  # Exception happens here
+            count_threshold=0
+        )
+
+    assert str(exc_info.value) == "Invalid threshold value should be between 0-1"
