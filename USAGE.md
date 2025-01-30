@@ -13,9 +13,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.scan_request(request={
+    res = a_client.apex.scan_request(request={
         "analyzers": [
             "Detectors",
             "en-text-prompt_injection-detector",
@@ -62,9 +62,9 @@ async def main():
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
-    ) as acuvity:
+    ) as a_client:
 
-        res = await acuvity.apex.scan_request_async(request={
+        res = await a_client.apex.scan_request_async(request={
             "analyzers": [
                 "Detectors",
                 "en-text-prompt_injection-detector",
@@ -112,9 +112,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.list_analyzers()
+    res = a_client.apex.list_analyzers()
 
     # Handle response
     print(res)
@@ -135,9 +135,9 @@ async def main():
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
-    ) as acuvity:
+    ) as a_client:
 
-        res = await acuvity.apex.list_analyzers_async()
+        res = await a_client.apex.list_analyzers_async()
 
         # Handle response
         print(res)
