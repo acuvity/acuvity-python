@@ -311,9 +311,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.list_analyzers(,
+    res = a_client.apex.list_analyzers(,
         RetryConfig("backoff", BackoffStrategy(1, 50, 1.1, 100), False))
 
     # Handle response
@@ -333,9 +333,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.list_analyzers()
+    res = a_client.apex.list_analyzers()
 
     # Handle response
     print(res)
@@ -376,11 +376,11 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
     res = None
     try:
 
-        res = acuvity.apex.list_analyzers()
+        res = a_client.apex.list_analyzers()
 
         # Handle response
         print(res)
@@ -537,9 +537,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.list_analyzers()
+    res = a_client.apex.list_analyzers()
 
     # Handle response
     print(res)
@@ -563,7 +563,7 @@ def main():
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
-    ) as acuvity:
+    ) as a_client:
         # Rest of application here...
 
 
@@ -573,7 +573,7 @@ async def amain():
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
-    ) as acuvity:
+    ) as a_client:
         # Rest of application here...
 ```
 <!-- End Resource Management [resource-management] -->
