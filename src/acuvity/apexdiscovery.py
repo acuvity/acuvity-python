@@ -21,25 +21,30 @@ def discover_apex(
 ) -> Tuple[Optional[str], Optional[str]]:
     # pylint: disable=too-many-return-statements
     """
-    Discovers the apex domain and port from the token by calling the backend API if the server_url is not provided.
+    Discovers the apex domain and port from the encoded token or by calling the backend API if the server_url is not provided.
+    This will raise exceptions if there is no token or the token is empty or invalid.
     """
-    # if a server_url was given, then we don't need to perform discovery at all
-    if server_url is not None:
-        return apex_domain, apex_port
-
-    # if an apex_domain was given, then we also don't need to perform discovery
-    if apex_domain is not None:
-        return apex_domain, apex_port
-
-    # if there is no token, then we can't perform discovery, and yes everything else will fail too
+    # if there is no token, then we can't perform discovery
+    # however, a token is in general needed to perform any API calls as there are no unauthenticated endpoints
+    # so we strictly check if there is a token and fail otherwise
     token: str = ""
     sec: Optional[BaseModel] = get_security_from_env(security, models.Security)
     if sec is None:
-        return apex_domain, apex_port
+        raise ValueError("No security object provided, or ACUVITY_TOKEN environment variable is not set or empty")
     if not isinstance(sec, models.Security):
         raise ValueError("Security object is not of type Security")
     token = sec.token if sec.token is not None else sec.cookie if sec.cookie is not None else ""
     if token == "":
+        raise ValueError("No token provided")
+
+    # if a server_url was given, then we don't need to perform discovery at all
+    # and we know already that we have a token, so we can return immediately
+    if server_url is not None:
+        return apex_domain, apex_port
+
+    # if an apex_domain was given, then we also don't need to perform discovery
+    # and we know already that we have a token, so we can return immediately
+    if apex_domain is not None:
         return apex_domain, apex_port
 
     # decode the token but don't verify the signature
