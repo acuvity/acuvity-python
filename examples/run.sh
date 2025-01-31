@@ -25,3 +25,9 @@ python "$SCRIPT_DIR/specific_text_prompt_injection.py"
 
 echo "Running piis.py ..."
 python "$SCRIPT_DIR/piis.py"
+
+echo "Running standalone_pii_example.py ..."
+python "$SCRIPT_DIR/standalone_pii_example.py"
+
+echo "Running standalone_multi_input_default.py ..."
+python "$SCRIPT_DIR/standalone_multi_input_default.py"

@@ -79,7 +79,6 @@ with Acuvity(
             "key1": "value1",
             "key2": "value2",
         },
-        "anonymization": acuvity.Anonymization.FIXED_SIZE,
         "bypass_hash": "6f37d752-bce1-4973-88f6-28b6c100ceb8",
         "keywords": [
             "legal",
