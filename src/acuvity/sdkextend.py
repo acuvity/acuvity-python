@@ -5,7 +5,6 @@ from acuvity.apexdiscovery import discover_apex
 from acuvity.apexextend import ApexExtended
 from acuvity.sdk import Acuvity
 from acuvity.types import OptionalNullable, UNSET
-from acuvity.utils import get_security_from_env
 from .httpclient import AsyncHttpClient, HttpClient
 from .utils.logger import Logger
 from .utils.retries import RetryConfig
@@ -75,9 +74,6 @@ def __patched_init__(
         timeout_ms=timeout_ms,
         debug_logger=debug_logger,
     )
-
-    if get_security_from_env(self.sdk_configuration.security, models.Security) is None:
-        raise ValueError("No Acuvity AppToken provided.")
 
 # Define the new _init_sdks method
 def __patched_init_sdks(self):
