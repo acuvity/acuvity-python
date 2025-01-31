@@ -1,9 +1,9 @@
-speakeasyVersion: 1.479.0
+speakeasyVersion: 1.480.0
 sources:
     Acuvity-OAS:
         sourceNamespace: acuvity-oas
-        sourceRevisionDigest: sha256:c094ba26259dac3cdb401f247ac5f9a45f29b731596c7c9bd884909893083d82
-        sourceBlobDigest: sha256:b385e91e0858fc55af8c1907e20cb3153930b6e1fefbf46e7e1e250015891f7c
+        sourceRevisionDigest: sha256:6423547950700c7a3b413df16d2265fa249d9c273955ef4267ad57a0c07b6df8
+        sourceBlobDigest: sha256:cd101e8a39f8de161266ab95e7fe439bd27660a5398fa1a7ab51e6a8e5316ec2
         tags:
             - latest
             - "1.0"
@@ -18,10 +18,10 @@ targets:
     python:
         source: Acuvity-OAS
         sourceNamespace: acuvity-oas
-        sourceRevisionDigest: sha256:c094ba26259dac3cdb401f247ac5f9a45f29b731596c7c9bd884909893083d82
-        sourceBlobDigest: sha256:b385e91e0858fc55af8c1907e20cb3153930b6e1fefbf46e7e1e250015891f7c
+        sourceRevisionDigest: sha256:6423547950700c7a3b413df16d2265fa249d9c273955ef4267ad57a0c07b6df8
+        sourceBlobDigest: sha256:cd101e8a39f8de161266ab95e7fe439bd27660a5398fa1a7ab51e6a8e5316ec2
         codeSamplesNamespace: acuvity-oas-python-code-samples
-        codeSamplesRevisionDigest: sha256:4a1d8f759a4b0135db8da38998208e3dd75384c6e0b74609e9c6851b1326e592
+        codeSamplesRevisionDigest: sha256:b16a27b02930320f57e1857b0b96c429cd4dee17634b7624fe011d6efe9da138
     typescript:
         source: Acuvity-OAS
         sourceNamespace: acuvity-oas
