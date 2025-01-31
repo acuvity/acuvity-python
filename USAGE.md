@@ -13,9 +13,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.scan_request(request={
+    res = a_client.apex.scan_request(request={
         "analyzers": [
             "Detectors",
             "en-text-prompt_injection-detector",
@@ -25,7 +25,6 @@ with Acuvity(
             "key1": "value1",
             "key2": "value2",
         },
-        "anonymization": acuvity.Anonymization.FIXED_SIZE,
         "bypass_hash": "6f37d752-bce1-4973-88f6-28b6c100ceb8",
         "keywords": [
             "legal",
@@ -62,9 +61,9 @@ async def main():
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
-    ) as acuvity:
+    ) as a_client:
 
-        res = await acuvity.apex.scan_request_async(request={
+        res = await a_client.apex.scan_request_async(request={
             "analyzers": [
                 "Detectors",
                 "en-text-prompt_injection-detector",
@@ -74,7 +73,6 @@ async def main():
                 "key1": "value1",
                 "key2": "value2",
             },
-            "anonymization": acuvity.Anonymization.FIXED_SIZE,
             "bypass_hash": "6f37d752-bce1-4973-88f6-28b6c100ceb8",
             "keywords": [
                 "legal",
@@ -112,9 +110,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.list_analyzers()
+    res = a_client.apex.list_analyzers()
 
     # Handle response
     print(res)
@@ -135,9 +133,9 @@ async def main():
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
-    ) as acuvity:
+    ) as a_client:
 
-        res = await acuvity.apex.list_analyzers_async()
+        res = await a_client.apex.list_analyzers_async()
 
         # Handle response
         print(res)

@@ -60,6 +60,37 @@ pip install acuvity
 ```bash
 poetry add acuvity
 ```
+
+### Shell and script usage with `uv`
+
+You can use this SDK in a Python shell with [uv](https://docs.astral.sh/uv/) and the `uvx` command that comes with it like so:
+
+```shell
+uvx --from acuvity python
+```
+
+It's also possible to write a standalone Python script without needing to set up a whole project like so:
+
+```python
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.9"
+# dependencies = [
+#     "acuvity",
+# ]
+# ///
+
+from acuvity import Acuvity
+
+sdk = Acuvity(
+  # SDK arguments
+)
+
+# Rest of script here...
+```
+
+Once that is saved to a file, you can run it with `uv run script.py` where
+`script.py` can be replaced with the actual file name.
 <!-- End SDK Installation [installation] -->
 
 <!-- Start IDE Support [idesupport] -->
@@ -311,9 +342,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.list_analyzers(,
+    res = a_client.apex.list_analyzers(,
         RetryConfig("backoff", BackoffStrategy(1, 50, 1.1, 100), False))
 
     # Handle response
@@ -333,9 +364,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.list_analyzers()
+    res = a_client.apex.list_analyzers()
 
     # Handle response
     print(res)
@@ -376,11 +407,11 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
     res = None
     try:
 
-        res = acuvity.apex.list_analyzers()
+        res = a_client.apex.list_analyzers()
 
         # Handle response
         print(res)
@@ -537,9 +568,9 @@ with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-) as acuvity:
+) as a_client:
 
-    res = acuvity.apex.list_analyzers()
+    res = a_client.apex.list_analyzers()
 
     # Handle response
     print(res)
@@ -563,7 +594,7 @@ def main():
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
-    ) as acuvity:
+    ) as a_client:
         # Rest of application here...
 
 
@@ -573,7 +604,7 @@ async def amain():
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
         ),
-    ) as acuvity:
+    ) as a_client:
         # Rest of application here...
 ```
 <!-- End Resource Management [resource-management] -->

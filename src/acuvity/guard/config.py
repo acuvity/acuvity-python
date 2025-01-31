@@ -75,6 +75,9 @@ class Guard:
             except GuardConfigValidationError as e:
                 raise GuardConfigValidationError("Invalid threshold") from e
 
+        if self.count_threshold < 0:
+            raise GuardConfigValidationError("Invalid count threshold, should be a positive number")
+
     @classmethod
     def create(
         cls,
