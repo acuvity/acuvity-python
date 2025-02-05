@@ -222,7 +222,7 @@ class TestResponseProcessingE2E:
         assert len(result[0].matched_checks) == 0
 
     def test_simple_non_keyword(self, create_pii_extraction):
-        """Test prompt injection detection below threshold"""
+        """Test non keyword response"""
         # Create extraction with low confidence prompt injection
         extraction = create_pii_extraction(
             email_detections=[0.85, 0.82],
@@ -247,7 +247,7 @@ class TestResponseProcessingE2E:
         assert len(result[0].matched_checks) == 0
 
     def test_simple_keyword(self, create_pii_extraction):
-        """Test prompt injection detection below threshold"""
+        """Test simple keyword"""
         # Create extraction with low confidence prompt injection
         pii_extraction = create_pii_extraction(
             email_detections=[0.85, 0.82],
