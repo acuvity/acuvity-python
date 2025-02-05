@@ -113,3 +113,10 @@ def test_guard_with_invalid_threshold():
         )
 
     assert str(exc_info.value) == "Invalid threshold value should be between 0-1"
+
+def test_guard_with_guard_create():
+    """Test that Guard creation with Guard create"""
+    guard_config=[Guard.create('keyword_detector',  matches={'bluefin':None} )]
+    config = GuardConfig(guard_config)
+
+    assert len(config.keywords) == 1

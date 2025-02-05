@@ -332,10 +332,9 @@ class GuardConfig:
         """
         keywords: List[str] = []
         for guard in self.guards:
-            if guard.name == 'keyword_detector':
-                for key, matches in guard.matches.items():
-                    if matches.redact:
-                        keywords.append(key)
+            if guard.name == GuardName.KEYWORD_DETECTOR:
+                for key, _ in guard.matches.items():
+                    keywords.append(key)
         return keywords
 
     def _parse_guard(self, guard: Dict) -> Guard:

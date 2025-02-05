@@ -25,9 +25,7 @@ class ResponseProcessor:
         match_counter = 0
         match_list : List[str] = []
         for match_name, match_name_guard in guard.matches.items():
-            print("\n checking match for -->", match_name, match_name_guard)
             result = ResponseHelper.evaluate(extraction, guard, match_name)
-            print("Result ->", result)
             # increment the match_counter only if eval is YES and it crosess the individual count_threshold .
             if result.response_match == ResponseMatch.YES and result.match_count >= match_name_guard.count_threshold:
                 match_counter += result.match_count
