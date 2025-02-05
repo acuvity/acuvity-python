@@ -361,6 +361,9 @@ class GuardConfig:
             except GuardConfigValidationError as e:
                 raise e
 
+        if 'count_threshold' in guard and guard['count_threshold'] > 0 and not guard.get('matches'):
+            raise GuardConfigValidationError("Failed to parse Guard object, cannot have count_threshold without matches.")
+
         # Parse matches
         matches = {}
         for match_key, match_data in guard.get('matches', {}).items():

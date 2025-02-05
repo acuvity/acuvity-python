@@ -8,7 +8,7 @@ import yaml
 
 from acuvity.guard import Guard, GuardConfig
 from acuvity.guard.constants import GuardName
-from acuvity.guard.errors import GuardConfigValidationError
+from acuvity.guard.errors import GuardConfigError, GuardConfigValidationError
 from acuvity.guard.threshold import Threshold
 
 
@@ -21,7 +21,7 @@ def create_test_config(tmp_path: Path, content: str) -> Path:
 # Sample configuration for testing
 SAMPLE_CONFIG = {
     "name": "prompt_injection",
-    "threshold": "> 0.5"
+    "threshold": "> 0.5",
 }
 
 @pytest.fixture
@@ -120,3 +120,21 @@ def test_guard_with_guard_create():
     config = GuardConfig(guard_config)
 
     assert len(config.keywords) == 1
+
+def test_guard_with_dict():
+    guard_config = {
+    "guardrails": [
+        {
+            "name": "prompt_injection",
+            "threshold": ">= 0.2"
+        },
+        {
+            "name": "pii_detector",
+            "count_threshold": 4
+        }
+    ]
+}
+    with pytest.raises(GuardConfigError) as exc_info:
+        GuardConfig(guard_config)
+
+    assert str(exc_info.value) == "Failed to parse config: Failed to parse Guard object, cannot have count_threshold without matches."
