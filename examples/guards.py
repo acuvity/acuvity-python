@@ -10,7 +10,7 @@ s = Acuvity(
     # not required at all if set in environment variables
     security=acuvity.Security(
        token=os.getenv("ACUVITY_TOKEN", ""),
-    ),
+    )
 )
 
 # This is to show the list of available guards supported by Acuvity.

@@ -9,7 +9,7 @@ s = Acuvity(
     # not required at all if set in environment variables
     security=acuvity.Security(
        token=os.getenv("ACUVITY_TOKEN", ""),
-    ),
+    )
 )
 
 print("--------------------------------------------------------------------------------")
