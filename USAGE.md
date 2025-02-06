@@ -17,9 +17,7 @@ with Acuvity(
 
     res = a_client.apex.scan_request(request={
         "analyzers": [
-            "Detectors",
-            "en-text-prompt_injection-detector",
-            "ocr-handwritten-text-extractor",
+            "Malcontents",
         ],
         "annotations": {
             "key1": "value1",
@@ -65,9 +63,7 @@ async def main():
 
         res = await a_client.apex.scan_request_async(request={
             "analyzers": [
-                "Detectors",
-                "en-text-prompt_injection-detector",
-                "ocr-handwritten-text-extractor",
+                "Malcontents",
             ],
             "annotations": {
                 "key1": "value1",

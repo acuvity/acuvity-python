@@ -283,14 +283,26 @@ class Apex(BaseSDK):
                 ),
             ),
             request=req,
-            error_status_codes=["400", "401", "403", "422", "429", "4XX", "500", "5XX"],
+            error_status_codes=[
+                "400",
+                "401",
+                "403",
+                "415",
+                "422",
+                "429",
+                "4XX",
+                "500",
+                "5XX",
+            ],
             retry_config=retry_config,
         )
 
         response_data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, models.Scanresponse)
-        if utils.match_response(http_res, ["400", "403", "422"], "application/json"):
+        if utils.match_response(
+            http_res, ["400", "403", "415", "422"], "application/json"
+        ):
             response_data = utils.unmarshal_json(
                 http_res.text, models.ElementalerrorData
             )
@@ -394,14 +406,26 @@ class Apex(BaseSDK):
                 ),
             ),
             request=req,
-            error_status_codes=["400", "401", "403", "422", "429", "4XX", "500", "5XX"],
+            error_status_codes=[
+                "400",
+                "401",
+                "403",
+                "415",
+                "422",
+                "429",
+                "4XX",
+                "500",
+                "5XX",
+            ],
             retry_config=retry_config,
         )
 
         response_data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, models.Scanresponse)
-        if utils.match_response(http_res, ["400", "403", "422"], "application/json"):
+        if utils.match_response(
+            http_res, ["400", "403", "415", "422"], "application/json"
+        ):
             response_data = utils.unmarshal_json(
                 http_res.text, models.ElementalerrorData
             )
