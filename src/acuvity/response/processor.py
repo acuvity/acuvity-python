@@ -30,9 +30,9 @@ class ResponseProcessor:
             if result.response_match == ResponseMatch.YES and result.match_count >= match_name_guard.count_threshold:
                 match_counter += result.match_count
                 match_list.append(match_name)
-            # if any one match, then flagged or if threshold given then check if greater.
-            if match_counter >= guard.count_threshold:
-                result_match = ResponseMatch.YES
+                # if any one match, then flagged or if threshold given then check if greater.
+                if match_counter >= guard.count_threshold:
+                    result_match = ResponseMatch.YES
 
         logger.debug("match guard {%s} , check {%s}, total match {%s}, guard threshold {%s}, match_list {%s}",
                     guard.name, result_match, match_counter, guard.count_threshold, match_list)

@@ -8,7 +8,7 @@ import yaml
 
 from acuvity.guard import Guard, GuardConfig
 from acuvity.guard.constants import GuardName
-from acuvity.guard.errors import GuardConfigValidationError
+from acuvity.guard.errors import GuardConfigError, GuardConfigValidationError
 from acuvity.guard.threshold import Threshold
 
 
@@ -21,7 +21,7 @@ def create_test_config(tmp_path: Path, content: str) -> Path:
 # Sample configuration for testing
 SAMPLE_CONFIG = {
     "name": "prompt_injection",
-    "threshold": "> 0.5"
+    "threshold": "> 0.5",
 }
 
 @pytest.fixture
@@ -113,3 +113,50 @@ def test_guard_with_invalid_threshold():
         )
 
     assert str(exc_info.value) == "Invalid threshold value should be between 0-1"
+
+def test_guard_with_guard_create():
+    """Test that Guard creation with Guard create"""
+    guard_config=[Guard.create('keyword_detector',  matches={'bluefin':None} )]
+    config = GuardConfig(guard_config)
+
+    assert len(config.keywords) == 1
+
+def test_guard_with_dict():
+    guard_config = {
+    "guardrails": [
+        {
+            "name": "prompt_injection",
+            "threshold": ">= 0.2"
+        },
+        {
+            "name": "pii_detector",
+            "count_threshold": 2,
+        }
+    ]
+}
+    with pytest.raises(GuardConfigError) as exc_info:
+        GuardConfig(guard_config)
+
+    assert str(exc_info.value) == "Failed to parse config: Failed to parse Guard object, cannot have count_threshold without matches."
+
+
+def test_guard_with_pii_types():
+    guard_config = {
+    "guardrails": [
+        {
+            "name": "prompt_injection",
+            "threshold": ">= 0.2"
+        },
+        {
+            "name": "pii_detector",
+            "count_threshold": 2,
+            "matches": {
+                "email_address": {
+                    "redact": True
+                }
+            }
+        }
+    ]
+}
+    gc = GuardConfig(guard_config)
+    assert len(gc.redaction_keys) == 1
