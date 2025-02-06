@@ -297,7 +297,7 @@ class GuardConfig:
             )
         return Match(
             threshold=threshold,
-            redact= False,
+            redact= match_data.get('redact', False),
             count_threshold=0
         )
 
