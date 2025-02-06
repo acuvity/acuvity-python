@@ -1,5 +1,6 @@
 import os
 
+import httpx
 from rich import print
 
 import acuvity
@@ -9,7 +10,8 @@ s = Acuvity(
     # not required at all if set in environment variables
     security=acuvity.Security(
        token=os.getenv("ACUVITY_TOKEN", ""),
-    )
+    ),
+    client=httpx.Client(verify=False)
 )
 
 

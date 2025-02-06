@@ -366,6 +366,7 @@ class TestResponseProcessingE2E:
             topics={
                 "content/toxic": 0.81  # Just above threshold
             },
+            malcontents={"toxic": 0.81},
             data="test"
         )
 
