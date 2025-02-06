@@ -3,7 +3,7 @@ import os
 from rich import print
 
 import acuvity
-from acuvity import Acuvity, Guard, GuardName
+from acuvity import Acuvity, Guard, GuardName, Match
 
 s = Acuvity(
     # not required at all if set in environment variables
@@ -39,7 +39,6 @@ guard_config = {
         },
         {
             "name": "pii_detector",
-            "count_threshold": 4,
         }
     ]
 }
@@ -66,3 +65,10 @@ matches = s.apex.scan(*input_messages, guard_config=config_path).matches()
 print("Input:\n", input_messages)
 print("Config:\n", config_path)
 print("Matches:\n", matches)
+
+
+matches = s.apex.scan(
+       "My keyword is bluefin",
+            guard_config=[Guard.create('keyword_detector',  matches={'bluefin': None} )],
+      )
+print("\n matches --> ", matches, "\n matches ", matches.matches())

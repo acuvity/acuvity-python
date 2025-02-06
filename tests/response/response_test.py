@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import pytest
 
@@ -20,10 +20,23 @@ class TestResponseProcessingE2E:
         def _create_pii_extraction(
             email_detections: List[float] ,
             person_detections: List[float] ,
-            ssn_detections: List[float]
+            ssn_detections: List[float],
+            keyword_detections: Optional[List[float]] = []
         ) -> Extraction:
             detections = []
             pii_dict = {}
+            keyword_dict = {}
+            # Add keyword_detections
+            if keyword_detections:
+                for confidence in keyword_detections:
+                    detections.append(
+                        Textualdetection(
+                            type=TextualdetectionType.KEYWORD,
+                            name="bluefin",
+                            score=confidence,
+                        )
+                    )
+                keyword_dict["bluefin"] = max(keyword_detections)
 
             # Add email detections
             if email_detections:
@@ -61,7 +74,7 @@ class TestResponseProcessingE2E:
                     )
                 pii_dict["ssn"] = max(ssn_detections)
 
-            return Extraction(detections=detections, pi_is=pii_dict, data="hello")
+            return Extraction(detections=detections, pi_is=pii_dict, data="hello", keywords=keyword_dict)
 
         return _create_pii_extraction
 
@@ -207,6 +220,57 @@ class TestResponseProcessingE2E:
         # Verify
         assert result[0].response_match == ResponseMatch.NO
         assert len(result[0].matched_checks) == 0
+
+    def test_simple_non_keyword(self, create_pii_extraction):
+        """Test non keyword response"""
+        # Create extraction with low confidence prompt injection
+        extraction = create_pii_extraction(
+            email_detections=[0.85, 0.82],
+            person_detections=[1.0],
+            ssn_detections=[0.95]
+        )
+
+        # Create guard configuration
+        guard_config = GuardConfig(
+            [
+                Guard.create('keyword_detector',  matches={'bluefin':None} )
+            ]
+        )
+
+        # Process
+        response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[extraction])
+        processor = ResponseProcessor(response, guard_config)
+        result = processor.matches()
+
+        # Verify
+        assert result[0].response_match == ResponseMatch.NO
+        assert len(result[0].matched_checks) == 0
+
+    def test_simple_keyword(self, create_pii_extraction):
+        """Test simple keyword"""
+        # Create extraction with low confidence prompt injection
+        pii_extraction = create_pii_extraction(
+            email_detections=[0.85, 0.82],
+            person_detections=[1.0],
+            ssn_detections=[0.95],
+            keyword_detections=[0.9],
+        )
+
+        # Create guard configuration
+        guard_config = GuardConfig(
+            [
+                Guard.create('keyword_detector',  matches={'bluefin':None} )
+            ]
+        )
+
+        # Process
+        response = Scanresponse(principal=Principal(type=PrincipalType.APP), extractions=[pii_extraction])
+        processor = ResponseProcessor(response, guard_config)
+        result = processor.matches()
+
+        # Verify
+        assert result[0].response_match == ResponseMatch.YES
+        assert len(result[0].matched_checks) == 1
 
     def test_combined_pii_and_prompt_injection(self, create_pii_extraction, create_exploit_extraction):
         """Test both PII and prompt injection detection together"""
