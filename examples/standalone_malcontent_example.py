@@ -19,7 +19,7 @@ def create_temp_file(content):
         temp.write(content)
         return temp.name
 
-# PII Guard config content
+# malcontent_config_content
 malcontent_config_content = """guardrails:
   - name: toxic"""
 
