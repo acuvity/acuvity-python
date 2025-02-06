@@ -363,9 +363,6 @@ class TestResponseProcessingE2E:
             detections=pii_extraction.detections,
             pi_is=pii_extraction.pi_is,
             exploits=exploit_extraction.exploits,
-            topics={
-                "content/toxic": 0.81  # Just above threshold
-            },
             malcontents={"toxic": 0.81},
             data="test"
         )

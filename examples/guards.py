@@ -1,6 +1,5 @@
 import os
 
-import httpx
 from rich import print
 
 import acuvity
@@ -12,7 +11,6 @@ s = Acuvity(
     security=acuvity.Security(
        token=os.getenv("ACUVITY_TOKEN", ""),
     ),
-    client=httpx.Client(verify=False)
 )
 
 # This is to show the list of available guards supported by Acuvity.
