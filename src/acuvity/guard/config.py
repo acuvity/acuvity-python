@@ -284,20 +284,26 @@ class GuardConfig:
             Match object
         """
         threshold = DEFAULT_THRESHOLD
-        if match_data and 'threshold' in match_data:
-            try:
-                threshold = Threshold(match_data['threshold'])
-            except GuardConfigValidationError as e:
-                raise GuardConfigValidationError(f"Invalid threshold for match {match_key}") from e
+        redact = False
+        if match_data:
+            if 'threshold' in match_data:
+                try:
+                    threshold = Threshold(match_data['threshold'])
+                except GuardConfigValidationError as e:
+                    raise GuardConfigValidationError(f"Invalid threshold for match {match_key}") from e
+
+            if 'redact' in match_data:
+                redact = match_data['redact']
 
             return Match(
                 threshold=threshold,
-                redact=match_data.get('redact', False),
+                redact=redact,
                 count_threshold=match_data.get('count_threshold', 0)
             )
+
         return Match(
             threshold=threshold,
-            redact= match_data.get('redact', False),
+            redact= redact,
             count_threshold=0
         )
 

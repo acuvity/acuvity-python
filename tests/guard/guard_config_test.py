@@ -130,7 +130,7 @@ def test_guard_with_dict():
         },
         {
             "name": "pii_detector",
-            "count_threshold": 4
+            "count_threshold": 2,
         }
     ]
 }
@@ -138,3 +138,25 @@ def test_guard_with_dict():
         GuardConfig(guard_config)
 
     assert str(exc_info.value) == "Failed to parse config: Failed to parse Guard object, cannot have count_threshold without matches."
+
+
+def test_guard_with_pii_types():
+    guard_config = {
+    "guardrails": [
+        {
+            "name": "prompt_injection",
+            "threshold": ">= 0.2"
+        },
+        {
+            "name": "pii_detector",
+            "count_threshold": 2,
+            "matches": {
+                "email_address": {
+                    "redact": True
+                }
+            }
+        }
+    ]
+}
+    gc = GuardConfig(guard_config)
+    assert len(gc.redaction_keys) == 1
