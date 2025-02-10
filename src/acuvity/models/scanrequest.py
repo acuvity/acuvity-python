@@ -37,8 +37,26 @@ class ScanrequestTypedDict(TypedDict):
     If the code starts with package main, then everything remains untouched.
     """
     analyzers: NotRequired[List[str]]
-    r"""The name of the analyzers to run by the pipelines. If empty, it means all of
-    them. Possible values are PIIs, Secrets, Topics, Confidentiality, Exploits.
+    r"""The analyzers parameter allows for customizing which analyzers should be used,
+    overriding the default selection. Each analyzer entry can optionally include a
+    prefix to modify its behavior:
+
+    - No prefix: Runs only the specified analyzers and any dependencies required
+    for deeper analyzis (slower but more acurate).
+    - '+' (enable): Activates an analyzer that is disabled by default.
+    - '-' (disable): Disables an analyzer that is enabled by default.
+    - '@' (direct execution): Runs the analyzer immediately, bypassing the deeper
+    analyzis (faster but less acurate).
+
+    An analyzers entry can be specified using:
+    - The analyzer name (e.g., 'Toxicity detector')
+    - The analyzer ID (e.g., 'en-text-toxicity-detector')
+    - The analyzer group (e.g., 'Detectors')
+    - A detector name (e.g., 'toxic')
+    - A detector label (e.g., 'insult')
+    - A detector group (e.g., 'Malcontents')
+
+    If left empty, all default analyzers will be executed.
     """
     annotations: NotRequired[Dict[str, str]]
     r"""Annotations attached to the extraction."""
@@ -90,8 +108,26 @@ class Scanrequest(BaseModel):
     """
 
     analyzers: Optional[List[str]] = None
-    r"""The name of the analyzers to run by the pipelines. If empty, it means all of
-    them. Possible values are PIIs, Secrets, Topics, Confidentiality, Exploits.
+    r"""The analyzers parameter allows for customizing which analyzers should be used,
+    overriding the default selection. Each analyzer entry can optionally include a
+    prefix to modify its behavior:
+
+    - No prefix: Runs only the specified analyzers and any dependencies required
+    for deeper analyzis (slower but more acurate).
+    - '+' (enable): Activates an analyzer that is disabled by default.
+    - '-' (disable): Disables an analyzer that is enabled by default.
+    - '@' (direct execution): Runs the analyzer immediately, bypassing the deeper
+    analyzis (faster but less acurate).
+
+    An analyzers entry can be specified using:
+    - The analyzer name (e.g., 'Toxicity detector')
+    - The analyzer ID (e.g., 'en-text-toxicity-detector')
+    - The analyzer group (e.g., 'Detectors')
+    - A detector name (e.g., 'toxic')
+    - A detector label (e.g., 'insult')
+    - A detector group (e.g., 'Malcontents')
+
+    If left empty, all default analyzers will be executed.
     """
 
     annotations: Optional[Dict[str, str]] = None
