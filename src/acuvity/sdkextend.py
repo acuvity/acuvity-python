@@ -1,15 +1,18 @@
 # pylint: disable=protected-access
 
+from typing import Callable, Dict, Optional, Union
+
+import httpx
+
 from acuvity import models
 from acuvity.apexdiscovery import discover_apex
 from acuvity.apexextend import ApexExtended
 from acuvity.sdk import Acuvity
-from acuvity.types import OptionalNullable, UNSET
+from acuvity.types import UNSET, OptionalNullable
+
 from .httpclient import AsyncHttpClient, HttpClient
 from .utils.logger import Logger
 from .utils.retries import RetryConfig
-from typing import Callable, Dict, Optional, Union
-import httpx
 
 # Save the original __init__ reference
 __original_init__ = Acuvity.__init__

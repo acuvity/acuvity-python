@@ -36,8 +36,7 @@ class ResponseHelper:
         if guard.name in (GuardName.PROMPT_INJECTION, GuardName.JAILBREAK, GuardName.MALICIOUS_URL):
             exists, value = ResponseHelper._get_guard_value(extraction.exploits, str(guard.name))
         elif guard.name in (GuardName.TOXIC, GuardName.BIASED, GuardName.HARMFUL):
-            prefix = "content/" + str(guard.name)
-            exists, value = ResponseHelper._get_guard_value(extraction.topics, prefix)
+            exists, value = ResponseHelper._get_guard_value(extraction.malcontents, str(guard.name))
         elif guard.name == GuardName.LANGUAGE:
             # Language guard
             if match_name:
