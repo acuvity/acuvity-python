@@ -75,6 +75,9 @@ class Guard:
             except GuardConfigValidationError as e:
                 raise GuardConfigValidationError("Invalid threshold") from e
 
+        if self.count_threshold < 0:
+            raise GuardConfigValidationError("Invalid count threshold, should be a positive number")
+
     @classmethod
     def create(
         cls,
@@ -281,20 +284,26 @@ class GuardConfig:
             Match object
         """
         threshold = DEFAULT_THRESHOLD
-        if match_data and 'threshold' in match_data:
-            try:
-                threshold = Threshold(match_data['threshold'])
-            except GuardConfigValidationError as e:
-                raise GuardConfigValidationError(f"Invalid threshold for match {match_key}") from e
+        redact = False
+        if match_data:
+            if 'threshold' in match_data:
+                try:
+                    threshold = Threshold(match_data['threshold'])
+                except GuardConfigValidationError as e:
+                    raise GuardConfigValidationError(f"Invalid threshold for match {match_key}") from e
+
+            if 'redact' in match_data:
+                redact = match_data['redact']
 
             return Match(
                 threshold=threshold,
-                redact=match_data.get('redact', False),
+                redact=redact,
                 count_threshold=match_data.get('count_threshold', 0)
             )
+
         return Match(
             threshold=threshold,
-            redact= False,
+            redact= redact,
             count_threshold=0
         )
 
@@ -329,10 +338,9 @@ class GuardConfig:
         """
         keywords: List[str] = []
         for guard in self.guards:
-            if guard.name == 'keyword_detector':
-                for key, matches in guard.matches.items():
-                    if matches.redact:
-                        keywords.append(key)
+            if guard.name == GuardName.KEYWORD_DETECTOR:
+                for key, _ in guard.matches.items():
+                    keywords.append(key)
         return keywords
 
     def _parse_guard(self, guard: Dict) -> Guard:
@@ -358,6 +366,9 @@ class GuardConfig:
                 threshold = Threshold(guard.get('threshold', '>= 0.0'))
             except GuardConfigValidationError as e:
                 raise e
+
+        if 'count_threshold' in guard and guard['count_threshold'] > 0 and not guard.get('matches'):
+            raise GuardConfigValidationError("Failed to parse Guard object, cannot have count_threshold without matches.")
 
         # Parse matches
         matches = {}

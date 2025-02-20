@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 from acuvity.types import BaseModel
+import pydantic
 from typing import Dict, Optional
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class ExtractionrequestTypedDict(TypedDict):
@@ -17,6 +18,10 @@ class ExtractionrequestTypedDict(TypedDict):
     r"""If true, this extraction is for internal use only. This can be used by agentic
     systems to mark an extraction as internal only as opposed to user facing.
     """
+    is_file: NotRequired[bool]
+    r"""If true, the data of the extraction is a file."""
+    is_stored: NotRequired[bool]
+    r"""If true, indicates that the file has been stored."""
     label: NotRequired[str]
     r"""A means of distinguishing what was extracted, such as prompt, input file or
     code.
@@ -36,6 +41,12 @@ class Extractionrequest(BaseModel):
     r"""If true, this extraction is for internal use only. This can be used by agentic
     systems to mark an extraction as internal only as opposed to user facing.
     """
+
+    is_file: Annotated[Optional[bool], pydantic.Field(alias="isFile")] = None
+    r"""If true, the data of the extraction is a file."""
+
+    is_stored: Annotated[Optional[bool], pydantic.Field(alias="isStored")] = None
+    r"""If true, indicates that the file has been stored."""
 
     label: Optional[str] = None
     r"""A means of distinguishing what was extracted, such as prompt, input file or

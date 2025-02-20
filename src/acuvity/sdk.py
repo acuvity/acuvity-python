@@ -71,7 +71,7 @@ class Acuvity(BaseSDK):
                 server_url = utils.template_url(server_url, url_params)
         server_defaults: List[Dict[str, str]] = [
             {
-                "apex_domain": apex_domain or "apex.acuvity.ai",
+                "apex_domain": apex_domain or "api.apex.acuvity.ai",
                 "apex_port": apex_port or "443",
             },
         ]

@@ -3,6 +3,7 @@
 from __future__ import annotations
 from .alertevent import Alertevent, AlerteventTypedDict
 from .extraction import Extraction, ExtractionTypedDict
+from .extractionsummary import Extractionsummary, ExtractionsummaryTypedDict
 from .latency import Latency, LatencyTypedDict
 from .principal import Principal, PrincipalTypedDict
 from acuvity.types import BaseModel
@@ -61,6 +62,8 @@ class ScanresponseTypedDict(TypedDict):
     r"""the provider to use."""
     reasons: NotRequired[List[str]]
     r"""The various reasons returned by the policy engine."""
+    summary: NotRequired[ExtractionsummaryTypedDict]
+    r"""Represents the summary of the extractions."""
     time: NotRequired[datetime]
     r"""Set the time of the message request."""
     type: NotRequired[ScanresponseType]
@@ -113,6 +116,9 @@ class Scanresponse(BaseModel):
 
     reasons: Optional[List[str]] = None
     r"""The various reasons returned by the policy engine."""
+
+    summary: Optional[Extractionsummary] = None
+    r"""Represents the summary of the extractions."""
 
     time: Optional[datetime] = None
     r"""Set the time of the message request."""
