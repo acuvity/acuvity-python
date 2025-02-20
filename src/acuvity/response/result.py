@@ -20,6 +20,11 @@ class GuardMatch:
     match_count: int = 0
     match_values: List[str]= field(default_factory=list)
 
+    def to_dict(self):
+        return {
+            'guard_name': str(self.guard_name),  # assuming GuardName needs str conversion
+        }
+
 @dataclass
 class Matches:
     """Result of processing multiple checks or a configuration."""

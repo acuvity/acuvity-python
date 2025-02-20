@@ -23,6 +23,8 @@ class Threshold:
             # First try to convert the entire string to float (case when only number provided)
             try:
                 self.value = float(threshold_str)
+                if not 0 <= self.value <= 1:
+                    raise GuardConfigValidationError("Invalid threshold value should be between 0-1")
                 self.operator = ComparisonOperator.GREATER_EQUAL  # Default operator
                 return
             except ValueError:
@@ -36,7 +38,7 @@ class Threshold:
             operator_str, value_str = parts
             self.value = float(value_str)
             if not 0 <= self.value <= 1:
-                raise GuardConfigValidationError("Invalid threshold value")
+                raise GuardConfigValidationError("Invalid threshold value should be between 0-1")
 
             try:
                 self.operator = ComparisonOperator(operator_str)

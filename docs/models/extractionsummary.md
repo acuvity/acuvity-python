@@ -1,0 +1,19 @@
+# Extractionsummary
+
+Represents the summary of the extractions.
+
+
+## Fields
+
+| Field                                                                        | Type                                                                         | Required                                                                     | Description                                                                  |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `pi_is`                                                                      | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The PIIs found during classification.                                        |
+| `categories`                                                                 | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The categories are remapping of the modalities in a more human friendly way. |
+| `exploits`                                                                   | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The various exploits attempts.                                               |
+| `intent`                                                                     | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The estimated intent embodied into the text.                                 |
+| `keywords`                                                                   | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The keywords found during classification.                                    |
+| `languages`                                                                  | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The language of the classification.                                          |
+| `malcontents`                                                                | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The various malcontents attempts.                                            |
+| `modalities`                                                                 | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The modalities of data detected in the data.                                 |
+| `secrets`                                                                    | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The secrets found during classification.                                     |
+| `topics`                                                                     | Dict[str, *Any*]                                                             | :heavy_minus_sign:                                                           | The topic of the classification.                                             |

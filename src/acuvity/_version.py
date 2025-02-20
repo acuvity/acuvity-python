@@ -5,8 +5,8 @@ import importlib.metadata
 __title__: str = "acuvity"
 __version__: str = "0.6.0"
 __openapi_doc_version__: str = "1.0"
-__gen_version__: str = "2.497.0"
-__user_agent__: str = "speakeasy-sdk/python 0.6.0 2.497.0 1.0 acuvity"
+__gen_version__: str = "2.518.1"
+__user_agent__: str = "speakeasy-sdk/python 0.6.0 2.518.1 1.0 acuvity"
 
 try:
     if __package__ is not None:

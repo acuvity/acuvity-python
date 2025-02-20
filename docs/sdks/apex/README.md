@@ -71,15 +71,12 @@ with Acuvity(
 
     res = a_client.apex.scan_request(request={
         "analyzers": [
-            "Detectors",
-            "en-text-prompt_injection-detector",
-            "ocr-handwritten-text-extractor",
+            "Malcontents",
         ],
         "annotations": {
             "key1": "value1",
             "key2": "value2",
         },
-        "anonymization": acuvity.Anonymization.FIXED_SIZE,
         "bypass_hash": "6f37d752-bce1-4973-88f6-28b6c100ceb8",
         "keywords": [
             "legal",
@@ -117,6 +114,6 @@ with Acuvity(
 
 | Error Type            | Status Code           | Content Type          |
 | --------------------- | --------------------- | --------------------- |
-| models.Elementalerror | 400, 403, 422         | application/json      |
+| models.Elementalerror | 400, 403, 415, 422    | application/json      |
 | models.Elementalerror | 500                   | application/json      |
 | models.APIError       | 4XX, 5XX              | \*/\*                 |

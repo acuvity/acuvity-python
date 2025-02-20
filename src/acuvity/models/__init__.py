@@ -4,10 +4,17 @@ from .alertevent import Alertevent, AlerteventTypedDict
 from .analyzer import Analyzer, AnalyzerTypedDict
 from .analyzermodel import Analyzermodel, AnalyzermodelTypedDict
 from .apierror import APIError
+from .detectionmatcher import (
+    Confidence,
+    Detectionmatcher,
+    DetectionmatcherTypedDict,
+    Operator,
+)
 from .detector import Detector, DetectorTypedDict
 from .elementalerror import Data, DataTypedDict, Elementalerror, ElementalerrorData
 from .extraction import Extraction, ExtractionTypedDict
 from .extractionrequest import Extractionrequest, ExtractionrequestTypedDict
+from .extractionsummary import Extractionsummary, ExtractionsummaryTypedDict
 from .latency import Latency, LatencyTypedDict
 from .modality import Modality, ModalityTypedDict
 from .principal import AuthType, Principal, PrincipalType, PrincipalTypedDict
@@ -38,9 +45,12 @@ __all__ = [
     "AnalyzermodelTypedDict",
     "Anonymization",
     "AuthType",
+    "Confidence",
     "Data",
     "DataTypedDict",
     "Decision",
+    "Detectionmatcher",
+    "DetectionmatcherTypedDict",
     "Detector",
     "DetectorTypedDict",
     "Elementalerror",
@@ -49,10 +59,13 @@ __all__ = [
     "ExtractionTypedDict",
     "Extractionrequest",
     "ExtractionrequestTypedDict",
+    "Extractionsummary",
+    "ExtractionsummaryTypedDict",
     "Latency",
     "LatencyTypedDict",
     "Modality",
     "ModalityTypedDict",
+    "Operator",
     "Principal",
     "PrincipalType",
     "PrincipalTypedDict",

@@ -45,7 +45,6 @@ guard_config = {
         },
         {
             "name": "pii_detector",
-            "count_threshold": 4,
         }
     ]
 }
