@@ -42,4 +42,5 @@ jobs:
         run: |
           echo "Running all tests ..."
           pip install pytest
+          pip install pytest-subtests
           pytest
