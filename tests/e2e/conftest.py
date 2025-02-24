@@ -55,6 +55,10 @@ def tmp_test_dir():
 
 @pytest.fixture(scope="function")
 def set_acuvity_debug():
+    acuvity_debug = os.environ.get("ACUVITY_DEBUG")
     os.environ["ACUVITY_DEBUG"] = "true"
     yield
-    os.environ.pop("ACUVITY_DEBUG", None)
+    if acuvity_debug is not None:
+        os.environ["ACUVITY_DEBUG"] = acuvity_debug
+    else:
+        os.environ.pop("ACUVITY_DEBUG", None)
