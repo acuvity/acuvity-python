@@ -8,7 +8,11 @@ SUPPORTED_PLATFORMS = ["dev", "prod", "pre_prod"]
 
 def pytest_addoption(parser):
     parser.addoption(
-        "--platform", action="store", type=str, help="Specify platform to run against"
+        "--platform",
+        action="store",
+        default="",
+        type=str,
+        help="Specify platform to run against",
     )
 
 
