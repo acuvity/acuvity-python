@@ -57,9 +57,10 @@ def verify_match_details(
     checks["all_checks_count"] = len(match_details.all_checks) == len(
         matched_guards
     ) + len(non_matched_guards)
-    checks["response_match"] = (
-        match_details.response_match.value == "YES" if matched_guards else None
+    checks["response_match"] = match_details.response_match.value == (
+        "YES" if matched_guards else "NO"
     )
+
     checks["matched_checks_count"] = len(match_details.matched_checks) == len(
         matched_guards
     )
