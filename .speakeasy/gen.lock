@@ -1,24 +1,24 @@
 lockVersion: 2.0.0
 id: 463716ea-2172-44e6-ac63-a7a5b29ba606
 management:
-  docChecksum: 504bbb8137418b3d210d6141404f7de1
+  docChecksum: d36c489000899aeaa2d939df1cef5a30
   docVersion: "1.0"
-  speakeasyVersion: 1.486.0
-  generationVersion: 2.505.0
+  speakeasyVersion: 1.504.0
+  generationVersion: 2.529.0
   releaseVersion: 0.5.5
-  configChecksum: 784b11b615a5bb22c4014788402fd370
+  configChecksum: 4fa9744d46623be9f5686a2e6a9a4444
   published: true
 features:
   python:
     additionalDependencies: 1.0.0
     constsAndDefaults: 1.0.5
-    core: 5.11.0
+    core: 5.12.1
     defaultEnabledRetries: 0.2.0
     devContainers: 3.0.0
     enumUnions: 0.1.0
     envVarSecurityUsage: 0.3.2
     examples: 3.0.1
-    globalSecurity: 3.0.2
+    globalSecurity: 3.0.3
     globalSecurityCallbacks: 1.0.0
     globalServerURLs: 3.1.0
     ignores: 3.0.1
@@ -27,7 +27,7 @@ features:
     operationTimeout: 0.3.0
     responseFormat: 1.0.1
     retries: 3.0.2
-    sdkHooks: 1.0.0
+    sdkHooks: 1.0.1
 generatedFiles:
   - .devcontainer/README.md
   - .devcontainer/devcontainer.json
@@ -41,10 +41,9 @@ generatedFiles:
   - docs/models/analyzermodel.md
   - docs/models/anonymization.md
   - docs/models/authtype.md
-  - docs/models/confidence.md
   - docs/models/data.md
   - docs/models/decision.md
-  - docs/models/detectionmatcher.md
+  - docs/models/detectionmatchers.md
   - docs/models/detector.md
   - docs/models/elementalerror.md
   - docs/models/extraction.md
@@ -52,7 +51,6 @@ generatedFiles:
   - docs/models/extractionsummary.md
   - docs/models/latency.md
   - docs/models/modality.md
-  - docs/models/operator.md
   - docs/models/principal.md
   - docs/models/principalapp.md
   - docs/models/principaltype.md
@@ -85,7 +83,6 @@ generatedFiles:
   - src/acuvity/models/analyzer.py
   - src/acuvity/models/analyzermodel.py
   - src/acuvity/models/apierror.py
-  - src/acuvity/models/detectionmatcher.py
   - src/acuvity/models/detector.py
   - src/acuvity/models/elementalerror.py
   - src/acuvity/models/extraction.py
@@ -136,7 +133,7 @@ examples:
         application/json: {"analyzers": ["Malcontents"], "annotations": {"key1": "value1", "key2": "value2"}, "anonymization": "FixedSize", "bypassHash": "6f37d752-bce1-4973-88f6-28b6c100ceb8", "keywords": ["legal", "technical", "scientific"], "messages": ["Summarize the main points of this article in bullet points.", "Generate a list of creative product names for a futuristic tech gadget."], "redactions": ["person", "ssn", "location"]}
       responses:
         "200":
-          application/json: {"alerts": [{"alertDefinition": "warning-notification", "principal": {"app": {"labels": ["country=us", "another-label"], "name": "MyApp", "tier": "frontend"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}}], "client": "curl", "clientVersion": "7.64.1", "extractions": [{"categories": [{"group": "image", "type": "png"}, {"group": "image", "type": "png"}], "confidentiality": 0.9, "modalities": [{"group": "image", "type": "png"}, {"group": "image", "type": "png"}], "relevance": 0.9}], "principal": {"app": {"labels": ["country=us", "another-label"], "name": "MyApp", "tier": "frontend"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}, "provider": "openai"}
+          application/json: {"alerts": [{"alertDefinition": "warning-notification", "principal": {"app": {"component": "frontend", "labels": ["country=us", "another-label"], "name": "MyApp"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}}], "client": "curl", "clientVersion": "7.64.1", "extractions": [{"PIIs": {"ssn": 0.8}, "categories": [{"group": "image", "type": "png"}, {"group": "image", "type": "png"}], "confidentiality": 0.9, "customDataTypes": {"my_cdt": 1}, "exploits": {"prompt_injection": 0.8}, "intent": {"write": 0.8}, "keywords": {"my_keywork": 0.8}, "languages": {"english": 0.8}, "malcontents": {"toxic": 0.8}, "modalities": [{"group": "image", "type": "png"}, {"group": "image", "type": "png"}], "relevance": 0.9, "secrets": {"credentials": 0.7}, "topics": {"category/enterprise": 0.7, "department/logistics": 0.8, "depict/document": 0.8, "extracted/typed_text_content": 1, "timeframe/current_year": 0.6}}], "principal": {"app": {"component": "frontend", "labels": ["country=us", "another-label"], "name": "MyApp"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}, "provider": "openai"}
         "400":
           application/json: {}
         "500":

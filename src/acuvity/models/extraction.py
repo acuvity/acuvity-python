@@ -22,6 +22,13 @@ class ExtractionTypedDict(TypedDict):
     bitcoin_wallet, credit_card, driver_license, email_address, itin_number,
     location, medical_license, money_amount, passport_number, person, phone_number,
     ssn.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
     annotations: NotRequired[Dict[str, str]]
     r"""Annotations attached to the extraction."""
@@ -29,6 +36,16 @@ class ExtractionTypedDict(TypedDict):
     r"""The categories are remapping of the modalities in a more human friendly way."""
     confidentiality: NotRequired[float]
     r"""The level of general confidentiality of the input."""
+    custom_data_types: NotRequired[Dict[str, float]]
+    r"""The custom data types found during classification.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     data: NotRequired[str]
     r"""The data extracted."""
     detections: NotRequired[List[TextualdetectionTypedDict]]
@@ -40,6 +57,13 @@ class ExtractionTypedDict(TypedDict):
     detector groups 'Exploits' accross all analyzers.
 
     Example of exploits detected: jailbreak, prompt_injection, malicious_url.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
     hash: NotRequired[str]
     r"""The hash of the extraction."""
@@ -50,6 +74,13 @@ class ExtractionTypedDict(TypedDict):
     detector groups 'Intent' accross all analyzers.
 
     Example of intent detected: explain, outline, summarize, write.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
     internal: NotRequired[bool]
     r"""If true, this extraction is for internal use only. This can be used by agentic
@@ -60,7 +91,15 @@ class ExtractionTypedDict(TypedDict):
     is_stored: NotRequired[bool]
     r"""If true, indicates that the file has been stored."""
     keywords: NotRequired[Dict[str, float]]
-    r"""The keywords found during classification."""
+    r"""The keywords found during classification.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     label: NotRequired[str]
     r"""A means of distinguishing what was extracted, such as prompt, input file or
     code.
@@ -73,6 +112,13 @@ class ExtractionTypedDict(TypedDict):
 
     Example of languages: chinese, english, french, german, gibberish, japanese,
     russian, spanish.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
     malcontents: NotRequired[Dict[str, float]]
     r"""The various malcontents attempts.
@@ -81,11 +127,26 @@ class ExtractionTypedDict(TypedDict):
     detector groups 'Malcontents' accross all analyzers.
 
     Example of malcontents: biased, harmful, toxic.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
     modalities: NotRequired[List[ModalityTypedDict]]
     r"""The modalities of data detected in the data."""
     relevance: NotRequired[float]
-    r"""The level of general organization relevance of the input."""
+    r"""The level of general organization relevance of the input.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     secrets: NotRequired[Dict[str, float]]
     r"""The secrets found during classification.
 
@@ -107,6 +168,13 @@ class ExtractionTypedDict(TypedDict):
     slack_workflow_webhook, sourcegraph, sourcegraphcody, squareapp, squareup,
     stripe, supabase, tailscale, tines_webhook, trufflehog, twilio, ubidots,
     voiceflow, web_url_with_credentials, zapierwebhook.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
     topics: NotRequired[Dict[str, float]]
     r"""The topic of the classification.
@@ -142,6 +210,13 @@ class ExtractionTypedDict(TypedDict):
     extracted/typed_text_content, timeframe/current_year, timeframe/future,
     timeframe/last_year, timeframe/next_year, timeframe/past,
     transcribed/audio_text_content.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
 
 
@@ -158,6 +233,13 @@ class Extraction(BaseModel):
     bitcoin_wallet, credit_card, driver_license, email_address, itin_number,
     location, medical_license, money_amount, passport_number, person, phone_number,
     ssn.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
 
     annotations: Optional[Dict[str, str]] = None
@@ -168,6 +250,19 @@ class Extraction(BaseModel):
 
     confidentiality: Optional[float] = None
     r"""The level of general confidentiality of the input."""
+
+    custom_data_types: Annotated[
+        Optional[Dict[str, float]], pydantic.Field(alias="customDataTypes")
+    ] = None
+    r"""The custom data types found during classification.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     data: Optional[str] = None
     r"""The data extracted."""
@@ -182,6 +277,13 @@ class Extraction(BaseModel):
     detector groups 'Exploits' accross all analyzers.
 
     Example of exploits detected: jailbreak, prompt_injection, malicious_url.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
 
     hash: Optional[str] = None
@@ -194,6 +296,13 @@ class Extraction(BaseModel):
     detector groups 'Intent' accross all analyzers.
 
     Example of intent detected: explain, outline, summarize, write.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
 
     internal: Optional[bool] = None
@@ -208,7 +317,15 @@ class Extraction(BaseModel):
     r"""If true, indicates that the file has been stored."""
 
     keywords: Optional[Dict[str, float]] = None
-    r"""The keywords found during classification."""
+    r"""The keywords found during classification.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     label: Optional[str] = None
     r"""A means of distinguishing what was extracted, such as prompt, input file or
@@ -223,6 +340,13 @@ class Extraction(BaseModel):
 
     Example of languages: chinese, english, french, german, gibberish, japanese,
     russian, spanish.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
 
     malcontents: Optional[Dict[str, float]] = None
@@ -232,13 +356,28 @@ class Extraction(BaseModel):
     detector groups 'Malcontents' accross all analyzers.
 
     Example of malcontents: biased, harmful, toxic.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
 
     modalities: Optional[List[Modality]] = None
     r"""The modalities of data detected in the data."""
 
     relevance: Optional[float] = None
-    r"""The level of general organization relevance of the input."""
+    r"""The level of general organization relevance of the input.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     secrets: Optional[Dict[str, float]] = None
     r"""The secrets found during classification.
@@ -261,6 +400,13 @@ class Extraction(BaseModel):
     slack_workflow_webhook, sourcegraph, sourcegraphcody, squareapp, squareup,
     stripe, supabase, tailscale, tines_webhook, trufflehog, twilio, ubidots,
     voiceflow, web_url_with_credentials, zapierwebhook.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """
 
     topics: Optional[Dict[str, float]] = None
@@ -297,4 +443,11 @@ class Extraction(BaseModel):
     extracted/typed_text_content, timeframe/current_year, timeframe/future,
     timeframe/last_year, timeframe/next_year, timeframe/past,
     transcribed/audio_text_content.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
     """

@@ -10,8 +10,10 @@ generation:
   useClassNamesForArrayFields: true
   fixes:
     nameResolutionDec2023: true
+    nameResolutionFeb2025: false
     parameterOrderingFeb2024: true
     requestResponseComponentNamesFeb2024: true
+    securityFeb2025: false
   auth:
     oAuth2ClientCredentialsEnabled: true
     oAuth2PasswordEnabled: true
@@ -51,5 +53,6 @@ python:
   methodArguments: infer-optional-args
   outputModelSuffix: output
   packageName: acuvity
+  pytestTimeout: 0
   responseFormat: flat
   templateVersion: v2
