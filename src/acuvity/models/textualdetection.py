@@ -14,6 +14,7 @@ class TextualdetectionType(str, Enum):
     KEYWORD = "Keyword"
     PII = "PII"
     SECRET = "Secret"
+    CDT = "CDT"
 
 
 class TextualdetectionTypedDict(TypedDict):

@@ -22,6 +22,7 @@ class Decision(str, Enum):
     ASK = "Ask"
     BYPASSED = "Bypassed"
     FORBIDDEN_USER = "ForbiddenUser"
+    SKIPPED = "Skipped"
 
 
 class ScanresponseType(str, Enum):

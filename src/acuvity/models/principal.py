@@ -18,7 +18,7 @@ class AuthType(str, Enum):
     APP_TOKEN = "AppToken"
     HOSTNAME = "Hostname"
     TOKEN = "Token"
-    TIER_TOKEN = "TierToken"
+    COMPONENT_TOKEN = "ComponentToken"
     EXTERNAL = "External"
 
 

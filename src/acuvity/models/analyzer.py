@@ -2,12 +2,19 @@
 
 from __future__ import annotations
 from .analyzermodel import Analyzermodel, AnalyzermodelTypedDict
-from .detectionmatcher import Detectionmatcher, DetectionmatcherTypedDict
 from .detector import Detector, DetectorTypedDict
 from acuvity.types import BaseModel
 import pydantic
 from typing import List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
+
+
+class DetectionMatchersTypedDict(TypedDict):
+    pass
+
+
+class DetectionMatchers(BaseModel):
+    pass
 
 
 class AnalyzerTypedDict(TypedDict):
@@ -17,7 +24,7 @@ class AnalyzerTypedDict(TypedDict):
     r"""ID is the identifier of the object."""
     description: NotRequired[str]
     r"""The description of the analyzer."""
-    detection_matchers: NotRequired[List[DetectionmatcherTypedDict]]
+    detection_matchers: NotRequired[List[List[DetectionMatchersTypedDict]]]
     r"""A list of detection matcher that will trigger the analyzer."""
     detectors: NotRequired[List[DetectorTypedDict]]
     r"""The detectors the analyzer can use."""
@@ -43,7 +50,8 @@ class Analyzer(BaseModel):
     r"""The description of the analyzer."""
 
     detection_matchers: Annotated[
-        Optional[List[Detectionmatcher]], pydantic.Field(alias="detectionMatchers")
+        Optional[List[List[DetectionMatchers]]],
+        pydantic.Field(alias="detectionMatchers"),
     ] = None
     r"""A list of detection matcher that will trigger the analyzer."""
 

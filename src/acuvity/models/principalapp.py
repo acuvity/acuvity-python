@@ -9,22 +9,22 @@ from typing_extensions import NotRequired, TypedDict
 class PrincipalappTypedDict(TypedDict):
     r"""Describes the principal information of an application."""
 
+    component: NotRequired[str]
+    r"""The component of the application request."""
     labels: NotRequired[List[str]]
     r"""The list of labels attached to an application request."""
     name: NotRequired[str]
     r"""The name of the application."""
-    tier: NotRequired[str]
-    r"""The tier of the application request."""
 
 
 class Principalapp(BaseModel):
     r"""Describes the principal information of an application."""
+
+    component: Optional[str] = None
+    r"""The component of the application request."""
 
     labels: Optional[List[str]] = None
     r"""The list of labels attached to an application request."""
 
     name: Optional[str] = None
     r"""The name of the application."""
-
-    tier: Optional[str] = None
-    r"""The tier of the application request."""
