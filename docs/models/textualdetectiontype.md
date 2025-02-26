@@ -10,3 +10,4 @@ The type of detection.
 | `KEYWORD` | Keyword   |
 | `PII`     | PII       |
 | `SECRET`  | Secret    |
+| `CDT`     | CDT       |
