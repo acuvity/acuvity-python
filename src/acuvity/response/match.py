@@ -67,6 +67,8 @@ class ScanResponseMatch:
             The 1st found GuardMatch for a specific guard.
         """
         matches: List[GuardMatch] = []
+        if not GuardName.valid(str(guard)):
+            raise ValueError(f"Invalid gaurd name, please provide one of the following {GuardName.values()}")
 
         # Helper to search one index
         def search_at_index(idx: int):
