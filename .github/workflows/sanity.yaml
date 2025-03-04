@@ -7,6 +7,16 @@ on:
     branches:
       - main
   pull_request:
+      inputs:
+      platform:
+        description: 'Which platform to target'
+        required: true
+        default: "prod"
+        type: choice
+        options:
+          - prod
+          - pre_prod
+          - dev
   workflow_dispatch:
     inputs:
       platform:
