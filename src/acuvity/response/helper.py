@@ -30,7 +30,7 @@ class ResponseHelper:
             GuardMatch with MATCH.YES if condition met, MATCH>NO if not met
         """
         exists = False
-        value = 0.0
+        value = 0
         match_count = 0
         match_list: List[str] = []
         if guard.name in (GuardName.PROMPT_INJECTION, GuardName.JAILBREAK, GuardName.MALICIOUS_URL):
@@ -56,6 +56,9 @@ class ResponseHelper:
         response_match=ResponseMatch.NO
         if exists and guard.threshold.compare(value):
             response_match=ResponseMatch.YES
+
+        if response_match is ResponseMatch.NO:
+            value = -1
 
         return GuardMatch(
             response_match=response_match,
