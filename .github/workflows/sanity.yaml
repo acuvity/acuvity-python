@@ -52,10 +52,19 @@ jobs:
           echo "Running all examples ..."
           ./examples/run.sh
 
-      - name: Pytest
+      - name: Pytest e2e tests
         run: |
-          echo "Running all tests ..."
+          echo "Running e2e tests ..."
           pip install pytest
           pip install pytest-subtests
-          pytest --platform ${{ inputs.platform }}
+          pytest ./tests/e2e --platform ${{ inputs.platform }}
+
+      - name: Pytest unit tests
+        run: |
+          echo "Running unit tests ..."
+          pip install pytest
+          pytest ./tests/guard 
+          pytest ./tests/response
+
+        
 
