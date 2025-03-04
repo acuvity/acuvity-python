@@ -1,18 +1,25 @@
 lockVersion: 2.0.0
 id: 463716ea-2172-44e6-ac63-a7a5b29ba606
 management:
-  docChecksum: 504bbb8137418b3d210d6141404f7de1
+  docChecksum: d36c489000899aeaa2d939df1cef5a30
   docVersion: "1.0"
+<<<<<<< HEAD
   speakeasyVersion: 1.498.1
   generationVersion: 2.518.1
   releaseVersion: 0.6.0
   configChecksum: bdca7d03ddfaf3e62acbc527dc4c857d
+=======
+  speakeasyVersion: 1.504.0
+  generationVersion: 2.529.0
+  releaseVersion: 0.5.5
+  configChecksum: 4fa9744d46623be9f5686a2e6a9a4444
+>>>>>>> origin/main
   published: true
 features:
   python:
     additionalDependencies: 1.0.0
     constsAndDefaults: 1.0.5
-    core: 5.11.0
+    core: 5.12.1
     defaultEnabledRetries: 0.2.0
     devContainers: 3.0.0
     enumUnions: 0.1.0
@@ -41,10 +48,9 @@ generatedFiles:
   - docs/models/analyzermodel.md
   - docs/models/anonymization.md
   - docs/models/authtype.md
-  - docs/models/confidence.md
   - docs/models/data.md
   - docs/models/decision.md
-  - docs/models/detectionmatcher.md
+  - docs/models/detectionmatchers.md
   - docs/models/detector.md
   - docs/models/elementalerror.md
   - docs/models/extraction.md
@@ -52,7 +58,6 @@ generatedFiles:
   - docs/models/extractionsummary.md
   - docs/models/latency.md
   - docs/models/modality.md
-  - docs/models/operator.md
   - docs/models/principal.md
   - docs/models/principalapp.md
   - docs/models/principaltype.md
@@ -85,7 +90,6 @@ generatedFiles:
   - src/acuvity/models/analyzer.py
   - src/acuvity/models/analyzermodel.py
   - src/acuvity/models/apierror.py
-  - src/acuvity/models/detectionmatcher.py
   - src/acuvity/models/detector.py
   - src/acuvity/models/elementalerror.py
   - src/acuvity/models/extraction.py
