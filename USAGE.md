@@ -9,6 +9,7 @@ import acuvity
 from acuvity import Acuvity
 import os
 
+
 with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
@@ -55,6 +56,7 @@ import asyncio
 import os
 
 async def main():
+
     async with Acuvity(
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
@@ -102,6 +104,7 @@ import acuvity
 from acuvity import Acuvity
 import os
 
+
 with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
@@ -125,6 +128,7 @@ import asyncio
 import os
 
 async def main():
+
     async with Acuvity(
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
