@@ -38,8 +38,8 @@ class TestApexFunctions:
         verify_match_details(
             match_details=res.match_details[1],
             prompt=EXAMPLES["jailbreak"],
-            matched_guards=["jailbreak"],
-            non_matched_guards=["jailbreak", "prompt_injection"],
+            matched_guards=["jailbreak", "pii_detector"],
+            non_matched_guards=["prompt_injection"],
         )
         verify_match_details(
             match_details=res.match_details[2],

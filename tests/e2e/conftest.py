@@ -10,7 +10,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--platform",
         action="store",
-        default="",
+        default="prod",
         type=str,
         help="Specify platform to run against",
     )
