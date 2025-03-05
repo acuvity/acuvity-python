@@ -7,6 +7,17 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Which platform to target'
+        required: true
+        default: "prod"
+        type: choice
+        options:
+          - prod
+          - pre_prod
+          - dev
 
 defaults:
   run:
@@ -14,6 +25,9 @@ defaults:
 
 env:
   ACUVITY_TOKEN: ${{ secrets.ACUVITY_TOKEN }}
+  APPS_DEV_TOKEN: ${{ secrets.APPS_DEV_TOKEN }}
+  APPS_PRE_PROD_TOKEN: ${{ secrets.APPS_PRE_PROD_TOKEN }}
+  APPS_PROD_TOKEN: ${{ secrets.APPS_PROD_TOKEN }}
 
 jobs:
   sanity:
@@ -38,8 +52,24 @@ jobs:
           echo "Running all examples ..."
           ./examples/run.sh
 
-      - name: Pytest
+      - name: Pytest e2e tests
         run: |
-          echo "Running all tests ..."
+          echo "Running e2e tests ..."
           pip install pytest
-          pytest
+          pip install pytest-subtests
+          SELECTED_OPTION="${{ inputs.platform }}"
+          
+          if [ -z "$SELECTED_OPTION" ]; then
+            SELECTED_OPTION="prod"  # Default value when input is missing
+          fi
+          pytest ./tests/e2e --platform $SELECTED_OPTION
+
+      - name: Pytest unit tests
+        run: |
+          echo "Running unit tests ..."
+          pip install pytest
+          pytest ./tests/guard 
+          pytest ./tests/response
+
+        
+

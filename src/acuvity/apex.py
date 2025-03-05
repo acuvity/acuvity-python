@@ -36,6 +36,8 @@ class Apex(BaseSDK):
 
         if server_url is not None:
             base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
         req = self._build_request(
             method="GET",
             path="/_acuvity/analyzers",
@@ -66,6 +68,7 @@ class Apex(BaseSDK):
 
         http_res = self.do_request(
             hook_ctx=HookContext(
+                base_url=base_url or "",
                 operation_id="get-all-Analyzers",
                 oauth2_scopes=[],
                 security_source=get_security_from_env(
@@ -77,15 +80,19 @@ class Apex(BaseSDK):
             retry_config=retry_config,
         )
 
-        data: Any = None
+        response_data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, List[models.Analyzer])
         if utils.match_response(http_res, ["400", "401"], "application/json"):
-            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
-            raise models.Elementalerror(data=data)
+            response_data = utils.unmarshal_json(
+                http_res.text, models.ElementalerrorData
+            )
+            raise models.Elementalerror(data=response_data)
         if utils.match_response(http_res, "500", "application/json"):
-            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
-            raise models.Elementalerror(data=data)
+            response_data = utils.unmarshal_json(
+                http_res.text, models.ElementalerrorData
+            )
+            raise models.Elementalerror(data=response_data)
         if utils.match_response(http_res, "4XX", "*"):
             http_res_text = utils.stream_to_text(http_res)
             raise models.APIError(
@@ -131,6 +138,8 @@ class Apex(BaseSDK):
 
         if server_url is not None:
             base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
         req = self._build_request_async(
             method="GET",
             path="/_acuvity/analyzers",
@@ -161,6 +170,7 @@ class Apex(BaseSDK):
 
         http_res = await self.do_request_async(
             hook_ctx=HookContext(
+                base_url=base_url or "",
                 operation_id="get-all-Analyzers",
                 oauth2_scopes=[],
                 security_source=get_security_from_env(
@@ -172,15 +182,19 @@ class Apex(BaseSDK):
             retry_config=retry_config,
         )
 
-        data: Any = None
+        response_data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, List[models.Analyzer])
         if utils.match_response(http_res, ["400", "401"], "application/json"):
-            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
-            raise models.Elementalerror(data=data)
+            response_data = utils.unmarshal_json(
+                http_res.text, models.ElementalerrorData
+            )
+            raise models.Elementalerror(data=response_data)
         if utils.match_response(http_res, "500", "application/json"):
-            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
-            raise models.Elementalerror(data=data)
+            response_data = utils.unmarshal_json(
+                http_res.text, models.ElementalerrorData
+            )
+            raise models.Elementalerror(data=response_data)
         if utils.match_response(http_res, "4XX", "*"):
             http_res_text = await utils.stream_to_text_async(http_res)
             raise models.APIError(
@@ -230,6 +244,8 @@ class Apex(BaseSDK):
 
         if server_url is not None:
             base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
 
         if not isinstance(request, BaseModel):
             request = utils.unmarshal(request, models.Scanrequest)
@@ -268,6 +284,7 @@ class Apex(BaseSDK):
 
         http_res = self.do_request(
             hook_ctx=HookContext(
+                base_url=base_url or "",
                 operation_id="create-ScanRequest-as-ScanResponse",
                 oauth2_scopes=[],
                 security_source=get_security_from_env(
@@ -275,24 +292,40 @@ class Apex(BaseSDK):
                 ),
             ),
             request=req,
-            error_status_codes=["400", "401", "403", "422", "429", "4XX", "500", "5XX"],
+            error_status_codes=[
+                "400",
+                "401",
+                "403",
+                "415",
+                "422",
+                "429",
+                "4XX",
+                "500",
+                "5XX",
+            ],
             retry_config=retry_config,
         )
 
-        data: Any = None
+        response_data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, models.Scanresponse)
-        if utils.match_response(http_res, ["400", "403", "422"], "application/json"):
-            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
-            raise models.Elementalerror(data=data)
+        if utils.match_response(
+            http_res, ["400", "403", "415", "422"], "application/json"
+        ):
+            response_data = utils.unmarshal_json(
+                http_res.text, models.ElementalerrorData
+            )
+            raise models.Elementalerror(data=response_data)
+        if utils.match_response(http_res, "500", "application/json"):
+            response_data = utils.unmarshal_json(
+                http_res.text, models.ElementalerrorData
+            )
+            raise models.Elementalerror(data=response_data)
         if utils.match_response(http_res, ["401", "429", "4XX"], "*"):
             http_res_text = utils.stream_to_text(http_res)
             raise models.APIError(
                 "API error occurred", http_res.status_code, http_res_text, http_res
             )
-        if utils.match_response(http_res, "500", "application/json"):
-            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
-            raise models.Elementalerror(data=data)
         if utils.match_response(http_res, "5XX", "*"):
             http_res_text = utils.stream_to_text(http_res)
             raise models.APIError(
@@ -337,6 +370,8 @@ class Apex(BaseSDK):
 
         if server_url is not None:
             base_url = server_url
+        else:
+            base_url = self._get_url(base_url, url_variables)
 
         if not isinstance(request, BaseModel):
             request = utils.unmarshal(request, models.Scanrequest)
@@ -375,6 +410,7 @@ class Apex(BaseSDK):
 
         http_res = await self.do_request_async(
             hook_ctx=HookContext(
+                base_url=base_url or "",
                 operation_id="create-ScanRequest-as-ScanResponse",
                 oauth2_scopes=[],
                 security_source=get_security_from_env(
@@ -382,24 +418,40 @@ class Apex(BaseSDK):
                 ),
             ),
             request=req,
-            error_status_codes=["400", "401", "403", "422", "429", "4XX", "500", "5XX"],
+            error_status_codes=[
+                "400",
+                "401",
+                "403",
+                "415",
+                "422",
+                "429",
+                "4XX",
+                "500",
+                "5XX",
+            ],
             retry_config=retry_config,
         )
 
-        data: Any = None
+        response_data: Any = None
         if utils.match_response(http_res, "200", "application/json"):
             return utils.unmarshal_json(http_res.text, models.Scanresponse)
-        if utils.match_response(http_res, ["400", "403", "422"], "application/json"):
-            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
-            raise models.Elementalerror(data=data)
+        if utils.match_response(
+            http_res, ["400", "403", "415", "422"], "application/json"
+        ):
+            response_data = utils.unmarshal_json(
+                http_res.text, models.ElementalerrorData
+            )
+            raise models.Elementalerror(data=response_data)
+        if utils.match_response(http_res, "500", "application/json"):
+            response_data = utils.unmarshal_json(
+                http_res.text, models.ElementalerrorData
+            )
+            raise models.Elementalerror(data=response_data)
         if utils.match_response(http_res, ["401", "429", "4XX"], "*"):
             http_res_text = await utils.stream_to_text_async(http_res)
             raise models.APIError(
                 "API error occurred", http_res.status_code, http_res_text, http_res
             )
-        if utils.match_response(http_res, "500", "application/json"):
-            data = utils.unmarshal_json(http_res.text, models.ElementalerrorData)
-            raise models.Elementalerror(data=data)
         if utils.match_response(http_res, "5XX", "*"):
             http_res_text = await utils.stream_to_text_async(http_res)
             raise models.APIError(

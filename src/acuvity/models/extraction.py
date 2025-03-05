@@ -13,50 +13,234 @@ class ExtractionTypedDict(TypedDict):
     r"""Represents the extracted information to log."""
 
     pi_is: NotRequired[Dict[str, float]]
-    r"""The PIIs found during classification."""
+    r"""The PIIs found during classification.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'PIIs' accross all analyzers.
+
+    Example of PIIs detected: aba_routing_number, address, bank_account,
+    bitcoin_wallet, credit_card, driver_license, email_address, itin_number,
+    location, medical_license, money_amount, passport_number, person, phone_number,
+    ssn.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     annotations: NotRequired[Dict[str, str]]
     r"""Annotations attached to the extraction."""
     categories: NotRequired[List[ModalityTypedDict]]
     r"""The categories are remapping of the modalities in a more human friendly way."""
     confidentiality: NotRequired[float]
     r"""The level of general confidentiality of the input."""
+    custom_data_types: NotRequired[Dict[str, float]]
+    r"""The custom data types found during classification.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     data: NotRequired[str]
     r"""The data extracted."""
     detections: NotRequired[List[TextualdetectionTypedDict]]
-    r"""The detections found while applying policies."""
+    r"""The textual detections found while applying policies."""
     exploits: NotRequired[Dict[str, float]]
-    r"""The various exploits attempts."""
+    r"""The various exploits attempts.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Exploits' accross all analyzers.
+
+    Example of exploits detected: jailbreak, prompt_injection, malicious_url.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     hash: NotRequired[str]
     r"""The hash of the extraction."""
     intent: NotRequired[Dict[str, float]]
-    r"""The estimated intent embodied into the text."""
+    r"""The estimated intent embodied into the text.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Intent' accross all analyzers.
+
+    Example of intent detected: explain, outline, summarize, write.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     internal: NotRequired[bool]
     r"""If true, this extraction is for internal use only. This can be used by agentic
     systems to mark an extraction as internal only as opposed to user facing.
     """
+    is_file: NotRequired[bool]
+    r"""If true, the data of the extraction is a file."""
+    is_stored: NotRequired[bool]
+    r"""If true, indicates that the file has been stored."""
     keywords: NotRequired[Dict[str, float]]
-    r"""The keywords found during classification."""
+    r"""The keywords found during classification.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     label: NotRequired[str]
     r"""A means of distinguishing what was extracted, such as prompt, input file or
     code.
     """
     languages: NotRequired[Dict[str, float]]
-    r"""The language of the classification."""
+    r"""The language of the classification.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Languages' accross all analyzers.
+
+    Example of languages: chinese, english, french, german, gibberish, japanese,
+    russian, spanish.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
+    malcontents: NotRequired[Dict[str, float]]
+    r"""The various malcontents attempts.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Malcontents' accross all analyzers.
+
+    Example of malcontents: biased, harmful, toxic.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     modalities: NotRequired[List[ModalityTypedDict]]
     r"""The modalities of data detected in the data."""
     relevance: NotRequired[float]
-    r"""The level of general organization relevance of the input."""
+    r"""The level of general organization relevance of the input.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     secrets: NotRequired[Dict[str, float]]
-    r"""The secrets found during classification."""
+    r"""The secrets found during classification.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Secrets' accross all analyzers.
+
+    Example of secrets: adafruit, alibaba, anthropic, apideck, apify, atlassian,
+    aws_secret_key, buildkite, checkout, clickuppersonal, contentfulpersonalaccess,
+    credentials, database_url_with_credentials, databricks, denodeploy, dfuse,
+    digitalocean, discord_webhook, docker_hub, doppler, dropbox, endorlabs,
+    fleetbase, flutterwave, frameio, freshdesk, fullstory, github, gitlab,
+    gocardless, google_api, grafana, groq, huggingface, intra42, jwt, klaviyo,
+    launchdarkly, linearapi, locationiq, mailchimp, mailgun, mapbox, maxmind,
+    microsoft_teams_webhook, nightfall, notion, npm, openai, otp_auth_url, pagarme,
+    paystack, planetscale, planetscaledb, portainer, posthog, postman, prefect,
+    private_key, pubnub_publish, pubnub_subscribe, pulumi, ramp, razorpay, readme,
+    rechargepayments, replicate, rubygems, salesforce, sendgrid, sendinblue,
+    shopify, slack_access, slack_bot, slack_refresh, slack_user, slack_webhook,
+    slack_workflow_webhook, sourcegraph, sourcegraphcody, squareapp, squareup,
+    stripe, supabase, tailscale, tines_webhook, trufflehog, twilio, ubidots,
+    voiceflow, web_url_with_credentials, zapierwebhook.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
     topics: NotRequired[Dict[str, float]]
-    r"""The topic of the classification."""
+    r"""The topic of the classification.
+
+    The current list can be obtained through the analyzers API, with the following
+    conditions:
+    1. Includes all analyzers EXCEPT those in the 'Modality' group
+    2. Includes all analyzer detectors EXCEPT those in these groups:
+    - 'Secrets'
+    - 'Exploits'
+    - 'Intent'
+    - 'PIIs'
+    - 'Malcontents'
+
+    Example of topics: category/enterprise, category/healthcare, category/medical,
+    category/personal, contains/blank_image, contains/certificate_signing_request,
+    contains/database_url, contains/handwritten_text, contains/printed_text,
+    contains/public_key, contains/ssh_public_key, contains/web_url,
+    decoded/base32_data, decoded/base58_data, decoded/base64_data,
+    decoded/base64_url_data, decoded/base85_data, decoded/hexadecimal_data,
+    decoded/puny_code_data, decoded/quoted_printable_data,
+    decoded/url_encoding_data, department/compliance, department/cybersecurity,
+    department/finance, department/human_resources,
+    department/information_technology, department/legal, department/logistics,
+    department/marketing, department/performance_evaluation,
+    department/product_management, department/project_management, department/sales,
+    department/strategy, department/support, depict/check, depict/code,
+    depict/document, depict/unclassified, depict/whiteboard, domain/commercial,
+    domain/development, domain/financial, domain/general, domain/regulatory,
+    domain/workforce, extracted/csv_cell_content, extracted/document_text_content,
+    extracted/handwritten_text_content, extracted/pdf_text_content,
+    extracted/pptx_text_content, extracted/spreadsheet_text_content,
+    extracted/typed_text_content, timeframe/current_year, timeframe/future,
+    timeframe/last_year, timeframe/next_year, timeframe/past,
+    transcribed/audio_text_content.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
 
 class Extraction(BaseModel):
     r"""Represents the extracted information to log."""
 
     pi_is: Annotated[Optional[Dict[str, float]], pydantic.Field(alias="PIIs")] = None
-    r"""The PIIs found during classification."""
+    r"""The PIIs found during classification.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'PIIs' accross all analyzers.
+
+    Example of PIIs detected: aba_routing_number, address, bank_account,
+    bitcoin_wallet, credit_card, driver_license, email_address, itin_number,
+    location, medical_license, money_amount, passport_number, person, phone_number,
+    ssn.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     annotations: Optional[Dict[str, str]] = None
     r"""Annotations attached to the extraction."""
@@ -67,28 +251,81 @@ class Extraction(BaseModel):
     confidentiality: Optional[float] = None
     r"""The level of general confidentiality of the input."""
 
+    custom_data_types: Annotated[
+        Optional[Dict[str, float]], pydantic.Field(alias="customDataTypes")
+    ] = None
+    r"""The custom data types found during classification.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
+
     data: Optional[str] = None
     r"""The data extracted."""
 
     detections: Optional[List[Textualdetection]] = None
-    r"""The detections found while applying policies."""
+    r"""The textual detections found while applying policies."""
 
     exploits: Optional[Dict[str, float]] = None
-    r"""The various exploits attempts."""
+    r"""The various exploits attempts.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Exploits' accross all analyzers.
+
+    Example of exploits detected: jailbreak, prompt_injection, malicious_url.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     hash: Optional[str] = None
     r"""The hash of the extraction."""
 
     intent: Optional[Dict[str, float]] = None
-    r"""The estimated intent embodied into the text."""
+    r"""The estimated intent embodied into the text.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Intent' accross all analyzers.
+
+    Example of intent detected: explain, outline, summarize, write.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     internal: Optional[bool] = None
     r"""If true, this extraction is for internal use only. This can be used by agentic
     systems to mark an extraction as internal only as opposed to user facing.
     """
 
+    is_file: Annotated[Optional[bool], pydantic.Field(alias="isFile")] = None
+    r"""If true, the data of the extraction is a file."""
+
+    is_stored: Annotated[Optional[bool], pydantic.Field(alias="isStored")] = None
+    r"""If true, indicates that the file has been stored."""
+
     keywords: Optional[Dict[str, float]] = None
-    r"""The keywords found during classification."""
+    r"""The keywords found during classification.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     label: Optional[str] = None
     r"""A means of distinguishing what was extracted, such as prompt, input file or
@@ -96,16 +333,121 @@ class Extraction(BaseModel):
     """
 
     languages: Optional[Dict[str, float]] = None
-    r"""The language of the classification."""
+    r"""The language of the classification.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Languages' accross all analyzers.
+
+    Example of languages: chinese, english, french, german, gibberish, japanese,
+    russian, spanish.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
+
+    malcontents: Optional[Dict[str, float]] = None
+    r"""The various malcontents attempts.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Malcontents' accross all analyzers.
+
+    Example of malcontents: biased, harmful, toxic.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     modalities: Optional[List[Modality]] = None
     r"""The modalities of data detected in the data."""
 
     relevance: Optional[float] = None
-    r"""The level of general organization relevance of the input."""
+    r"""The level of general organization relevance of the input.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     secrets: Optional[Dict[str, float]] = None
-    r"""The secrets found during classification."""
+    r"""The secrets found during classification.
+
+    The current list can be obtained through the analyzers API by searching for
+    detector groups 'Secrets' accross all analyzers.
+
+    Example of secrets: adafruit, alibaba, anthropic, apideck, apify, atlassian,
+    aws_secret_key, buildkite, checkout, clickuppersonal, contentfulpersonalaccess,
+    credentials, database_url_with_credentials, databricks, denodeploy, dfuse,
+    digitalocean, discord_webhook, docker_hub, doppler, dropbox, endorlabs,
+    fleetbase, flutterwave, frameio, freshdesk, fullstory, github, gitlab,
+    gocardless, google_api, grafana, groq, huggingface, intra42, jwt, klaviyo,
+    launchdarkly, linearapi, locationiq, mailchimp, mailgun, mapbox, maxmind,
+    microsoft_teams_webhook, nightfall, notion, npm, openai, otp_auth_url, pagarme,
+    paystack, planetscale, planetscaledb, portainer, posthog, postman, prefect,
+    private_key, pubnub_publish, pubnub_subscribe, pulumi, ramp, razorpay, readme,
+    rechargepayments, replicate, rubygems, salesforce, sendgrid, sendinblue,
+    shopify, slack_access, slack_bot, slack_refresh, slack_user, slack_webhook,
+    slack_workflow_webhook, sourcegraph, sourcegraphcody, squareapp, squareup,
+    stripe, supabase, tailscale, tines_webhook, trufflehog, twilio, ubidots,
+    voiceflow, web_url_with_credentials, zapierwebhook.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """
 
     topics: Optional[Dict[str, float]] = None
-    r"""The topic of the classification."""
+    r"""The topic of the classification.
+
+    The current list can be obtained through the analyzers API, with the following
+    conditions:
+    1. Includes all analyzers EXCEPT those in the 'Modality' group
+    2. Includes all analyzer detectors EXCEPT those in these groups:
+    - 'Secrets'
+    - 'Exploits'
+    - 'Intent'
+    - 'PIIs'
+    - 'Malcontents'
+
+    Example of topics: category/enterprise, category/healthcare, category/medical,
+    category/personal, contains/blank_image, contains/certificate_signing_request,
+    contains/database_url, contains/handwritten_text, contains/printed_text,
+    contains/public_key, contains/ssh_public_key, contains/web_url,
+    decoded/base32_data, decoded/base58_data, decoded/base64_data,
+    decoded/base64_url_data, decoded/base85_data, decoded/hexadecimal_data,
+    decoded/puny_code_data, decoded/quoted_printable_data,
+    decoded/url_encoding_data, department/compliance, department/cybersecurity,
+    department/finance, department/human_resources,
+    department/information_technology, department/legal, department/logistics,
+    department/marketing, department/performance_evaluation,
+    department/product_management, department/project_management, department/sales,
+    department/strategy, department/support, depict/check, depict/code,
+    depict/document, depict/unclassified, depict/whiteboard, domain/commercial,
+    domain/development, domain/financial, domain/general, domain/regulatory,
+    domain/workforce, extracted/csv_cell_content, extracted/document_text_content,
+    extracted/handwritten_text_content, extracted/pdf_text_content,
+    extracted/pptx_text_content, extracted/spreadsheet_text_content,
+    extracted/typed_text_content, timeframe/current_year, timeframe/future,
+    timeframe/last_year, timeframe/next_year, timeframe/past,
+    transcribed/audio_text_content.
+
+    If a key is not present in the map that implies that entity was not detected. If
+    an entity is detected then the value is a score. Here's how to interpret the
+    scores:
+    - confidence: 'low', 0 < score <0.33
+    - confidence: 'medium', 0.33 <= score < 0.66
+    - confidence: 'high', 0.66 <= score <= 1.
+    """

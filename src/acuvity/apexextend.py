@@ -29,43 +29,15 @@ class ApexExtended(Apex):
         super().__init__(sdk_config)
         self._available_analyzers: Optional[List[Analyzer]] = None
 
-    def list_analyzer_groups(self) -> List[str]:
-        """
-        list_analyzer_groups() returns a list of all available analyzer groups. These can be passed in a scan request
-        to activate/deactivate a whole group of analyzers at once.
-
-        NOTE: this call is cached for the lifetime of the SDK object.
-        """
-        if self._available_analyzers is None:
-            self._available_analyzers = self.list_analyzers()
-        return sorted({ a.group for a in self._available_analyzers if a.group is not None })
-
-    def list_analyzer_names(self, group: Optional[str] = None) -> List[str]:
-        """
-        list_analyzer_names() returns a list of all available analyzer names. These can be passed in a scan request
-        to activate/deactivate specific analyzers.
-
-        :param group: the group of analyzers to filter the list by. If not provided, all analyzers will be returned.
-
-        NOTE: this call is cached for the lifetime of the SDK object.
-        """
-        if self._available_analyzers is None:
-            self._available_analyzers = self.list_analyzers()
-
-        return sorted([ a.id for a in self._available_analyzers if (group is None or a.group == group) and a.id is not None ])
-
-        # # Filter out None values and sort
-        # return sorted([name for name in mapped_names if name is not None])
-
     def list_available_guards(self) -> List[str]:
         """
-        list_secrets: returns a list of all available secrets that can be detected.
+        list_available_guards: returns a list of all available guards that can be detected.
         """
         return GuardName.values()
 
     def list_detectable_secrets(self) -> List[str]:
         """
-        list_secrets: returns a list of all available secrets that can be detected.
+        list_detectable_secrets: returns a list of all available secrets that can be detected.
         """
         detectable_secrets: List[str] = []
         if self._available_analyzers is None:
@@ -82,7 +54,7 @@ class ApexExtended(Apex):
 
     def list_detectable_piis(self) -> List[str]:
         """
-        list_pii: returns a list of all available secrets that can be detected.
+        list_detectable_piis: returns a list of all available Piis that can be detected.
         """
         detectable_piis: List[str] = []
         if self._available_analyzers is None:
@@ -118,6 +90,8 @@ class ApexExtended(Apex):
         :param files: the files to scan. These are the files that you want to scan. Required if no messages are provided. Can be used in addition to messages.
         :param request_type: the type of the validation. This can be either Type.INPUT or Type.OUTPUT. Defaults to Type.INPUT. Use Type.OUTPUT if you want to run model output through the detection engines.
         :param annotations: the annotations to use. These are the annotations that you want to use. If not provided, no annotations will be used.
+        :param redactions: the redactions that need to be redacted if detected. This arg cannot be used with guard_config.
+        :param keywords: the keywords that need to be detected. This arg cannot be used with guard_config.
         :param guard_config: the guard config used to do the response eval for matches. If not provided, the default guard config will be used.
         """
 

@@ -12,3 +12,4 @@ Tell what was the decision about the data.
 | `ASK`            | Ask              |
 | `BYPASSED`       | Bypassed         |
 | `FORBIDDEN_USER` | ForbiddenUser    |
+| `SKIPPED`        | Skipped          |
