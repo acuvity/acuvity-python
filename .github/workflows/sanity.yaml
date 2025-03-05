@@ -11,7 +11,8 @@ on:
     inputs:
       platform:
         description: 'Which platform to target'
-        required: false
+        required: true
+        default: "prod"
         type: choice
         options:
           - prod
@@ -56,7 +57,12 @@ jobs:
           echo "Running e2e tests ..."
           pip install pytest
           pip install pytest-subtests
-          pytest ./tests/e2e --platform ${{ inputs.platform }}
+          SELECTED_OPTION="${{ inputs.platform }}"
+          
+          if [ -z "$SELECTED_OPTION" ]; then
+            SELECTED_OPTION="prod"  # Default value when input is missing
+          fi
+          pytest ./tests/e2e --platform $SELECTED_OPTION
 
       - name: Pytest unit tests
         run: |
