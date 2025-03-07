@@ -338,6 +338,7 @@ from acuvity import Acuvity
 from acuvity.utils import BackoffStrategy, RetryConfig
 import os
 
+
 with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
@@ -358,6 +359,7 @@ import acuvity
 from acuvity import Acuvity
 from acuvity.utils import BackoffStrategy, RetryConfig
 import os
+
 
 with Acuvity(
     retry_config=RetryConfig("backoff", BackoffStrategy(1, 50, 1.1, 100), False),
@@ -402,6 +404,7 @@ When custom error responses are specified for an operation, the SDK may also rai
 import acuvity
 from acuvity import Acuvity, models
 import os
+
 
 with Acuvity(
     security=acuvity.Security(
@@ -564,6 +567,7 @@ import acuvity
 from acuvity import Acuvity
 import os
 
+
 with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
@@ -590,6 +594,7 @@ import acuvity
 from acuvity import Acuvity
 import os
 def main():
+
     with Acuvity(
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),
@@ -600,6 +605,7 @@ def main():
 
 # Or when using async:
 async def amain():
+
     async with Acuvity(
         security=acuvity.Security(
             token=os.getenv("ACUVITY_TOKEN", ""),

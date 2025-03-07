@@ -30,7 +30,7 @@ class ResponseHelper:
             GuardMatch with MATCH.YES if condition met, MATCH>NO if not met
         """
         exists = False
-        value = 0
+        value = 0.0
         match_count = 0
         match_list: List[str] = []
         if guard.name in (GuardName.PROMPT_INJECTION, GuardName.JAILBREAK, GuardName.MALICIOUS_URL):

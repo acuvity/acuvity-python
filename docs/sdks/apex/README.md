@@ -21,6 +21,7 @@ import acuvity
 from acuvity import Acuvity
 import os
 
+
 with Acuvity(
     security=acuvity.Security(
         token=os.getenv("ACUVITY_TOKEN", ""),
@@ -62,6 +63,7 @@ Processes the scan request.
 import acuvity
 from acuvity import Acuvity
 import os
+
 
 with Acuvity(
     security=acuvity.Security(
