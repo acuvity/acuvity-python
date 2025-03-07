@@ -3,8 +3,8 @@ id: 463716ea-2172-44e6-ac63-a7a5b29ba606
 management:
   docChecksum: d36c489000899aeaa2d939df1cef5a30
   docVersion: "1.0"
-  speakeasyVersion: 1.504.0
-  generationVersion: 2.529.0
+  speakeasyVersion: 1.513.2
+  generationVersion: 2.545.2
   releaseVersion: 0.5.5
   configChecksum: 4fa9744d46623be9f5686a2e6a9a4444
   published: true
@@ -12,7 +12,7 @@ features:
   python:
     additionalDependencies: 1.0.0
     constsAndDefaults: 1.0.5
-    core: 5.12.1
+    core: 5.12.2
     defaultEnabledRetries: 0.2.0
     devContainers: 3.0.0
     enumUnions: 0.1.0
@@ -69,7 +69,7 @@ generatedFiles:
   - py.typed
   - pylintrc
   - pyproject.toml
-  - scripts/prepare-readme.py
+  - scripts/prepare_readme.py
   - scripts/publish.sh
   - src/acuvity/_hooks/__init__.py
   - src/acuvity/_hooks/sdkhooks.py
