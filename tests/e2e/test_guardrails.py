@@ -93,8 +93,8 @@ class TestGuardrails:
         }
         prompt = EXAMPLES["keywords_and_pii"]
         res = self.apex.scan(prompt, guard_config=guard_json)
-        expected_data = prompt.replace("apollo", "XXXXXX").replace(
-            "aaa@gmail.com", "XXXXXXXXXXXXX"
+        expected_data = prompt.replace("apollo", "######").replace(
+            "aaa@gmail.com", "#############"
         )
         match_details = res.match_details[0]
         verify_match_details(
