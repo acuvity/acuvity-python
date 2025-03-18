@@ -26,6 +26,7 @@ guardrail_agent = Agent(
 async def prompt_injection_guardrail(ctx, agent, input_data):
     gc = [Guard.create(GuardName.PROMPT_INJECTION)]
     matches = s.apex.scan(input_data, guard_config=gc).matches()
+    print(matches)
     return GuardrailFunctionOutput(
         output_info="prompt injection guard triggered",
         tripwire_triggered=matches[0].response_match == "YES",

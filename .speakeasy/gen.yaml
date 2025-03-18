@@ -21,6 +21,7 @@ python:
   version: 0.5.5
   additionalDependencies:
     dev:
+      openai-agents: ^0.0.4
       types-PyYAML: ^6.0.12
     main:
       PyYAML: ^6.0.2
