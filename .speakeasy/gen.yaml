@@ -30,7 +30,7 @@ python:
     - Acuvity, Inc.
   clientServerStatusCodesAsErrors: true
   defaultErrorName: APIError
-  description: Acvuvity Python SDK
+  description: Acuvity Python SDK
   documentationUrl: https://github.com/acuvity/acuvity-python
   enableCustomCodeRegions: false
   enumFormat: enum
