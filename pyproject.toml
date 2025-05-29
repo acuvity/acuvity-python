@@ -1,7 +1,7 @@
 [project]
 name = "acuvity"
-version = "0.6.1"
-description = "Acvuvity Python SDK"
+version = "0.6.2"
+description = "Acuvity Python SDK"
 authors = [{ name = "Acuvity, Inc." },]
 readme = "README-PYPI.md"
 requires-python = ">=3.9"
