@@ -68,6 +68,7 @@ class Apex(BaseSDK):
 
         http_res = self.do_request(
             hook_ctx=HookContext(
+                config=self.sdk_configuration,
                 base_url=base_url or "",
                 operation_id="get-all-Analyzers",
                 oauth2_scopes=[],
@@ -170,6 +171,7 @@ class Apex(BaseSDK):
 
         http_res = await self.do_request_async(
             hook_ctx=HookContext(
+                config=self.sdk_configuration,
                 base_url=base_url or "",
                 operation_id="get-all-Analyzers",
                 oauth2_scopes=[],
@@ -218,9 +220,7 @@ class Apex(BaseSDK):
     def scan_request(
         self,
         *,
-        request: Union[
-            models.Scanrequest, models.ScanrequestTypedDict
-        ] = models.Scanrequest(),
+        request: Union[models.Scanrequest, models.ScanrequestTypedDict],
         retries: OptionalNullable[utils.RetryConfig] = UNSET,
         server_url: Optional[str] = None,
         timeout_ms: Optional[int] = None,
@@ -265,7 +265,7 @@ class Apex(BaseSDK):
             http_headers=http_headers,
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request, False, True, "json", Optional[models.Scanrequest]
+                request, False, False, "json", models.Scanrequest
             ),
             timeout_ms=timeout_ms,
         )
@@ -284,6 +284,7 @@ class Apex(BaseSDK):
 
         http_res = self.do_request(
             hook_ctx=HookContext(
+                config=self.sdk_configuration,
                 base_url=base_url or "",
                 operation_id="create-ScanRequest-as-ScanResponse",
                 oauth2_scopes=[],
@@ -344,9 +345,7 @@ class Apex(BaseSDK):
     async def scan_request_async(
         self,
         *,
-        request: Union[
-            models.Scanrequest, models.ScanrequestTypedDict
-        ] = models.Scanrequest(),
+        request: Union[models.Scanrequest, models.ScanrequestTypedDict],
         retries: OptionalNullable[utils.RetryConfig] = UNSET,
         server_url: Optional[str] = None,
         timeout_ms: Optional[int] = None,
@@ -391,7 +390,7 @@ class Apex(BaseSDK):
             http_headers=http_headers,
             security=self.sdk_configuration.security,
             get_serialized_body=lambda: utils.serialize_request_body(
-                request, False, True, "json", Optional[models.Scanrequest]
+                request, False, False, "json", models.Scanrequest
             ),
             timeout_ms=timeout_ms,
         )
@@ -410,6 +409,7 @@ class Apex(BaseSDK):
 
         http_res = await self.do_request_async(
             hook_ctx=HookContext(
+                config=self.sdk_configuration,
                 base_url=base_url or "",
                 operation_id="create-ScanRequest-as-ScanResponse",
                 oauth2_scopes=[],
