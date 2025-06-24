@@ -3,16 +3,18 @@ id: 463716ea-2172-44e6-ac63-a7a5b29ba606
 management:
   docChecksum: d36c489000899aeaa2d939df1cef5a30
   docVersion: "1.0"
-  speakeasyVersion: 1.520.0
-  generationVersion: 2.555.1
-  releaseVersion: 0.5.5
-  configChecksum: 4158e68f5cac19a5457185a9de298ba8
+  speakeasyVersion: 1.568.1
+  generationVersion: 2.634.1
+  releaseVersion: 0.6.0
+  configChecksum: 5a6c41dd94e6a627e809f37105f9bda7
+  repoURL: https://github.com/acuvity/acuvity-python.git
+  installationURL: https://github.com/acuvity/acuvity-python.git
   published: true
 features:
   python:
     additionalDependencies: 1.0.0
     constsAndDefaults: 1.0.5
-    core: 5.12.4
+    core: 5.19.3
     defaultEnabledRetries: 0.2.0
     devContainers: 3.0.0
     enumUnions: 0.1.0
@@ -20,14 +22,14 @@ features:
     examples: 3.0.1
     globalSecurity: 3.0.3
     globalSecurityCallbacks: 1.0.0
-    globalServerURLs: 3.1.0
+    globalServerURLs: 3.1.1
     ignores: 3.0.1
     methodArguments: 1.0.2
     nameOverrides: 3.0.1
     operationTimeout: 0.3.0
     responseFormat: 1.0.1
     retries: 3.0.2
-    sdkHooks: 1.0.1
+    sdkHooks: 1.1.0
 generatedFiles:
   - .devcontainer/README.md
   - .devcontainer/devcontainer.json
@@ -104,6 +106,7 @@ generatedFiles:
   - src/acuvity/types/basemodel.py
   - src/acuvity/utils/__init__.py
   - src/acuvity/utils/annotations.py
+  - src/acuvity/utils/datetimes.py
   - src/acuvity/utils/enums.py
   - src/acuvity/utils/eventstreaming.py
   - src/acuvity/utils/forms.py
@@ -122,7 +125,7 @@ examples:
     speakeasy-default-get-all-analyzers:
       responses:
         "200":
-          application/json: [{}, {}]
+          application/json: [{"detectionMatchers": [[{}]]}]
         "400":
           application/json: {}
         "500":
@@ -133,10 +136,10 @@ examples:
         application/json: {"analyzers": ["Malcontents"], "annotations": {"key1": "value1", "key2": "value2"}, "anonymization": "FixedSize", "bypassHash": "6f37d752-bce1-4973-88f6-28b6c100ceb8", "keywords": ["legal", "technical", "scientific"], "messages": ["Summarize the main points of this article in bullet points.", "Generate a list of creative product names for a futuristic tech gadget."], "redactions": ["person", "ssn", "location"]}
       responses:
         "200":
-          application/json: {"alerts": [{"alertDefinition": "warning-notification", "principal": {"app": {"component": "frontend", "labels": ["country=us", "another-label"], "name": "MyApp"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}}], "client": "curl", "clientVersion": "7.64.1", "extractions": [{"PIIs": {"ssn": 0.8}, "categories": [{"group": "image", "type": "png"}, {"group": "image", "type": "png"}], "confidentiality": 0.9, "customDataTypes": {"my_cdt": 1}, "exploits": {"prompt_injection": 0.8}, "intent": {"write": 0.8}, "keywords": {"my_keywork": 0.8}, "languages": {"english": 0.8}, "malcontents": {"toxic": 0.8}, "modalities": [{"group": "image", "type": "png"}, {"group": "image", "type": "png"}], "relevance": 0.9, "secrets": {"credentials": 0.7}, "topics": {"category/enterprise": 0.7, "department/logistics": 0.8, "depict/document": 0.8, "extracted/typed_text_content": 1, "timeframe/current_year": 0.6}}], "principal": {"app": {"component": "frontend", "labels": ["country=us", "another-label"], "name": "MyApp"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}, "provider": "openai"}
+          application/json: {"alerts": [{"alertDefinition": "warning-notification", "principal": {"app": {"component": "frontend", "labels": ["country=us", "another-label"], "name": "MyApp"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}}], "client": "curl", "clientVersion": "7.64.1", "extractions": [{"PIIs": {"ssn": 0.8}, "categories": [{"group": "image", "type": "png"}], "confidentiality": 0.9, "customDataTypes": {"my_cdt": 1}, "exploits": {"prompt_injection": 0.8}, "intent": {"write": 0.8}, "keywords": {"my_keywork": 0.8}, "languages": {"english": 0.8}, "malcontents": {"toxic": 0.8}, "modalities": [{"group": "image", "type": "png"}], "relevance": 0.9, "secrets": {"credentials": 0.7}, "topics": {"category/enterprise": 0.7, "department/logistics": 0.8, "depict/document": 0.8, "extracted/typed_text_content": 1, "timeframe/current_year": 0.6}}], "principal": {"app": {"component": "frontend", "labels": ["country=us", "another-label"], "name": "MyApp"}, "team": "admins", "tokenName": "my-user-token", "type": "User", "user": {"name": "user@company.com"}}, "provider": "openai"}
         "400":
           application/json: {}
         "500":
           application/json: {}
-examplesVersion: 1.0.0
+examplesVersion: 1.0.2
 generatedTests: {}
