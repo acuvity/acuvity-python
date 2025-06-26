@@ -10,10 +10,14 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 class ExtractionsummaryTypedDict(TypedDict):
     r"""Represents the summary of the extractions."""
 
-    pi_is: NotRequired[Dict[str, Any]]
-    r"""The PIIs found during classification."""
     categories: NotRequired[Dict[str, Any]]
     r"""The categories are remapping of the modalities in a more human friendly way."""
+    confidence_levels: NotRequired[Dict[str, Any]]
+    r"""The detected confidence levels."""
+    data_sets: NotRequired[Dict[str, Any]]
+    r"""The detected datasets."""
+    data_types: NotRequired[Dict[str, Any]]
+    r"""The detected dataTypes."""
     exploits: NotRequired[Dict[str, Any]]
     r"""The various exploits attempts."""
     intent: NotRequired[Dict[str, Any]]
@@ -26,8 +30,6 @@ class ExtractionsummaryTypedDict(TypedDict):
     r"""The various malcontents attempts."""
     modalities: NotRequired[Dict[str, Any]]
     r"""The modalities of data detected in the data."""
-    secrets: NotRequired[Dict[str, Any]]
-    r"""The secrets found during classification."""
     topics: NotRequired[Dict[str, Any]]
     r"""The topic of the classification."""
 
@@ -35,11 +37,23 @@ class ExtractionsummaryTypedDict(TypedDict):
 class Extractionsummary(BaseModel):
     r"""Represents the summary of the extractions."""
 
-    pi_is: Annotated[Optional[Dict[str, Any]], pydantic.Field(alias="PIIs")] = None
-    r"""The PIIs found during classification."""
-
     categories: Optional[Dict[str, Any]] = None
     r"""The categories are remapping of the modalities in a more human friendly way."""
+
+    confidence_levels: Annotated[
+        Optional[Dict[str, Any]], pydantic.Field(alias="confidenceLevels")
+    ] = None
+    r"""The detected confidence levels."""
+
+    data_sets: Annotated[Optional[Dict[str, Any]], pydantic.Field(alias="dataSets")] = (
+        None
+    )
+    r"""The detected datasets."""
+
+    data_types: Annotated[
+        Optional[Dict[str, Any]], pydantic.Field(alias="dataTypes")
+    ] = None
+    r"""The detected dataTypes."""
 
     exploits: Optional[Dict[str, Any]] = None
     r"""The various exploits attempts."""
@@ -58,9 +72,6 @@ class Extractionsummary(BaseModel):
 
     modalities: Optional[Dict[str, Any]] = None
     r"""The modalities of data detected in the data."""
-
-    secrets: Optional[Dict[str, Any]] = None
-    r"""The secrets found during classification."""
 
     topics: Optional[Dict[str, Any]] = None
     r"""The topic of the classification."""

@@ -3,6 +3,8 @@
 from __future__ import annotations
 from .modality import Modality, ModalityTypedDict
 from .textualdetection import Textualdetection, TextualdetectionTypedDict
+from .toolresult import Toolresult, ToolresultTypedDict
+from .tooluse import Tooluse, TooluseTypedDict
 from acuvity.types import BaseModel
 import pydantic
 from typing import Dict, List, Optional
@@ -48,6 +50,8 @@ class ExtractionTypedDict(TypedDict):
     """
     data: NotRequired[str]
     r"""The data extracted."""
+    data_sets: NotRequired[Dict[str, Dict[str, float]]]
+    r"""The data sets found during classification."""
     detections: NotRequired[List[TextualdetectionTypedDict]]
     r"""The textual detections found while applying policies."""
     exploits: NotRequired[Dict[str, float]]
@@ -176,6 +180,10 @@ class ExtractionTypedDict(TypedDict):
     - confidence: 'medium', 0.33 <= score < 0.66
     - confidence: 'high', 0.66 <= score <= 1.
     """
+    tool_results: NotRequired[List[ToolresultTypedDict]]
+    r"""Tool call results which are passed in to this request."""
+    tool_uses: NotRequired[List[TooluseTypedDict]]
+    r"""Tool uses as requested by a model."""
     topics: NotRequired[Dict[str, float]]
     r"""The topic of the classification.
 
@@ -266,6 +274,11 @@ class Extraction(BaseModel):
 
     data: Optional[str] = None
     r"""The data extracted."""
+
+    data_sets: Annotated[
+        Optional[Dict[str, Dict[str, float]]], pydantic.Field(alias="dataSets")
+    ] = None
+    r"""The data sets found during classification."""
 
     detections: Optional[List[Textualdetection]] = None
     r"""The textual detections found while applying policies."""
@@ -408,6 +421,16 @@ class Extraction(BaseModel):
     - confidence: 'medium', 0.33 <= score < 0.66
     - confidence: 'high', 0.66 <= score <= 1.
     """
+
+    tool_results: Annotated[
+        Optional[List[Toolresult]], pydantic.Field(alias="toolResults")
+    ] = None
+    r"""Tool call results which are passed in to this request."""
+
+    tool_uses: Annotated[Optional[List[Tooluse]], pydantic.Field(alias="toolUses")] = (
+        None
+    )
+    r"""Tool uses as requested by a model."""
 
     topics: Optional[Dict[str, float]] = None
     r"""The topic of the classification.
