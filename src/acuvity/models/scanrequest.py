@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from .extractionrequest import Extractionrequest, ExtractionrequestTypedDict
+from .tool import Tool, ToolTypedDict
 from acuvity.types import BaseModel
 from enum import Enum
 import pydantic
@@ -87,8 +88,12 @@ class ScanrequestTypedDict(TypedDict):
     """
     minimal_logging: NotRequired[bool]
     r"""If true, the system will not log the contents that were scanned."""
+    model: NotRequired[str]
+    r"""The model used by the request."""
     redactions: NotRequired[List[str]]
     r"""The redactions to perform if they are detected."""
+    tools: NotRequired[Dict[str, ToolTypedDict]]
+    r"""The various tools used by the request."""
     type: NotRequired[Type]
     r"""The type of text."""
 
@@ -171,8 +176,14 @@ class Scanrequest(BaseModel):
     ] = None
     r"""If true, the system will not log the contents that were scanned."""
 
+    model: Optional[str] = None
+    r"""The model used by the request."""
+
     redactions: Optional[List[str]] = None
     r"""The redactions to perform if they are detected."""
+
+    tools: Optional[Dict[str, Tool]] = None
+    r"""The various tools used by the request."""
 
     type: Optional[Type] = None
     r"""The type of text."""

@@ -5,7 +5,11 @@ from .alertevent import Alertevent, AlerteventTypedDict
 from .extraction import Extraction, ExtractionTypedDict
 from .extractionsummary import Extractionsummary, ExtractionsummaryTypedDict
 from .latency import Latency, LatencyTypedDict
+from .mcpmessage import Mcpmessage, McpmessageTypedDict
 from .principal import Principal, PrincipalTypedDict
+from .tool import Tool, ToolTypedDict
+from .toolchoice import Toolchoice, ToolchoiceTypedDict
+from .traceref import Traceref, TracerefTypedDict
 from acuvity.types import BaseModel
 from datetime import datetime
 from enum import Enum
@@ -55,18 +59,28 @@ class ScanresponseTypedDict(TypedDict):
     r"""The hash of the input."""
     latency: NotRequired[LatencyTypedDict]
     r"""Holds information about latencies introduced by Apex."""
+    mcp_message: NotRequired[McpmessageTypedDict]
+    r"""Represents MCP message details."""
+    model: NotRequired[str]
+    r"""The model used by the request."""
     namespace: NotRequired[str]
     r"""The namespace of the object."""
     pipeline_name: NotRequired[str]
     r"""The name of the particular pipeline that extracted the text."""
     provider: NotRequired[str]
-    r"""the provider to use."""
+    r"""The provider to use."""
     reasons: NotRequired[List[str]]
     r"""The various reasons returned by the policy engine."""
     summary: NotRequired[ExtractionsummaryTypedDict]
     r"""Represents the summary of the extractions."""
     time: NotRequired[datetime]
     r"""Set the time of the message request."""
+    tool_choice: NotRequired[ToolchoiceTypedDict]
+    r"""Represents the tool choice that can be passed along together with tools."""
+    tools: NotRequired[Dict[str, ToolTypedDict]]
+    r"""The various tools used by the request."""
+    trace: NotRequired[TracerefTypedDict]
+    r"""Holds all references to a trace which are also the essentials of the span data."""
     type: NotRequired[ScanresponseType]
     r"""The type of text."""
 
@@ -106,6 +120,14 @@ class Scanresponse(BaseModel):
     latency: Optional[Latency] = None
     r"""Holds information about latencies introduced by Apex."""
 
+    mcp_message: Annotated[Optional[Mcpmessage], pydantic.Field(alias="mcpMessage")] = (
+        None
+    )
+    r"""Represents MCP message details."""
+
+    model: Optional[str] = None
+    r"""The model used by the request."""
+
     namespace: Optional[str] = None
     r"""The namespace of the object."""
 
@@ -113,7 +135,7 @@ class Scanresponse(BaseModel):
     r"""The name of the particular pipeline that extracted the text."""
 
     provider: Optional[str] = None
-    r"""the provider to use."""
+    r"""The provider to use."""
 
     reasons: Optional[List[str]] = None
     r"""The various reasons returned by the policy engine."""
@@ -123,6 +145,17 @@ class Scanresponse(BaseModel):
 
     time: Optional[datetime] = None
     r"""Set the time of the message request."""
+
+    tool_choice: Annotated[Optional[Toolchoice], pydantic.Field(alias="toolChoice")] = (
+        None
+    )
+    r"""Represents the tool choice that can be passed along together with tools."""
+
+    tools: Optional[Dict[str, Tool]] = None
+    r"""The various tools used by the request."""
+
+    trace: Optional[Traceref] = None
+    r"""Holds all references to a trace which are also the essentials of the span data."""
 
     type: Optional[ScanresponseType] = None
     r"""The type of text."""

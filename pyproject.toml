@@ -1,6 +1,6 @@
 [project]
 name = "acuvity"
-version = "0.6.2"
+version = "0.7.0"
 description = "Acuvity Python SDK"
 authors = [{ name = "Acuvity, Inc." },]
 readme = "README-PYPI.md"
@@ -31,6 +31,7 @@ in-project = true
 
 [tool.poetry.group.dev.dependencies]
 mypy = "==1.14.1"
+openai-agents = "^0.0.4"
 pylint = "==3.2.3"
 types-PyYAML = "^6.0.12"
 types-python-dateutil = "^2.9.0.20240316"

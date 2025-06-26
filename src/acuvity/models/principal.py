@@ -27,6 +27,7 @@ class PrincipalType(str, Enum):
 
     USER = "User"
     APP = "App"
+    EXTERNAL = "External"
 
 
 class PrincipalTypedDict(TypedDict):
@@ -34,14 +35,16 @@ class PrincipalTypedDict(TypedDict):
 
     type: PrincipalType
     r"""The type of principal."""
+    ip: NotRequired[str]
+    r"""The source IP address of the request."""
     app: NotRequired[PrincipalappTypedDict]
     r"""Describes the principal information of an application."""
     auth_type: NotRequired[AuthType]
     r"""The type of authentication."""
     claims: NotRequired[List[str]]
     r"""List of claims extracted from the user query."""
-    team: NotRequired[str]
-    r"""The team that was used to authorize the request."""
+    teams: NotRequired[List[str]]
+    r"""The teams that were used to authorize the request."""
     token_name: NotRequired[str]
     r"""The name of the token, if any."""
     user: NotRequired[PrincipaluserTypedDict]
@@ -54,6 +57,9 @@ class Principal(BaseModel):
     type: PrincipalType
     r"""The type of principal."""
 
+    ip: Annotated[Optional[str], pydantic.Field(alias="IP")] = None
+    r"""The source IP address of the request."""
+
     app: Optional[Principalapp] = None
     r"""Describes the principal information of an application."""
 
@@ -63,8 +69,8 @@ class Principal(BaseModel):
     claims: Optional[List[str]] = None
     r"""List of claims extracted from the user query."""
 
-    team: Optional[str] = None
-    r"""The team that was used to authorize the request."""
+    teams: Optional[List[str]] = None
+    r"""The teams that were used to authorize the request."""
 
     token_name: Annotated[Optional[str], pydantic.Field(alias="tokenName")] = None
     r"""The name of the token, if any."""
