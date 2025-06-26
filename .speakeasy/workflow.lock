@@ -1,11 +1,12 @@
-speakeasyVersion: 1.520.0
+speakeasyVersion: 1.570.0
 sources:
     Acuvity-OAS:
         sourceNamespace: acuvity-oas
-        sourceRevisionDigest: sha256:1d4881b62de4b97f0eab2eb56a9ad4f8cadf70ffccd48f13f28a332236ecf87c
+        sourceRevisionDigest: sha256:a244d3ae6c713bf083d5a6ad50f30ed3bc0f0082cca04d13ed12ad809ac5cd4e
         sourceBlobDigest: sha256:bf90601d8f53ec558afad1bf6455e0dd5f884355b7dc3dd54a10c46be12f50ce
         tags:
             - latest
+            - speakeasy-sdk-regen-1750811450
             - "1.0"
 targets:
     golang:
@@ -18,10 +19,10 @@ targets:
     python:
         source: Acuvity-OAS
         sourceNamespace: acuvity-oas
-        sourceRevisionDigest: sha256:1d4881b62de4b97f0eab2eb56a9ad4f8cadf70ffccd48f13f28a332236ecf87c
+        sourceRevisionDigest: sha256:a244d3ae6c713bf083d5a6ad50f30ed3bc0f0082cca04d13ed12ad809ac5cd4e
         sourceBlobDigest: sha256:bf90601d8f53ec558afad1bf6455e0dd5f884355b7dc3dd54a10c46be12f50ce
         codeSamplesNamespace: acuvity-oas-python-code-samples
-        codeSamplesRevisionDigest: sha256:a24614ad4adbe99bcba5f8d6079939e2138bfef83d9aae9adc8920e0cee40660
+        codeSamplesRevisionDigest: sha256:619c0a031b5acae2d8046393587bc1276eaa6020921f9233099e2d1af3b74b31
     typescript:
         source: Acuvity-OAS
         sourceNamespace: acuvity-oas
