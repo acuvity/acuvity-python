@@ -15,9 +15,13 @@ from .extraction import Extraction, ExtractionTypedDict
 from .extractionrequest import Extractionrequest, ExtractionrequestTypedDict
 from .extractionsummary import Extractionsummary, ExtractionsummaryTypedDict
 from .latency import Latency, LatencyTypedDict
+from .mcpmessage import Direction, Mcpmessage, McpmessageType, McpmessageTypedDict
+from .mcpserver import Mcpserver, McpserverTypedDict
+from .mcptoolannotations import Mcptoolannotations, McptoolannotationsTypedDict
 from .modality import Modality, ModalityTypedDict
 from .principal import AuthType, Principal, PrincipalType, PrincipalTypedDict
 from .principalapp import Principalapp, PrincipalappTypedDict
+from .principalappuser import Principalappuser, PrincipalappuserTypedDict
 from .principaluser import Principaluser, PrincipaluserTypedDict
 from .scanrequest import Anonymization, Scanrequest, ScanrequestTypedDict, Type
 from .scanresponse import (
@@ -32,6 +36,11 @@ from .textualdetection import (
     TextualdetectionType,
     TextualdetectionTypedDict,
 )
+from .tool import Category, Tool, ToolTypedDict
+from .toolchoice import Choice, Toolchoice, ToolchoiceTypedDict
+from .toolresult import Toolresult, ToolresultTypedDict
+from .tooluse import Tooluse, TooluseTypedDict
+from .traceref import Kind, StatusCode, Traceref, TracerefTypedDict
 
 
 __all__ = [
@@ -44,6 +53,8 @@ __all__ = [
     "AnalyzermodelTypedDict",
     "Anonymization",
     "AuthType",
+    "Category",
+    "Choice",
     "Data",
     "DataTypedDict",
     "Decision",
@@ -51,6 +62,7 @@ __all__ = [
     "DetectionMatchersTypedDict",
     "Detector",
     "DetectorTypedDict",
+    "Direction",
     "Elementalerror",
     "ElementalerrorData",
     "Extraction",
@@ -59,8 +71,16 @@ __all__ = [
     "ExtractionrequestTypedDict",
     "Extractionsummary",
     "ExtractionsummaryTypedDict",
+    "Kind",
     "Latency",
     "LatencyTypedDict",
+    "Mcpmessage",
+    "McpmessageType",
+    "McpmessageTypedDict",
+    "Mcpserver",
+    "McpserverTypedDict",
+    "Mcptoolannotations",
+    "McptoolannotationsTypedDict",
     "Modality",
     "ModalityTypedDict",
     "Principal",
@@ -68,6 +88,8 @@ __all__ = [
     "PrincipalTypedDict",
     "Principalapp",
     "PrincipalappTypedDict",
+    "Principalappuser",
+    "PrincipalappuserTypedDict",
     "Principaluser",
     "PrincipaluserTypedDict",
     "Scanrequest",
@@ -77,8 +99,19 @@ __all__ = [
     "ScanresponseTypedDict",
     "Security",
     "SecurityTypedDict",
+    "StatusCode",
     "Textualdetection",
     "TextualdetectionType",
     "TextualdetectionTypedDict",
+    "Tool",
+    "ToolTypedDict",
+    "Toolchoice",
+    "ToolchoiceTypedDict",
+    "Toolresult",
+    "ToolresultTypedDict",
+    "Tooluse",
+    "TooluseTypedDict",
+    "Traceref",
+    "TracerefTypedDict",
     "Type",
 ]

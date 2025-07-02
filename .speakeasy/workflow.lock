@@ -14,7 +14,7 @@ targets:
         sourceRevisionDigest: sha256:aeb3878ee1c156e2a76f6175ceec87c5546f6653cc02a81ccdeef7e0efb35885
         sourceBlobDigest: sha256:bf90601d8f53ec558afad1bf6455e0dd5f884355b7dc3dd54a10c46be12f50ce
         codeSamplesNamespace: acuvity-oas-python-code-samples
-        codeSamplesRevisionDigest: sha256:0b0e7c846d89085ee8d17cd81be0ff7e15885eadc07823ee1dfaf6bac033597b
+        codeSamplesRevisionDigest: sha256:5a8f400d6d4204a0a22b4bd3ea087916c37b0df8b468720ff2ac631faa770270
     typescript:
         source: Acuvity-OAS
         sourceNamespace: acuvity-oas
@@ -28,7 +28,7 @@ workflow:
     sources:
         Acuvity-OAS:
             inputs:
-                - location: ./apex-openapi.yaml
+                - location: https://api.acuvity.dev/apex/v1/openapi.json?extensions=true
             registry:
                 location: registry.speakeasyapi.dev/acuvity/acuvity/acuvity-oas
     targets:
