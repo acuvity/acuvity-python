@@ -5,8 +5,10 @@ management:
   docVersion: "1.0"
   speakeasyVersion: 1.520.0
   generationVersion: 2.555.1
-  releaseVersion: 0.7.0
-  configChecksum: 94c81440c6fa95dbbaa6e68747568d78
+  releaseVersion: 0.7.1
+  configChecksum: 7b72055f58a380dac0b4550062033baf
+  repoURL: https://github.com/acuvity/acuvity-python.git
+  installationURL: https://github.com/acuvity/acuvity-python.git
   published: true
 features:
   python:
