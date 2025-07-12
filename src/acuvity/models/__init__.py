@@ -21,7 +21,7 @@ from .mcptoolannotations import Mcptoolannotations, McptoolannotationsTypedDict
 from .modality import Modality, ModalityTypedDict
 from .principal import AuthType, Principal, PrincipalType, PrincipalTypedDict
 from .principalapp import Principalapp, PrincipalappTypedDict
-from .principalappuser import Principalappuser, PrincipalappuserTypedDict
+from .principalexternal import Principalexternal, PrincipalexternalTypedDict
 from .principaluser import Principaluser, PrincipaluserTypedDict
 from .scanrequest import Anonymization, Scanrequest, ScanrequestTypedDict, Type
 from .scanresponse import (
@@ -88,8 +88,8 @@ __all__ = [
     "PrincipalTypedDict",
     "Principalapp",
     "PrincipalappTypedDict",
-    "Principalappuser",
-    "PrincipalappuserTypedDict",
+    "Principalexternal",
+    "PrincipalexternalTypedDict",
     "Principaluser",
     "PrincipaluserTypedDict",
     "Scanrequest",
