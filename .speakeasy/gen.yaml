@@ -7,6 +7,7 @@ generation:
   maintainOpenAPIOrder: true
   usageSnippets:
     optionalPropertyRendering: withExample
+    sdkInitStyle: constructor
   useClassNamesForArrayFields: true
   fixes:
     nameResolutionDec2023: true
@@ -14,9 +15,14 @@ generation:
     parameterOrderingFeb2024: true
     requestResponseComponentNamesFeb2024: true
     securityFeb2025: false
+    sharedErrorComponentsApr2025: false
   auth:
     oAuth2ClientCredentialsEnabled: true
     oAuth2PasswordEnabled: true
+  tests:
+    generateTests: true
+    generateNewTests: false
+    skipResponseBodyAssertions: false
 python:
   version: 0.7.0
   additionalDependencies:
@@ -28,6 +34,7 @@ python:
       pyjwt: ^2.9.0
   authors:
     - Acuvity, Inc.
+  baseErrorName: AcuvityError
   clientServerStatusCodesAsErrors: true
   defaultErrorName: APIError
   description: Acuvity Python SDK
@@ -52,8 +59,10 @@ python:
   inputModelSuffix: input
   maxMethodParams: 20
   methodArguments: infer-optional-args
+  moduleName: ""
   outputModelSuffix: output
   packageName: acuvity
+  pytestFilterWarnings: []
   pytestTimeout: 0
   responseFormat: flat
   templateVersion: v2

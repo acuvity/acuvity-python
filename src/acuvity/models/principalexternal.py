@@ -7,15 +7,9 @@ from typing import List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class PrincipalappTypedDict(TypedDict):
-    r"""Describes the principal information of an application."""
+class PrincipalexternalTypedDict(TypedDict):
+    r"""Describes the principal information of an external request."""
 
-    component: NotRequired[str]
-    r"""The component of the application request."""
-    labels: NotRequired[List[str]]
-    r"""The list of labels attached to an application request."""
-    name: NotRequired[str]
-    r"""The name of the application."""
     user_claims: NotRequired[List[str]]
     r"""The optional user claims of the request. This can be an incomplete list, and
     claims can be mapped to different keys.
@@ -24,17 +18,8 @@ class PrincipalappTypedDict(TypedDict):
     r"""The optional username of the request."""
 
 
-class Principalapp(BaseModel):
-    r"""Describes the principal information of an application."""
-
-    component: Optional[str] = None
-    r"""The component of the application request."""
-
-    labels: Optional[List[str]] = None
-    r"""The list of labels attached to an application request."""
-
-    name: Optional[str] = None
-    r"""The name of the application."""
+class Principalexternal(BaseModel):
+    r"""Describes the principal information of an external request."""
 
     user_claims: Annotated[Optional[List[str]], pydantic.Field(alias="userClaims")] = (
         None

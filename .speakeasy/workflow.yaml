@@ -1,7 +1,5 @@
 workflowVersion: 1.0.0
-# TODO: latest Speakeasy versions are breaking our code integration
-# We need to adjust this before we can update the Speakeasy version again
-speakeasyVersion: 1.520.0
+speakeasyVersion: latest
 sources:
     Acuvity-OAS:
         inputs:

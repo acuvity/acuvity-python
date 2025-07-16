@@ -379,27 +379,18 @@ with Acuvity(
 <!-- Start Error Handling [errors] -->
 ## Error Handling
 
-Handling errors in this SDK should largely match your expectations. All operations return a response object or raise an exception.
+[`AcuvityError`](./src/acuvity/models/acuvityerror.py) is the base class for all HTTP error responses. It has the following properties:
 
-By default, an API error will raise a models.APIError exception, which has the following properties:
-
-| Property        | Type             | Description           |
-|-----------------|------------------|-----------------------|
-| `.status_code`  | *int*            | The HTTP status code  |
-| `.message`      | *str*            | The error message     |
-| `.raw_response` | *httpx.Response* | The raw HTTP response |
-| `.body`         | *str*            | The response content  |
-
-When custom error responses are specified for an operation, the SDK may also raise their associated exceptions. You can refer to respective *Errors* tables in SDK docs for more details on possible exception types for each operation. For example, the `list_analyzers_async` method may raise the following exceptions:
-
-| Error Type            | Status Code | Content Type     |
-| --------------------- | ----------- | ---------------- |
-| models.Elementalerror | 400, 401    | application/json |
-| models.Elementalerror | 500         | application/json |
-| models.APIError       | 4XX, 5XX    | \*/\*            |
+| Property           | Type             | Description                                                                             |
+| ------------------ | ---------------- | --------------------------------------------------------------------------------------- |
+| `err.message`      | `str`            | Error message                                                                           |
+| `err.status_code`  | `int`            | HTTP response status code eg `404`                                                      |
+| `err.headers`      | `httpx.Headers`  | HTTP response headers                                                                   |
+| `err.body`         | `str`            | HTTP body. Can be empty string if no body is returned.                                  |
+| `err.raw_response` | `httpx.Response` | Raw HTTP response                                                                       |
+| `err.data`         |                  | Optional. Some errors may contain structured data. [See Error Classes](#error-classes). |
 
 ### Example
-
 ```python
 import acuvity
 from acuvity import Acuvity, models
@@ -419,16 +410,43 @@ with Acuvity(
         # Handle response
         print(res)
 
-    except models.Elementalerror as e:
-        # handle e.data: models.ElementalerrorData
-        raise(e)
-    except models.Elementalerror as e:
-        # handle e.data: models.ElementalerrorData
-        raise(e)
-    except models.APIError as e:
-        # handle exception
-        raise(e)
+
+    except models.AcuvityError as e:
+        # The base class for HTTP error responses
+        print(e.message)
+        print(e.status_code)
+        print(e.body)
+        print(e.headers)
+        print(e.raw_response)
+
+        # Depending on the method different errors may be thrown
+        if isinstance(e, models.Elementalerror):
+            print(e.data.code)  # Optional[int]
+            print(e.data.data)  # Optional[acuvity.Data]
+            print(e.data.description)  # Optional[str]
+            print(e.data.subject)  # Optional[str]
+            print(e.data.title)  # Optional[str]
 ```
+
+### Error Classes
+**Primary errors:**
+* [`AcuvityError`](./src/acuvity/models/acuvityerror.py): The base class for HTTP error responses.
+  * [`Elementalerror`](./src/acuvity/models/elementalerror.py): Generic error.
+
+<details><summary>Less common errors (5)</summary>
+
+<br />
+
+**Network errors:**
+* [`httpx.RequestError`](https://www.python-httpx.org/exceptions/#httpx.RequestError): Base class for request errors.
+    * [`httpx.ConnectError`](https://www.python-httpx.org/exceptions/#httpx.ConnectError): HTTP client was unable to make a request to a server.
+    * [`httpx.TimeoutException`](https://www.python-httpx.org/exceptions/#httpx.TimeoutException): HTTP request timed out.
+
+
+**Inherit from [`AcuvityError`](./src/acuvity/models/acuvityerror.py)**:
+* [`ResponseValidationError`](./src/acuvity/models/responsevalidationerror.py): Type mismatch between the response data and the expected Pydantic model. Provides access to the Pydantic validation error via the `cause` attribute.
+
+</details>
 <!-- End Error Handling [errors] -->
 
 <!-- No Server Selection [server] -->
