@@ -21,7 +21,7 @@ targets:
         sourceRevisionDigest: sha256:1d4881b62de4b97f0eab2eb56a9ad4f8cadf70ffccd48f13f28a332236ecf87c
         sourceBlobDigest: sha256:bf90601d8f53ec558afad1bf6455e0dd5f884355b7dc3dd54a10c46be12f50ce
         codeSamplesNamespace: acuvity-oas-python-code-samples
-        codeSamplesRevisionDigest: sha256:ecefd1117f2c56811a36f9d2fb4968ae2be69cf79b85a1d753e226f301ab3dde
+        codeSamplesRevisionDigest: sha256:d1e7e429e8012bcc7ebeb6132ae945e7c8ed3caef7a54ac2ba2952bff2c2f8ec
     typescript:
         source: Acuvity-OAS
         sourceNamespace: acuvity-oas
