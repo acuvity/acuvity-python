@@ -13,9 +13,7 @@ from .httpclient import HttpClient
 def discover_apex(
     client: HttpClient,
     server_url: Optional[str] = None,
-    security: Optional[
-        Union[models.Security, Callable[[], models.Security]]
-    ] = None,
+    security: Optional[Union[models.Security, Callable[[], models.Security]]] = None,
     apex_domain: Optional[str] = None,
     apex_port: Optional[str] = None,
 ) -> Tuple[Optional[str], Optional[str]]:
@@ -30,10 +28,16 @@ def discover_apex(
     token: str = ""
     sec: Optional[BaseModel] = get_security_from_env(security, models.Security)
     if sec is None:
-        raise ValueError("No security object provided, or ACUVITY_TOKEN environment variable is not set or empty")
+        raise ValueError(
+            "No security object provided, or ACUVITY_TOKEN environment variable is not set or empty"
+        )
     if not isinstance(sec, models.Security):
         raise ValueError("Security object is not of type Security")
-    token = sec.token if sec.token is not None else sec.cookie if sec.cookie is not None else ""
+    token = (
+        sec.token
+        if sec.token is not None
+        else sec.cookie if sec.cookie is not None else ""
+    )
     if token == "":
         raise ValueError("No token provided")
 
@@ -78,7 +82,9 @@ def discover_apex(
             if domain is None or domain == "":
                 raise ValueError(f"JWT Apex URL has no domain: {token_apex_url}")
             if port is None or port == "":
-                raise ValueError(f"JWT Apex URL has no port or wrong scheme: {token_apex_url}")
+                raise ValueError(
+                    f"JWT Apex URL has no port or wrong scheme: {token_apex_url}"
+                )
             return domain, port
 
         # we're assuming this must be a domain without a scheme
@@ -87,24 +93,39 @@ def discover_apex(
     # otherwise we extract the API URL from the token
     api_url = decoded_token["iss"]
     if api_url == "":
-        raise ValueError("'iss' field value of token is empty, but should have been the API URL")
+        raise ValueError(
+            "'iss' field value of token is empty, but should have been the API URL"
+        )
 
-    def well_known_apex_info(client: HttpClient, token: str, url: str, iteration: int = 0) -> Any:
+    def well_known_apex_info(
+        client: HttpClient, token: str, url: str, iteration: int = 0
+    ) -> Any:
         if iteration == 3:
             raise ValueError("Too many redirects")
-        req = client.build_request("GET", url, headers={"Authorization": f"Bearer {token}"})
-        resp = client.send(req, follow_redirects=False) # following redirects automatically will remove the token from the call as headers are not going to be sent anymore
+        req = client.build_request(
+            "GET", url, headers={"Authorization": f"Bearer {token}"}
+        )
+        resp = client.send(
+            req, follow_redirects=False
+        )  # following redirects automatically will remove the token from the call as headers are not going to be sent anymore
 
         if resp.status_code == 401:
             raise ValueError("Unauthorized: Invalid token or insufficient permissions")
 
         if resp.is_redirect:
-            return well_known_apex_info(client, token, resp.headers["Location"], iteration + 1)
+            return well_known_apex_info(
+                client, token, resp.headers["Location"], iteration + 1
+            )
         return resp.json()
+
     try:
-        apex_info = well_known_apex_info(client, token, f"{api_url}/.well-known/acuvity/my-apex.json")
+        apex_info = well_known_apex_info(
+            client, token, f"{api_url}/.well-known/acuvity/my-apex.json"
+        )
     except Exception as e:
-        raise ValueError(f"Failed to get apex info from well-known endpoint: {str(e)}") from e
+        raise ValueError(
+            f"Failed to get apex info from well-known endpoint: {str(e)}"
+        ) from e
 
     try:
         # extract the information from the response
