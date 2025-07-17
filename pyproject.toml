@@ -1,6 +1,6 @@
 [project]
 name = "acuvity"
-version = "0.7.0"
+version = "0.7.1"
 description = "Acuvity Python SDK"
 authors = [{ name = "Acuvity, Inc." },]
 readme = "README.md"
