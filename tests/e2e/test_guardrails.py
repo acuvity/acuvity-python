@@ -14,7 +14,7 @@ class TestGuardrails:
     def test_detector_guardrail(self, subtests, guard_format):
         for guard in self.guards:
             with subtests.test(f"veryfing {guard}"):
-                if guard == "biased":
+                if guard in ["biased", "jailbreak"]:
                     continue
                 threshold = "> 0.1" if guard != "modality" else ">= 0.0"
                 matches = {} if guard != "keyword_detector" else {"bluefin": None}

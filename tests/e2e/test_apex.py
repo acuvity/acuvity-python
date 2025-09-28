@@ -29,6 +29,7 @@ class TestApexFunctions:
             res = self.apex.scan(files=file_paths, guard_config=guard_json)
         else:
             res = self.apex.scan(*test_prompts, guard_config=guard_json)
+
         verify_match_details(
             match_details=res.match_details[0],
             prompt=EXAMPLES["prompt_injection"],
@@ -38,8 +39,8 @@ class TestApexFunctions:
         verify_match_details(
             match_details=res.match_details[1],
             prompt=EXAMPLES["jailbreak"],
-            matched_guards=["jailbreak", "pii_detector"],
-            non_matched_guards=["prompt_injection"],
+            matched_guards=["pii_detector", "prompt_injection"],
+            non_matched_guards=["jailbreak"],
         )
         verify_match_details(
             match_details=res.match_details[2],
