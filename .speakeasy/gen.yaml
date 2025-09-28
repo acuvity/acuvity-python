@@ -7,6 +7,7 @@ generation:
   maintainOpenAPIOrder: true
   usageSnippets:
     optionalPropertyRendering: withExample
+    sdkInitStyle: constructor
   useClassNamesForArrayFields: true
   fixes:
     nameResolutionDec2023: true
@@ -14,11 +15,17 @@ generation:
     parameterOrderingFeb2024: true
     requestResponseComponentNamesFeb2024: true
     securityFeb2025: false
+    sharedErrorComponentsApr2025: false
   auth:
     oAuth2ClientCredentialsEnabled: true
     oAuth2PasswordEnabled: true
+    hoistGlobalSecurity: true
+  tests:
+    generateTests: true
+    generateNewTests: false
+    skipResponseBodyAssertions: false
 python:
-  version: 0.7.0
+  version: 0.8.0
   additionalDependencies:
     dev:
       openai-agents: ^0.0.4
@@ -26,8 +33,13 @@ python:
     main:
       PyYAML: ^6.0.2
       pyjwt: ^2.9.0
+  allowedRedefinedBuiltins:
+    - id
+    - object
+  asyncMode: both
   authors:
     - Acuvity, Inc.
+  baseErrorName: AcuvityError
   clientServerStatusCodesAsErrors: true
   defaultErrorName: APIError
   description: Acuvity Python SDK
@@ -50,10 +62,15 @@ python:
       shared: ""
       webhooks: ""
   inputModelSuffix: input
+  legacyPyright: true
   maxMethodParams: 20
   methodArguments: infer-optional-args
+  moduleName: ""
   outputModelSuffix: output
+  packageManager: poetry
   packageName: acuvity
+  pytestFilterWarnings: []
   pytestTimeout: 0
   responseFormat: flat
+  sseFlatResponse: false
   templateVersion: v2
