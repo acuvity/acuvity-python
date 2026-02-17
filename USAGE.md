@@ -30,6 +30,8 @@ with Acuvity(
                 "tool_results": [
                     {
                         "call_id": "toolu_019X5QaEeVTDFrQPHqMMgd1n",
+                        "name": "fetch",
+                        "server_name": "my-mcp-server",
                     },
                 ],
                 "tool_uses": [
@@ -1249,6 +1251,8 @@ async def main():
                     "tool_results": [
                         {
                             "call_id": "toolu_019X5QaEeVTDFrQPHqMMgd1n",
+                            "name": "fetch",
+                            "server_name": "my-mcp-server",
                         },
                     ],
                     "tool_uses": [

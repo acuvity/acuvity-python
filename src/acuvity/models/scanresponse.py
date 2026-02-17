@@ -27,6 +27,7 @@ class Decision(str, Enum):
     BYPASSED = "Bypassed"
     FORBIDDEN_USER = "ForbiddenUser"
     SKIPPED = "Skipped"
+    REDIRECTED = "Redirected"
 
 
 class ScanresponseType(str, Enum):
