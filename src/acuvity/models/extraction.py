@@ -105,8 +105,8 @@ class ExtractionTypedDict(TypedDict):
     - confidence: 'high', 0.66 <= score <= 1.
     """
     label: NotRequired[str]
-    r"""A means of distinguishing what was extracted, such as prompt, input file or
-    code.
+    r"""Contains events and other information that are not actual user content, and will
+    not go through analysis.
     """
     languages: NotRequired[Dict[str, float]]
     r"""The language of the classification.
@@ -341,8 +341,8 @@ class Extraction(BaseModel):
     """
 
     label: Optional[str] = None
-    r"""A means of distinguishing what was extracted, such as prompt, input file or
-    code.
+    r"""Contains events and other information that are not actual user content, and will
+    not go through analysis.
     """
 
     languages: Optional[Dict[str, float]] = None

@@ -13,3 +13,6 @@ Tell what was the decision about the data.
 | `BYPASSED`       | Bypassed         |
 | `FORBIDDEN_USER` | ForbiddenUser    |
 | `SKIPPED`        | Skipped          |
+| `REDIRECTED`     | Redirected       |
+| `ERROR`          | Error            |
+| `UPSTREAM_ERROR` | UpstreamError    |

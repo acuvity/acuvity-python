@@ -25,8 +25,8 @@ class ExtractionrequestTypedDict(TypedDict):
     is_stored: NotRequired[bool]
     r"""If true, indicates that the file has been stored."""
     label: NotRequired[str]
-    r"""A means of distinguishing what was extracted, such as prompt, input file or
-    code.
+    r"""Contains events and other information that are not actual user content, and will
+    not go through analysis.
     """
     tool_results: NotRequired[List[ToolresultTypedDict]]
     r"""Tool call results which are passed in to this request."""
@@ -55,8 +55,8 @@ class Extractionrequest(BaseModel):
     r"""If true, indicates that the file has been stored."""
 
     label: Optional[str] = None
-    r"""A means of distinguishing what was extracted, such as prompt, input file or
-    code.
+    r"""Contains events and other information that are not actual user content, and will
+    not go through analysis.
     """
 
     tool_results: Annotated[
