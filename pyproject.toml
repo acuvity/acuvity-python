@@ -1,6 +1,6 @@
 [project]
 name = "acuvity"
-version = "0.7.0"
+version = "0.7.1"
 description = "Acuvity Python SDK"
 authors = [{ name = "Acuvity, Inc." },]
 readme = "README-PYPI.md"
@@ -17,6 +17,7 @@ dependencies = [
 
 [tool.poetry]
 homepage = "https://acuvity.ai/"
+repository = "https://github.com/acuvity/acuvity-python.git"
 documentation = "https://github.com/acuvity/acuvity-python"
 packages = [
     { include = "acuvity", from = "src" }

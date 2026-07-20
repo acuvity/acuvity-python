@@ -3,10 +3,11 @@
 from __future__ import annotations
 from .mcpserver import Mcpserver, McpserverTypedDict
 from .mcptoolannotations import Mcptoolannotations, McptoolannotationsTypedDict
+from .toolargument import Toolargument, ToolargumentTypedDict
 from acuvity.types import BaseModel
 from enum import Enum
 import pydantic
-from typing import Optional
+from typing import List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
@@ -27,6 +28,8 @@ class ToolTypedDict(TypedDict):
     r"""Represents the tool annotations as they can be optionally defined for MCP tools."""
     mcp_server: NotRequired[McpserverTypedDict]
     r"""Represents an MCP server object."""
+    arguments: NotRequired[List[ToolargumentTypedDict]]
+    r"""The input arguments accepted by this tool."""
     category: NotRequired[Category]
     r"""The category of the tool. This relays information about where the tool is being
     used. This can be empty if unknown or if this is a tool listing of MCP servers.
@@ -49,6 +52,9 @@ class Tool(BaseModel):
 
     mcp_server: Annotated[Optional[Mcpserver], pydantic.Field(alias="MCPServer")] = None
     r"""Represents an MCP server object."""
+
+    arguments: Optional[List[Toolargument]] = None
+    r"""The input arguments accepted by this tool."""
 
     category: Optional[Category] = None
     r"""The category of the tool. This relays information about where the tool is being

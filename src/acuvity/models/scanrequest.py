@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 from .extractionrequest import Extractionrequest, ExtractionrequestTypedDict
+from .requestapp import Requestapp, RequestappTypedDict
+from .requestdestination import Requestdestination, RequestdestinationTypedDict
 from .tool import Tool, ToolTypedDict
 from acuvity.types import BaseModel
 from enum import Enum
@@ -43,11 +45,11 @@ class ScanrequestTypedDict(TypedDict):
     prefix to modify its behavior:
 
     - No prefix: Runs only the specified analyzers and any dependencies required
-    for deeper analyzis (slower but more acurate).
+    for deeper analysis (slower but more acurate).
     - '+' (enable): Activates an analyzer that is disabled by default.
     - '-' (disable): Disables an analyzer that is enabled by default.
     - '@' (direct execution): Runs the analyzer immediately, bypassing the deeper
-    analyzis (faster but less acurate).
+    analysis (faster but less acurate).
 
     An analyzers entry can be specified using:
     - The analyzer name (e.g., 'Toxicity detector')
@@ -63,6 +65,13 @@ class ScanrequestTypedDict(TypedDict):
     r"""Annotations attached to the extraction."""
     anonymization: NotRequired[Anonymization]
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
+    app: NotRequired[RequestappTypedDict]
+    r"""RequestApp holds the application processing information for a request. For
+    police requests in an apps namespace, this is required when using an AppToken.
+    When using a ComponentToken, the app and component are inferred from the token
+    claims; if provided, they must match. For scan requests, this is optional and
+    enhances logging with app/component context.
+    """
     bypass_hash: NotRequired[str]
     r"""In the case of a contentPolicy that asks for a confirmation, this is the
     hash you must send back to bypass the block. This is only useful when a
@@ -78,6 +87,12 @@ class ScanrequestTypedDict(TypedDict):
     automatically.
     If the code starts with package main, then everything remains untouched.
     """
+    destination: NotRequired[RequestdestinationTypedDict]
+    r"""RequestDestination holds the destination information for a request. When app
+    and component are set, the request is evaluated against the app component's
+    policies instead of a provider. In that case, the provider field must not be
+    set.
+    """
     extractions: NotRequired[List[ExtractionrequestTypedDict]]
     r"""The extractions to request."""
     keywords: NotRequired[List[str]]
@@ -87,9 +102,16 @@ class ScanrequestTypedDict(TypedDict):
     processing binary data.
     """
     minimal_logging: NotRequired[bool]
-    r"""If true, the system will not log the contents that were scanned."""
+    r"""If true, the system will skip logging roundtrips with an Allow decision.
+    Denials, errors, and other non-Allow decisions are still logged. When
+    combined with no embedded policy, this effectively disables all logging.
+    """
     model: NotRequired[str]
     r"""The model used by the request."""
+    provider: NotRequired[str]
+    r"""The name of the provider to use for policy resolutions. Must not be set when
+    destination app and component are set.
+    """
     redactions: NotRequired[List[str]]
     r"""The redactions to perform if they are detected."""
     tools: NotRequired[Dict[str, ToolTypedDict]]
@@ -118,11 +140,11 @@ class Scanrequest(BaseModel):
     prefix to modify its behavior:
 
     - No prefix: Runs only the specified analyzers and any dependencies required
-    for deeper analyzis (slower but more acurate).
+    for deeper analysis (slower but more acurate).
     - '+' (enable): Activates an analyzer that is disabled by default.
     - '-' (disable): Disables an analyzer that is enabled by default.
     - '@' (direct execution): Runs the analyzer immediately, bypassing the deeper
-    analyzis (faster but less acurate).
+    analysis (faster but less acurate).
 
     An analyzers entry can be specified using:
     - The analyzer name (e.g., 'Toxicity detector')
@@ -140,6 +162,14 @@ class Scanrequest(BaseModel):
 
     anonymization: Optional[Anonymization] = Anonymization.FIXED_SIZE
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
+
+    app: Optional[Requestapp] = None
+    r"""RequestApp holds the application processing information for a request. For
+    police requests in an apps namespace, this is required when using an AppToken.
+    When using a ComponentToken, the app and component are inferred from the token
+    claims; if provided, they must match. For scan requests, this is optional and
+    enhances logging with app/component context.
+    """
 
     bypass_hash: Annotated[Optional[str], pydantic.Field(alias="bypassHash")] = None
     r"""In the case of a contentPolicy that asks for a confirmation, this is the
@@ -160,6 +190,13 @@ class Scanrequest(BaseModel):
     If the code starts with package main, then everything remains untouched.
     """
 
+    destination: Optional[Requestdestination] = None
+    r"""RequestDestination holds the destination information for a request. When app
+    and component are set, the request is evaluated against the app component's
+    policies instead of a provider. In that case, the provider field must not be
+    set.
+    """
+
     extractions: Optional[List[Extractionrequest]] = None
     r"""The extractions to request."""
 
@@ -174,10 +211,18 @@ class Scanrequest(BaseModel):
     minimal_logging: Annotated[
         Optional[bool], pydantic.Field(alias="minimalLogging")
     ] = None
-    r"""If true, the system will not log the contents that were scanned."""
+    r"""If true, the system will skip logging roundtrips with an Allow decision.
+    Denials, errors, and other non-Allow decisions are still logged. When
+    combined with no embedded policy, this effectively disables all logging.
+    """
 
     model: Optional[str] = None
     r"""The model used by the request."""
+
+    provider: Optional[str] = None
+    r"""The name of the provider to use for policy resolutions. Must not be set when
+    destination app and component are set.
+    """
 
     redactions: Optional[List[str]] = None
     r"""The redactions to perform if they are detected."""

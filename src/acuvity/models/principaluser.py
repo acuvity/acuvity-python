@@ -11,6 +11,8 @@ class PrincipaluserTypedDict(TypedDict):
 
     name: NotRequired[str]
     r"""Identification bit that will be used to identify the origin of the request."""
+    untrusted: NotRequired[bool]
+    r"""If true, the data is not fully trusted (eg. loose identity)."""
 
 
 class Principaluser(BaseModel):
@@ -18,3 +20,6 @@ class Principaluser(BaseModel):
 
     name: Optional[str] = None
     r"""Identification bit that will be used to identify the origin of the request."""
+
+    untrusted: Optional[bool] = None
+    r"""If true, the data is not fully trusted (eg. loose identity)."""

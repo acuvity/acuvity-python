@@ -1,4 +1,4 @@
-# Kind
+# ExtractionKind
 
 The kind of content carried by this extraction. Used together with role to
 label what the extracted blob represents so the UI can render it correctly and
