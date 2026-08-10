@@ -7,21 +7,22 @@ from typing import List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class PrincipalappTypedDict(TypedDict):
-    r"""Describes the principal information of an application."""
+class DestinationTypedDict(TypedDict):
+    r"""Represents the destination that this request was made to."""
 
+    app: NotRequired[str]
+    r"""The name of the application that the domain belongs to."""
     component: NotRequired[str]
-    r"""The component of the application request."""
-    labels: NotRequired[List[str]]
-    r"""The list of labels attached to an application request."""
-    name: NotRequired[str]
-    r"""The name of the application."""
-    user_claims: NotRequired[List[str]]
-    r"""The optional user claims of the request. This can be an incomplete list, and
-    claims can be mapped to different keys.
+    r"""The component of the application that the domain belongs to."""
+    host: NotRequired[str]
+    r"""The host name of the request. Optional, matching the destination of a scan or
+    police request: the caller may omit it, and it is only filled in when the
+    resolved provider or app component declares a host of its own.
     """
-    username: NotRequired[str]
-    r"""The optional username of the request."""
+    ip: NotRequired[str]
+    r"""The destination IP address of the request."""
+    labels: NotRequired[List[str]]
+    r"""The list of labels attached to the application request destination."""
     workload_group_hash: NotRequired[str]
     r"""The hash of the workload group this application belongs to."""
     workload_group_label: NotRequired[str]
@@ -32,27 +33,26 @@ class PrincipalappTypedDict(TypedDict):
     r"""The label format of the workload group set this application belongs to."""
 
 
-class Principalapp(BaseModel):
-    r"""Describes the principal information of an application."""
+class Destination(BaseModel):
+    r"""Represents the destination that this request was made to."""
+
+    app: Optional[str] = None
+    r"""The name of the application that the domain belongs to."""
 
     component: Optional[str] = None
-    r"""The component of the application request."""
+    r"""The component of the application that the domain belongs to."""
 
-    labels: Optional[List[str]] = None
-    r"""The list of labels attached to an application request."""
-
-    name: Optional[str] = None
-    r"""The name of the application."""
-
-    user_claims: Annotated[Optional[List[str]], pydantic.Field(alias="userClaims")] = (
-        None
-    )
-    r"""The optional user claims of the request. This can be an incomplete list, and
-    claims can be mapped to different keys.
+    host: Optional[str] = None
+    r"""The host name of the request. Optional, matching the destination of a scan or
+    police request: the caller may omit it, and it is only filled in when the
+    resolved provider or app component declares a host of its own.
     """
 
-    username: Optional[str] = None
-    r"""The optional username of the request."""
+    ip: Optional[str] = None
+    r"""The destination IP address of the request."""
+
+    labels: Optional[List[str]] = None
+    r"""The list of labels attached to the application request destination."""
 
     workload_group_hash: Annotated[
         Optional[str], pydantic.Field(alias="workloadGroupHash")

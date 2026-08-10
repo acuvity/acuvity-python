@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 from .alertevent import Alertevent, AlerteventTypedDict
+from .destination import Destination, DestinationTypedDict
 from .extraction import Extraction, ExtractionTypedDict
 from .extractionsummary import Extractionsummary, ExtractionsummaryTypedDict
 from .latency import Latency, LatencyTypedDict
 from .mcpmessage import Mcpmessage, McpmessageTypedDict
 from .principal import Principal, PrincipalTypedDict
+from .roundtriperror import Roundtriperror, RoundtriperrorTypedDict
 from .tool import Tool, ToolTypedDict
 from .toolchoice import Toolchoice, ToolchoiceTypedDict
 from .traceref import Traceref, TracerefTypedDict
@@ -19,14 +21,39 @@ from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class Decision(str, Enum):
-    r"""Tell what was the decision about the data."""
+    r"""User-facing outcome of the roundtrip. Reflects the policy
+    engine's verdict, or in case of platform failure, the result of the
+    failClose strategy (Deny on fail-close, Allow on fail-open, with
+    structured error field carring the detail). NotApplicable is
+    used by the scan and police APIs, which analyze content without
+    rendering an enforcement decision. Error and UpstreamError stay
+    in the allowed_choices list for backward compatibility with
+    clients that still PUT those values; new round-trips never emit
+    them — platform/upstream failures now surface via the structured
+    Error field instead.
+    NOTE: safe to drop Error and UpstreamError from this enum on or
+    after 2026-07-19 (two months after the structured RoundtripError
+    landed on 2026-05-19), once consumers have rolled forward.
+    """
 
     DENY = "Deny"
     ALLOW = "Allow"
     ASK = "Ask"
+    REPORT = "Report"
     BYPASSED = "Bypassed"
     FORBIDDEN_USER = "ForbiddenUser"
     SKIPPED = "Skipped"
+    REDIRECTED = "Redirected"
+    NOT_APPLICABLE = "NotApplicable"
+    ERROR = "Error"
+    UPSTREAM_ERROR = "UpstreamError"
+
+
+class ProviderType(str, Enum):
+    r"""The type of the provider."""
+
+    LLM = "LLM"
+    MCP_SERVER = "MCPServer"
 
 
 class ScanresponseType(str, Enum):
@@ -41,6 +68,8 @@ class ScanresponseTypedDict(TypedDict):
 
     principal: PrincipalTypedDict
     r"""Describe the principal."""
+    provider_type: ProviderType
+    r"""The type of the provider."""
     id: NotRequired[str]
     r"""ID is the identifier of the object."""
     alerts: NotRequired[List[AlerteventTypedDict]]
@@ -51,8 +80,36 @@ class ScanresponseTypedDict(TypedDict):
     r"""The client used to send the request."""
     client_version: NotRequired[str]
     r"""The version of the client used to send the request."""
+    content_redacted: NotRequired[bool]
+    r"""If true, the content of the extractions was stripped from the audit entry for
+    this request, and only the analysis and other metadata were kept. It reports
+    what actually happened, which is not the same as what was requested:
+    redactContentBypass can leave the content in place.
+    """
     decision: NotRequired[Decision]
-    r"""Tell what was the decision about the data."""
+    r"""User-facing outcome of the roundtrip. Reflects the policy
+    engine's verdict, or in case of platform failure, the result of the
+    failClose strategy (Deny on fail-close, Allow on fail-open, with
+    structured error field carring the detail). NotApplicable is
+    used by the scan and police APIs, which analyze content without
+    rendering an enforcement decision. Error and UpstreamError stay
+    in the allowed_choices list for backward compatibility with
+    clients that still PUT those values; new round-trips never emit
+    them — platform/upstream failures now surface via the structured
+    Error field instead.
+    NOTE: safe to drop Error and UpstreamError from this enum on or
+    after 2026-07-19 (two months after the structured RoundtripError
+    landed on 2026-05-19), once consumers have rolled forward.
+    """
+    destination: NotRequired[DestinationTypedDict]
+    r"""Represents the destination that this request was made to."""
+    error: NotRequired[RoundtriperrorTypedDict]
+    r"""Structured error info attached to a roundtrip when a non-user-facing
+    platform stage or the upstream provider failed. Carries the platform-side
+    detail (type, stage, message) for debugging and provider-health
+    derivation. The Decision field still reflects the policy/processing
+    outcome per existing semantics.
+    """
     extractions: NotRequired[List[ExtractionTypedDict]]
     r"""The extractions to log."""
     hash: NotRequired[str]
@@ -91,6 +148,9 @@ class Scanresponse(BaseModel):
     principal: Principal
     r"""Describe the principal."""
 
+    provider_type: Annotated[ProviderType, pydantic.Field(alias="providerType")]
+    r"""The type of the provider."""
+
     id: Annotated[Optional[str], pydantic.Field(alias="ID")] = None
     r"""ID is the identifier of the object."""
 
@@ -108,8 +168,41 @@ class Scanresponse(BaseModel):
     )
     r"""The version of the client used to send the request."""
 
+    content_redacted: Annotated[
+        Optional[bool], pydantic.Field(alias="contentRedacted")
+    ] = None
+    r"""If true, the content of the extractions was stripped from the audit entry for
+    this request, and only the analysis and other metadata were kept. It reports
+    what actually happened, which is not the same as what was requested:
+    redactContentBypass can leave the content in place.
+    """
+
     decision: Optional[Decision] = None
-    r"""Tell what was the decision about the data."""
+    r"""User-facing outcome of the roundtrip. Reflects the policy
+    engine's verdict, or in case of platform failure, the result of the
+    failClose strategy (Deny on fail-close, Allow on fail-open, with
+    structured error field carring the detail). NotApplicable is
+    used by the scan and police APIs, which analyze content without
+    rendering an enforcement decision. Error and UpstreamError stay
+    in the allowed_choices list for backward compatibility with
+    clients that still PUT those values; new round-trips never emit
+    them — platform/upstream failures now surface via the structured
+    Error field instead.
+    NOTE: safe to drop Error and UpstreamError from this enum on or
+    after 2026-07-19 (two months after the structured RoundtripError
+    landed on 2026-05-19), once consumers have rolled forward.
+    """
+
+    destination: Optional[Destination] = None
+    r"""Represents the destination that this request was made to."""
+
+    error: Optional[Roundtriperror] = None
+    r"""Structured error info attached to a roundtrip when a non-user-facing
+    platform stage or the upstream provider failed. Carries the platform-side
+    detail (type, stage, message) for debugging and provider-health
+    derivation. The Decision field still reflects the policy/processing
+    outcome per existing semantics.
+    """
 
     extractions: Optional[List[Extraction]] = None
     r"""The extractions to log."""

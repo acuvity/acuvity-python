@@ -13,11 +13,15 @@ class ToolresultTypedDict(TypedDict):
     """
 
     call_id: str
-    r"""The ID of the tool use as previously returned by a models tool use response."""
+    r"""The ID of the tool use as previously returned by a tool use response."""
     content: NotRequired[str]
     r"""The content of the tool call results."""
     is_error: NotRequired[bool]
     r"""Indicates if the tool call failed."""
+    name: NotRequired[str]
+    r"""The name of the tool used."""
+    server_name: NotRequired[str]
+    r"""The server name of the tool used."""
 
 
 class Toolresult(BaseModel):
@@ -26,10 +30,16 @@ class Toolresult(BaseModel):
     """
 
     call_id: Annotated[str, pydantic.Field(alias="callID")]
-    r"""The ID of the tool use as previously returned by a models tool use response."""
+    r"""The ID of the tool use as previously returned by a tool use response."""
 
     content: Optional[str] = None
     r"""The content of the tool call results."""
 
     is_error: Annotated[Optional[bool], pydantic.Field(alias="isError")] = False
     r"""Indicates if the tool call failed."""
+
+    name: Optional[str] = None
+    r"""The name of the tool used."""
+
+    server_name: Annotated[Optional[str], pydantic.Field(alias="serverName")] = None
+    r"""The server name of the tool used."""

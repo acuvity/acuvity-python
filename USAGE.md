@@ -7,6 +7,7 @@ You can submit a scan request using the Scan API.
 # Synchronous Example
 import acuvity
 from acuvity import Acuvity
+import dateutil.parser
 import os
 
 
@@ -24,12 +25,20 @@ with Acuvity(
             "key1": "value1",
             "key2": "value2",
         },
-        "bypass_hash": "6f37d752-bce1-4973-88f6-28b6c100ceb8",
+        "destination": {
+            "app": "other-ai-app",
+            "component": "backend",
+            "host": "api.openai.com",
+            "ip": "192.0.2.42",
+            "port": 443,
+        },
         "extractions": [
             {
                 "tool_results": [
                     {
                         "call_id": "toolu_019X5QaEeVTDFrQPHqMMgd1n",
+                        "name": "fetch",
+                        "server_name": "my-mcp-server",
                     },
                 ],
                 "tool_uses": [
@@ -56,11 +65,21 @@ with Acuvity(
             "Generate a list of creative product names for a futuristic tech gadget.",
         ],
         "model": "claude-3-7-sonnet",
+        "provider": "openai",
         "redactions": [
             "person",
             "ssn",
             "location",
         ],
+        "source": {
+            "ip": "192.0.2.42",
+            "user_claims": [
+                "name=John Doe",
+                "email=john.doe@acme.com",
+                "@validated=false",
+            ],
+            "username": "john.doe@acme.com",
+        },
         "tools": {
             "0": {
                 "mcp_server": {
@@ -71,6 +90,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -85,6 +111,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -99,6 +132,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -113,6 +158,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -127,6 +184,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -141,6 +215,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -155,6 +246,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -169,6 +272,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -183,6 +298,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -197,6 +329,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -211,6 +350,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -225,6 +376,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -239,6 +402,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -253,6 +428,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -267,6 +454,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -281,6 +485,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -295,6 +511,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -309,6 +532,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -323,6 +563,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -337,6 +584,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -351,6 +615,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -365,6 +636,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -379,6 +662,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -393,6 +683,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -407,6 +704,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -421,6 +735,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -435,6 +756,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -449,6 +777,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -463,6 +803,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -477,6 +824,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -491,6 +845,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -505,6 +866,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -519,6 +887,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -533,6 +918,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -547,6 +949,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -561,6 +980,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -575,6 +1006,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -589,6 +1032,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -603,6 +1053,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -617,6 +1079,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -631,6 +1100,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -645,6 +1121,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -659,6 +1147,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -673,6 +1168,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -687,6 +1189,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -701,6 +1215,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -715,6 +1236,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -729,6 +1262,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -743,6 +1288,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -757,6 +1309,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -771,6 +1340,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -785,6 +1371,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -799,6 +1402,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -813,6 +1433,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -827,6 +1459,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -841,6 +1480,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -855,6 +1501,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -869,6 +1522,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -883,6 +1543,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -897,6 +1569,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -911,6 +1600,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -925,6 +1631,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -939,6 +1657,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -953,6 +1688,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -967,6 +1719,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -981,6 +1740,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -995,6 +1761,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1009,6 +1782,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1023,6 +1803,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1037,6 +1829,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1051,6 +1850,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1065,6 +1876,13 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1079,6 +1897,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1093,6 +1928,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1107,6 +1954,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1121,6 +1985,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1135,6 +2011,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1149,6 +2042,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1163,6 +2068,23 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1177,6 +2099,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1191,6 +2125,18 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
@@ -1205,11 +2151,28 @@ with Acuvity(
                     ],
                     "name": "deepwiki",
                 },
+                "arguments": [
+                    {
+                        "name": "url",
+                        "description": "URL to fetch.",
+                        "type": "string",
+                    },
+                ],
                 "category": acuvity.Category.CLIENT,
                 "description": "Get the current weather in a given location",
                 "name": "get_weather",
                 "type": "computer_20250124",
             },
+        },
+        "trace": {
+            "span_end": dateutil.parser.isoparse("2025-03-22T14:35:00.123456789Z"),
+            "span_id": "6ba80aaa3b2f43d8",
+            "span_name": "acuvity_prompt_input_analysis",
+            "span_start": dateutil.parser.isoparse("2025-03-22T14:35:00.123456789Z"),
+            "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+            "parent_span_id": "00f067aa0ba902b7",
+            "status_message": "Failed to make API call to service Foo.",
+            "transparent_span_id": "6ba80aaa3b2f43d8",
         },
     })
 
@@ -1225,6 +2188,7 @@ The same SDK client can also be used to make asychronous requests by importing a
 import acuvity
 from acuvity import Acuvity
 import asyncio
+import dateutil.parser
 import os
 
 async def main():
@@ -1243,12 +2207,20 @@ async def main():
                 "key1": "value1",
                 "key2": "value2",
             },
-            "bypass_hash": "6f37d752-bce1-4973-88f6-28b6c100ceb8",
+            "destination": {
+                "app": "other-ai-app",
+                "component": "backend",
+                "host": "api.openai.com",
+                "ip": "192.0.2.42",
+                "port": 443,
+            },
             "extractions": [
                 {
                     "tool_results": [
                         {
                             "call_id": "toolu_019X5QaEeVTDFrQPHqMMgd1n",
+                            "name": "fetch",
+                            "server_name": "my-mcp-server",
                         },
                     ],
                     "tool_uses": [
@@ -1275,11 +2247,21 @@ async def main():
                 "Generate a list of creative product names for a futuristic tech gadget.",
             ],
             "model": "claude-3-7-sonnet",
+            "provider": "openai",
             "redactions": [
                 "person",
                 "ssn",
                 "location",
             ],
+            "source": {
+                "ip": "192.0.2.42",
+                "user_claims": [
+                    "name=John Doe",
+                    "email=john.doe@acme.com",
+                    "@validated=false",
+                ],
+                "username": "john.doe@acme.com",
+            },
             "tools": {
                 "0": {
                     "mcp_server": {
@@ -1290,6 +2272,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1304,6 +2293,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1318,6 +2314,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1332,6 +2340,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1346,6 +2366,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1360,6 +2397,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1374,6 +2428,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1388,6 +2454,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1402,6 +2480,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1416,6 +2511,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1430,6 +2532,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1444,6 +2558,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1458,6 +2584,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1472,6 +2610,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1486,6 +2636,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1500,6 +2667,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1514,6 +2693,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1528,6 +2714,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1542,6 +2745,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1556,6 +2766,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1570,6 +2797,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1584,6 +2818,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1598,6 +2844,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1612,6 +2865,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1626,6 +2886,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1640,6 +2917,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1654,6 +2938,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1668,6 +2959,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1682,6 +2985,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1696,6 +3006,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1710,6 +3027,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1724,6 +3048,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1738,6 +3069,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1752,6 +3100,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1766,6 +3131,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1780,6 +3162,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1794,6 +3188,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1808,6 +3214,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1822,6 +3235,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1836,6 +3261,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1850,6 +3282,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1864,6 +3303,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1878,6 +3329,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1892,6 +3350,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1906,6 +3371,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1920,6 +3397,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1934,6 +3418,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1948,6 +3444,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1962,6 +3470,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1976,6 +3491,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -1990,6 +3522,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2004,6 +3553,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2018,6 +3584,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2032,6 +3615,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2046,6 +3641,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2060,6 +3662,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2074,6 +3683,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2088,6 +3704,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2102,6 +3725,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2116,6 +3751,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2130,6 +3782,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2144,6 +3813,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2158,6 +3839,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2172,6 +3870,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2186,6 +3901,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2200,6 +3922,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2214,6 +3943,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2228,6 +3964,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2242,6 +3985,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2256,6 +4011,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2270,6 +4032,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2284,6 +4058,13 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2298,6 +4079,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2312,6 +4110,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2326,6 +4136,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2340,6 +4167,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2354,6 +4193,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2368,6 +4224,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2382,6 +4250,23 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2396,6 +4281,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2410,6 +4307,18 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
@@ -2424,11 +4333,28 @@ async def main():
                         ],
                         "name": "deepwiki",
                     },
+                    "arguments": [
+                        {
+                            "name": "url",
+                            "description": "URL to fetch.",
+                            "type": "string",
+                        },
+                    ],
                     "category": acuvity.Category.CLIENT,
                     "description": "Get the current weather in a given location",
                     "name": "get_weather",
                     "type": "computer_20250124",
                 },
+            },
+            "trace": {
+                "span_end": dateutil.parser.isoparse("2025-03-22T14:35:00.123456789Z"),
+                "span_id": "6ba80aaa3b2f43d8",
+                "span_name": "acuvity_prompt_input_analysis",
+                "span_start": dateutil.parser.isoparse("2025-03-22T14:35:00.123456789Z"),
+                "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+                "parent_span_id": "00f067aa0ba902b7",
+                "status_message": "Failed to make API call to service Foo.",
+                "transparent_span_id": "6ba80aaa3b2f43d8",
             },
         })
 

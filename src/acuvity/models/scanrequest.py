@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 from .extractionrequest import Extractionrequest, ExtractionrequestTypedDict
+from .requestdestination import Requestdestination, RequestdestinationTypedDict
+from .requestsource import Requestsource, RequestsourceTypedDict
 from .tool import Tool, ToolTypedDict
+from .traceref import Traceref, TracerefTypedDict
 from acuvity.types import BaseModel
 from enum import Enum
 import pydantic
@@ -17,6 +20,16 @@ class Anonymization(str, Enum):
     VARIABLE_SIZE = "VariableSize"
 
 
+class Direction(str, Enum):
+    r"""The direction of the traffic for this request, relative to the app component
+    the caller's token identifies. Determines whether the ingress or the egress
+    policies of that app component are evaluated.
+    """
+
+    EGRESS = "Egress"
+    INGRESS = "Ingress"
+
+
 class Type(str, Enum):
     r"""The type of text."""
 
@@ -25,29 +38,22 @@ class Type(str, Enum):
 
 
 class ScanrequestTypedDict(TypedDict):
-    r"""This is a scan request."""
-
-    access_policy: NotRequired[str]
-    r"""AccessPolicy allows to pass optional Rego access policy. If not set,
-    The action is always Allow,
-    If it is set, it will be run, and the final decision will be computed based
-    on that policy.
-    If the rego code does not start with package main, then the needed
-    classic package definition and  acuvity imports will be added
-    automatically.
-    If the code starts with package main, then everything remains untouched.
+    r"""This is a scan request. Scan enforces no policy, so unlike police it can be used
+    as a plain analyzer with no destination in mind: provider, destination and
+    direction may all be left out.
     """
+
     analyzers: NotRequired[List[str]]
     r"""The analyzers parameter allows for customizing which analyzers should be used,
     overriding the default selection. Each analyzer entry can optionally include a
     prefix to modify its behavior:
 
     - No prefix: Runs only the specified analyzers and any dependencies required
-    for deeper analyzis (slower but more acurate).
+    for deeper analysis (slower but more acurate).
     - '+' (enable): Activates an analyzer that is disabled by default.
     - '-' (disable): Disables an analyzer that is enabled by default.
     - '@' (direct execution): Runs the analyzer immediately, bypassing the deeper
-    analyzis (faster but less acurate).
+    analysis (faster but less acurate).
 
     An analyzers entry can be specified using:
     - The analyzer name (e.g., 'Toxicity detector')
@@ -60,23 +66,22 @@ class ScanrequestTypedDict(TypedDict):
     If left empty, all default analyzers will be executed.
     """
     annotations: NotRequired[Dict[str, str]]
-    r"""Annotations attached to the extraction."""
+    r"""Annotations attached to the request."""
     anonymization: NotRequired[Anonymization]
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
-    bypass_hash: NotRequired[str]
-    r"""In the case of a contentPolicy that asks for a confirmation, this is the
-    hash you must send back to bypass the block. This is only useful when a
-    content policy has been set or is evaluated remotely.
+    destination: NotRequired[RequestdestinationTypedDict]
+    r"""RequestDestination holds the destination information for a request. When app
+    and component are set, the request is evaluated against the app component's
+    policies instead of a provider. In that case, the provider field must not be
+    set.
+    On the police API an egress request must name its target, so app and component
+    are required unless a provider is given. On the scan API they may be left out
+    to run a plain scan that targets nothing.
     """
-    content_policy: NotRequired[str]
-    r"""ContentPolicy allows to pass optional Rego content policy. If not set,
-    The action is always Allow, and there cannot be any alerts raised etc
-    If it is set, it will be run, and the final decision will be computed based
-    on that policy.
-    If the rego code does not start with package main, then the needed
-    classic package definition and  acuvity imports will be added
-    automatically.
-    If the code starts with package main, then everything remains untouched.
+    direction: NotRequired[Direction]
+    r"""The direction of the traffic for this request, relative to the app component
+    the caller's token identifies. Determines whether the ingress or the egress
+    policies of that app component are evaluated.
     """
     extractions: NotRequired[List[ExtractionrequestTypedDict]]
     r"""The extractions to request."""
@@ -86,30 +91,49 @@ class ScanrequestTypedDict(TypedDict):
     r"""Messages to process and provide detections for. Use data in extractions for
     processing binary data.
     """
-    minimal_logging: NotRequired[bool]
-    r"""If true, the system will not log the contents that were scanned."""
     model: NotRequired[str]
     r"""The model used by the request."""
+    provider: NotRequired[str]
+    r"""The name of the provider to use for policy resolutions. Must not be set when
+    destination app and component are set.
+    On the police API an egress request must set either this or the destination app
+    and component. On the scan API both may be omitted to run a plain scan that
+    targets nothing.
+    """
+    redact_content: NotRequired[bool]
+    r"""If true, the user data is removed from the logged roundtrip, while the
+    analysis and all other metadata are kept. This only affects what is logged:
+    the response of this call always carries the full content.
+    """
+    redact_content_bypass: NotRequired[bool]
+    r"""If true, and redactContent is also true, the user data is kept in the
+    logged roundtrip whenever the decision reports a violation, so that the
+    content behind a denial stays available for review. It has no effect on
+    its own.
+    """
     redactions: NotRequired[List[str]]
     r"""The redactions to perform if they are detected."""
+    source: NotRequired[RequestsourceTypedDict]
+    r"""RequestSource holds the information about where a request originates from. On
+    egress, the source is the app component the caller's token identifies, and this
+    only carries optional enrichment. On ingress, the source is whoever is calling
+    into that app component, and the token field identifies it.
+    The username and userClaims are only used when no token is given, or when the
+    given token carries no user identity of its own: identity derived from a
+    validated token always wins over identity asserted in the request body.
+    """
     tools: NotRequired[Dict[str, ToolTypedDict]]
     r"""The various tools used by the request."""
+    trace: NotRequired[TracerefTypedDict]
+    r"""Holds all references to a trace which are also the essentials of the span data."""
     type: NotRequired[Type]
     r"""The type of text."""
 
 
 class Scanrequest(BaseModel):
-    r"""This is a scan request."""
-
-    access_policy: Annotated[Optional[str], pydantic.Field(alias="accessPolicy")] = None
-    r"""AccessPolicy allows to pass optional Rego access policy. If not set,
-    The action is always Allow,
-    If it is set, it will be run, and the final decision will be computed based
-    on that policy.
-    If the rego code does not start with package main, then the needed
-    classic package definition and  acuvity imports will be added
-    automatically.
-    If the code starts with package main, then everything remains untouched.
+    r"""This is a scan request. Scan enforces no policy, so unlike police it can be used
+    as a plain analyzer with no destination in mind: provider, destination and
+    direction may all be left out.
     """
 
     analyzers: Optional[List[str]] = None
@@ -118,11 +142,11 @@ class Scanrequest(BaseModel):
     prefix to modify its behavior:
 
     - No prefix: Runs only the specified analyzers and any dependencies required
-    for deeper analyzis (slower but more acurate).
+    for deeper analysis (slower but more acurate).
     - '+' (enable): Activates an analyzer that is disabled by default.
     - '-' (disable): Disables an analyzer that is enabled by default.
     - '@' (direct execution): Runs the analyzer immediately, bypassing the deeper
-    analyzis (faster but less acurate).
+    analysis (faster but less acurate).
 
     An analyzers entry can be specified using:
     - The analyzer name (e.g., 'Toxicity detector')
@@ -136,28 +160,25 @@ class Scanrequest(BaseModel):
     """
 
     annotations: Optional[Dict[str, str]] = None
-    r"""Annotations attached to the extraction."""
+    r"""Annotations attached to the request."""
 
     anonymization: Optional[Anonymization] = Anonymization.FIXED_SIZE
     r"""How to anonymize the data. If deanonymize is true, then VariablSize is required."""
 
-    bypass_hash: Annotated[Optional[str], pydantic.Field(alias="bypassHash")] = None
-    r"""In the case of a contentPolicy that asks for a confirmation, this is the
-    hash you must send back to bypass the block. This is only useful when a
-    content policy has been set or is evaluated remotely.
+    destination: Optional[Requestdestination] = None
+    r"""RequestDestination holds the destination information for a request. When app
+    and component are set, the request is evaluated against the app component's
+    policies instead of a provider. In that case, the provider field must not be
+    set.
+    On the police API an egress request must name its target, so app and component
+    are required unless a provider is given. On the scan API they may be left out
+    to run a plain scan that targets nothing.
     """
 
-    content_policy: Annotated[Optional[str], pydantic.Field(alias="contentPolicy")] = (
-        None
-    )
-    r"""ContentPolicy allows to pass optional Rego content policy. If not set,
-    The action is always Allow, and there cannot be any alerts raised etc
-    If it is set, it will be run, and the final decision will be computed based
-    on that policy.
-    If the rego code does not start with package main, then the needed
-    classic package definition and  acuvity imports will be added
-    automatically.
-    If the code starts with package main, then everything remains untouched.
+    direction: Optional[Direction] = Direction.EGRESS
+    r"""The direction of the traffic for this request, relative to the app component
+    the caller's token identifies. Determines whether the ingress or the egress
+    policies of that app component are evaluated.
     """
 
     extractions: Optional[List[Extractionrequest]] = None
@@ -171,19 +192,52 @@ class Scanrequest(BaseModel):
     processing binary data.
     """
 
-    minimal_logging: Annotated[
-        Optional[bool], pydantic.Field(alias="minimalLogging")
-    ] = None
-    r"""If true, the system will not log the contents that were scanned."""
-
     model: Optional[str] = None
     r"""The model used by the request."""
+
+    provider: Optional[str] = None
+    r"""The name of the provider to use for policy resolutions. Must not be set when
+    destination app and component are set.
+    On the police API an egress request must set either this or the destination app
+    and component. On the scan API both may be omitted to run a plain scan that
+    targets nothing.
+    """
+
+    redact_content: Annotated[Optional[bool], pydantic.Field(alias="redactContent")] = (
+        None
+    )
+    r"""If true, the user data is removed from the logged roundtrip, while the
+    analysis and all other metadata are kept. This only affects what is logged:
+    the response of this call always carries the full content.
+    """
+
+    redact_content_bypass: Annotated[
+        Optional[bool], pydantic.Field(alias="redactContentBypass")
+    ] = None
+    r"""If true, and redactContent is also true, the user data is kept in the
+    logged roundtrip whenever the decision reports a violation, so that the
+    content behind a denial stays available for review. It has no effect on
+    its own.
+    """
 
     redactions: Optional[List[str]] = None
     r"""The redactions to perform if they are detected."""
 
+    source: Optional[Requestsource] = None
+    r"""RequestSource holds the information about where a request originates from. On
+    egress, the source is the app component the caller's token identifies, and this
+    only carries optional enrichment. On ingress, the source is whoever is calling
+    into that app component, and the token field identifies it.
+    The username and userClaims are only used when no token is given, or when the
+    given token carries no user identity of its own: identity derived from a
+    validated token always wins over identity asserted in the request body.
+    """
+
     tools: Optional[Dict[str, Tool]] = None
     r"""The various tools used by the request."""
+
+    trace: Optional[Traceref] = None
+    r"""Holds all references to a trace which are also the essentials of the span data."""
 
     type: Optional[Type] = None
     r"""The type of text."""

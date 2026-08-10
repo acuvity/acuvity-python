@@ -6,9 +6,46 @@ from .textualdetection import Textualdetection, TextualdetectionTypedDict
 from .toolresult import Toolresult, ToolresultTypedDict
 from .tooluse import Tooluse, TooluseTypedDict
 from acuvity.types import BaseModel
+from enum import Enum
 import pydantic
 from typing import Dict, List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
+
+
+class ExtractionKind(str, Enum):
+    r"""The kind of content carried by this extraction. Used together with role to
+    label what the extracted blob represents so the UI can render it correctly and
+    analyzers can dispatch appropriately:
+    - Message: free-form natural language (default).
+    - Thinking: model reasoning trace (e.g. Anthropic thinking, OpenAI reasoning,
+    Gemini thought).
+    - ToolDefinition: tool/function schema advertised to the model (name,
+    description, JSON schema).
+    - ToolInput: structured arguments the model passes when invoking a tool.
+    - ToolOutput: result returned to the model after a tool call.
+    - File: uploaded or attached file payload.
+    - Resource: externally-supplied context injected into the prompt (RAG
+    document, search result, MCP resource).
+    - Event: control or lifecycle marker with no analyzable content.
+    """
+
+    MESSAGE = "Message"
+    THINKING = "Thinking"
+    TOOL_DEFINITION = "ToolDefinition"
+    TOOL_INPUT = "ToolInput"
+    TOOL_OUTPUT = "ToolOutput"
+    FILE = "File"
+    RESOURCE = "Resource"
+    EVENT = "Event"
+
+
+class ExtractionRole(str, Enum):
+    r"""The role of the message represented by this extraction."""
+
+    USER = "User"
+    ASSISTANT = "Assistant"
+    SYSTEM = "System"
+    TOOL = "Tool"
 
 
 class ExtractionTypedDict(TypedDict):
@@ -104,9 +141,25 @@ class ExtractionTypedDict(TypedDict):
     - confidence: 'medium', 0.33 <= score < 0.66
     - confidence: 'high', 0.66 <= score <= 1.
     """
+    kind: NotRequired[ExtractionKind]
+    r"""The kind of content carried by this extraction. Used together with role to
+    label what the extracted blob represents so the UI can render it correctly and
+    analyzers can dispatch appropriately:
+    - Message: free-form natural language (default).
+    - Thinking: model reasoning trace (e.g. Anthropic thinking, OpenAI reasoning,
+    Gemini thought).
+    - ToolDefinition: tool/function schema advertised to the model (name,
+    description, JSON schema).
+    - ToolInput: structured arguments the model passes when invoking a tool.
+    - ToolOutput: result returned to the model after a tool call.
+    - File: uploaded or attached file payload.
+    - Resource: externally-supplied context injected into the prompt (RAG
+    document, search result, MCP resource).
+    - Event: control or lifecycle marker with no analyzable content.
+    """
     label: NotRequired[str]
-    r"""A means of distinguishing what was extracted, such as prompt, input file or
-    code.
+    r"""Contains events and other information that are not actual user content, and will
+    not go through analysis.
     """
     languages: NotRequired[Dict[str, float]]
     r"""The language of the classification.
@@ -151,6 +204,8 @@ class ExtractionTypedDict(TypedDict):
     - confidence: 'medium', 0.33 <= score < 0.66
     - confidence: 'high', 0.66 <= score <= 1.
     """
+    role: NotRequired[ExtractionRole]
+    r"""The role of the message represented by this extraction."""
     secrets: NotRequired[Dict[str, float]]
     r"""The secrets found during classification.
 
@@ -340,9 +395,26 @@ class Extraction(BaseModel):
     - confidence: 'high', 0.66 <= score <= 1.
     """
 
+    kind: Optional[ExtractionKind] = ExtractionKind.MESSAGE
+    r"""The kind of content carried by this extraction. Used together with role to
+    label what the extracted blob represents so the UI can render it correctly and
+    analyzers can dispatch appropriately:
+    - Message: free-form natural language (default).
+    - Thinking: model reasoning trace (e.g. Anthropic thinking, OpenAI reasoning,
+    Gemini thought).
+    - ToolDefinition: tool/function schema advertised to the model (name,
+    description, JSON schema).
+    - ToolInput: structured arguments the model passes when invoking a tool.
+    - ToolOutput: result returned to the model after a tool call.
+    - File: uploaded or attached file payload.
+    - Resource: externally-supplied context injected into the prompt (RAG
+    document, search result, MCP resource).
+    - Event: control or lifecycle marker with no analyzable content.
+    """
+
     label: Optional[str] = None
-    r"""A means of distinguishing what was extracted, such as prompt, input file or
-    code.
+    r"""Contains events and other information that are not actual user content, and will
+    not go through analysis.
     """
 
     languages: Optional[Dict[str, float]] = None
@@ -391,6 +463,9 @@ class Extraction(BaseModel):
     - confidence: 'medium', 0.33 <= score < 0.66
     - confidence: 'high', 0.66 <= score <= 1.
     """
+
+    role: Optional[ExtractionRole] = ExtractionRole.USER
+    r"""The role of the message represented by this extraction."""
 
     secrets: Optional[Dict[str, float]] = None
     r"""The secrets found during classification.

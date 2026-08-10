@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 from .principalapp import Principalapp, PrincipalappTypedDict
+from .principalexternal import Principalexternal, PrincipalexternalTypedDict
 from .principaluser import Principaluser, PrincipaluserTypedDict
 from acuvity.types import BaseModel
 from enum import Enum
@@ -43,8 +44,12 @@ class PrincipalTypedDict(TypedDict):
     r"""The type of authentication."""
     claims: NotRequired[List[str]]
     r"""List of claims extracted from the user query."""
+    external: NotRequired[PrincipalexternalTypedDict]
+    r"""Describes the principal information of an external request."""
     teams: NotRequired[List[str]]
     r"""The teams that were used to authorize the request."""
+    token_id: NotRequired[str]
+    r"""The ID (jid) of the token, if any."""
     token_name: NotRequired[str]
     r"""The name of the token, if any."""
     user: NotRequired[PrincipaluserTypedDict]
@@ -69,8 +74,14 @@ class Principal(BaseModel):
     claims: Optional[List[str]] = None
     r"""List of claims extracted from the user query."""
 
+    external: Optional[Principalexternal] = None
+    r"""Describes the principal information of an external request."""
+
     teams: Optional[List[str]] = None
     r"""The teams that were used to authorize the request."""
+
+    token_id: Annotated[Optional[str], pydantic.Field(alias="tokenID")] = None
+    r"""The ID (jid) of the token, if any."""
 
     token_name: Annotated[Optional[str], pydantic.Field(alias="tokenName")] = None
     r"""The name of the token, if any."""

@@ -1,12 +1,13 @@
 # Direction
 
-The communication direction of the MCP message which can be from client to
-server, or from server to client.
+The direction of the traffic for this request, relative to the app component
+the caller's token identifies. Determines whether the ingress or the egress
+policies of that app component are evaluated.
 
 
 ## Values
 
-| Name             | Value            |
-| ---------------- | ---------------- |
-| `CLIENT2_SERVER` | Client2Server    |
-| `SERVER2_CLIENT` | Server2Client    |
+| Name      | Value     |
+| --------- | --------- |
+| `EGRESS`  | Egress    |
+| `INGRESS` | Ingress   |

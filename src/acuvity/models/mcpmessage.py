@@ -8,7 +8,7 @@ from typing import Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class Direction(str, Enum):
+class McpmessageDirection(str, Enum):
     r"""The communication direction of the MCP message which can be from client to
     server, or from server to client.
     """
@@ -28,12 +28,16 @@ class McpmessageType(str, Enum):
 class McpmessageTypedDict(TypedDict):
     r"""Represents MCP message details."""
 
-    direction: Direction
+    direction: McpmessageDirection
     r"""The communication direction of the MCP message which can be from client to
     server, or from server to client.
     """
     type: McpmessageType
     r"""The MCP message type which can be Request, Response or Notification."""
+    gateway_name: NotRequired[str]
+    r"""This is the MCP gateway name of the MCP message. This is only set for messages
+    that are sent to or received from an MCP gateway.
+    """
     is_error: NotRequired[bool]
     r"""IsError is true in case if a response is an error response as opposed to a
     result. Note that this is not the same as a result which has isError set to true
@@ -46,6 +50,8 @@ class McpmessageTypedDict(TypedDict):
     set on responses as well if possible in which case the format will be of the
     form method/params.name.
     """
+    params_name: NotRequired[str]
+    r"""This is the parameters name of the request or notification."""
     request_id: NotRequired[str]
     r"""The ID of a request or a response. We always extract this as a string even
     though this can be a string or number in MCP. It is derived from the id field of
@@ -60,13 +66,18 @@ class McpmessageTypedDict(TypedDict):
 class Mcpmessage(BaseModel):
     r"""Represents MCP message details."""
 
-    direction: Direction
+    direction: McpmessageDirection
     r"""The communication direction of the MCP message which can be from client to
     server, or from server to client.
     """
 
     type: McpmessageType
     r"""The MCP message type which can be Request, Response or Notification."""
+
+    gateway_name: Annotated[Optional[str], pydantic.Field(alias="gatewayName")] = None
+    r"""This is the MCP gateway name of the MCP message. This is only set for messages
+    that are sent to or received from an MCP gateway.
+    """
 
     is_error: Annotated[Optional[bool], pydantic.Field(alias="isError")] = None
     r"""IsError is true in case if a response is an error response as opposed to a
@@ -81,6 +92,9 @@ class Mcpmessage(BaseModel):
     set on responses as well if possible in which case the format will be of the
     form method/params.name.
     """
+
+    params_name: Annotated[Optional[str], pydantic.Field(alias="paramsName")] = None
+    r"""This is the parameters name of the request or notification."""
 
     request_id: Annotated[Optional[str], pydantic.Field(alias="requestID")] = None
     r"""The ID of a request or a response. We always extract this as a string even

@@ -9,11 +9,11 @@ from typing import List, Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class DetectionMatchersTypedDict(TypedDict):
+class MatchersTypedDict(TypedDict):
     pass
 
 
-class DetectionMatchers(BaseModel):
+class Matchers(BaseModel):
     pass
 
 
@@ -24,14 +24,14 @@ class AnalyzerTypedDict(TypedDict):
     r"""ID is the identifier of the object."""
     description: NotRequired[str]
     r"""The description of the analyzer."""
-    detection_matchers: NotRequired[List[List[DetectionMatchersTypedDict]]]
-    r"""A list of detection matcher that will trigger the analyzer."""
     detectors: NotRequired[List[DetectorTypedDict]]
     r"""The detectors the analyzer can use."""
     enabled: NotRequired[bool]
     r"""Tell if the analyzer is enabled by default."""
     group: NotRequired[str]
     r"""The group the analyzer belongs to."""
+    matchers: NotRequired[List[List[MatchersTypedDict]]]
+    r"""A list of matcher that will trigger the analyzer."""
     models: NotRequired[List[AnalyzermodelTypedDict]]
     r"""The models used by the analyzer."""
     name: NotRequired[str]
@@ -49,12 +49,6 @@ class Analyzer(BaseModel):
     description: Optional[str] = None
     r"""The description of the analyzer."""
 
-    detection_matchers: Annotated[
-        Optional[List[List[DetectionMatchers]]],
-        pydantic.Field(alias="detectionMatchers"),
-    ] = None
-    r"""A list of detection matcher that will trigger the analyzer."""
-
     detectors: Optional[List[Detector]] = None
     r"""The detectors the analyzer can use."""
 
@@ -63,6 +57,9 @@ class Analyzer(BaseModel):
 
     group: Optional[str] = None
     r"""The group the analyzer belongs to."""
+
+    matchers: Optional[List[List[Matchers]]] = None
+    r"""A list of matcher that will trigger the analyzer."""
 
     models: Optional[List[Analyzermodel]] = None
     r"""The models used by the analyzer."""

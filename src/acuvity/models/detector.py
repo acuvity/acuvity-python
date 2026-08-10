@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 from acuvity.types import BaseModel
+import pydantic
 from typing import Optional
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import Annotated, NotRequired, TypedDict
 
 
 class DetectorTypedDict(TypedDict):
@@ -11,6 +12,8 @@ class DetectorTypedDict(TypedDict):
 
     description: NotRequired[str]
     r"""The description of the detection."""
+    friendly_name: NotRequired[str]
+    r"""The friendly name of the detection."""
     group: NotRequired[str]
     r"""The group the detection belongs to."""
     label: NotRequired[str]
@@ -26,6 +29,9 @@ class Detector(BaseModel):
 
     description: Optional[str] = None
     r"""The description of the detection."""
+
+    friendly_name: Annotated[Optional[str], pydantic.Field(alias="friendlyName")] = None
+    r"""The friendly name of the detection."""
 
     group: Optional[str] = None
     r"""The group the detection belongs to."""

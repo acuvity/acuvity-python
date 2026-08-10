@@ -9,7 +9,7 @@ from typing import Optional
 from typing_extensions import Annotated, NotRequired, TypedDict
 
 
-class Kind(str, Enum):
+class TracerefKind(str, Enum):
     r"""The kind of the span."""
 
     UNSPECIFIED = "Unspecified"
@@ -41,7 +41,7 @@ class TracerefTypedDict(TypedDict):
     r"""When the span started."""
     trace_id: str
     r"""The Trace ID that is being referenced as hex encoded string."""
-    kind: NotRequired[Kind]
+    kind: NotRequired[TracerefKind]
     r"""The kind of the span."""
     parent_span_id: NotRequired[str]
     r"""The parent span ID that is being referenced as hex encoded string."""
@@ -74,7 +74,7 @@ class Traceref(BaseModel):
     trace_id: Annotated[str, pydantic.Field(alias="traceID")]
     r"""The Trace ID that is being referenced as hex encoded string."""
 
-    kind: Optional[Kind] = Kind.UNSPECIFIED
+    kind: Optional[TracerefKind] = TracerefKind.UNSPECIFIED
     r"""The kind of the span."""
 
     parent_span_id: Annotated[Optional[str], pydantic.Field(alias="parentSpanID")] = (
